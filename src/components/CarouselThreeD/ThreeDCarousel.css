@@ -1,0 +1,129 @@
+body {
+  margin: 0;
+  font:
+    15px/20px Arial,
+    sans-serif;
+}
+
+.container {
+  margin: 0 auto;
+  width: min(300px, 80vw);
+  height: min(300px, 80vw);
+  position: relative;
+  perspective: 1000px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  --carousel-radius: min(300px, 80vw);
+}
+
+.carousel {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease-out;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  border-radius: 10px;
+}
+
+.a {
+  transform: rotateY(0deg) translateZ(var(--carousel-radius));
+}
+.b {
+  transform: rotateY(72deg) translateZ(var(--carousel-radius));
+}
+.c {
+  transform: rotateY(144deg) translateZ(var(--carousel-radius));
+}
+.d {
+  transform: rotateY(216deg) translateZ(var(--carousel-radius));
+}
+.e {
+  transform: rotateY(288deg) translateZ(var(--carousel-radius));
+}
+
+/* Drag instructions */
+.carousel::before {
+  content: 'Drag to rotate';
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .container {
+    width: min(200px, 60vw);
+    height: min(200px, 60vw);
+    --carousel-radius: min(200px, 60vw);
+  }
+
+  .carousel::before {
+    font-size: 12px;
+    top: -30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: min(150px, 50vw);
+    height: min(150px, 50vw);
+    --carousel-radius: min(150px, 50vw);
+  }
+
+  .carousel::before {
+    font-size: 11px;
+    top: -25px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+  .container {
+    width: min(120px, 40vw);
+    height: min(120px, 40vw);
+    --carousel-radius: min(120px, 40vw);
+    perspective: 900px; /* Reduce perspective for smaller screens */
+  }
+
+  .carousel::before {
+    font-size: 10px;
+    top: -20px;
+  }
+}
+
+/* Very small screens (like iPhone SE) */
+@media (max-width: 320px) {
+  .container {
+    width: min(100px, 35vw);
+    height: min(100px, 35vw);
+    --carousel-radius: min(100px, 35vw);
+    perspective: 800px; /* Reduce perspective for smaller screens */
+  }
+
+  .carousel::before {
+    font-size: 9px;
+    top: -15px;
+  }
+}
