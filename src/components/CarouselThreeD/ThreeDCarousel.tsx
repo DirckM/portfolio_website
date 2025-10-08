@@ -194,15 +194,15 @@ const ThreeDCarousel = () => {
   const getMinHeight = () => {
     switch (screenSize) {
       case 'tiny':
-        return 'auto'; // Let it size naturally
+        return '300px'; // Fixed height instead of auto
       case 'extra-small':
-        return 'auto';
+        return '350px';
       case 'mobile':
-        return '80vh';
+        return '400px';
       case 'tablet':
-        return '90vh';
+        return '450px';
       default:
-        return '100vh';
+        return '500px'; // Much smaller than 100vh
     }
   };
 

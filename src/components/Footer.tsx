@@ -48,31 +48,11 @@ const Footer = () => {
             <h4 className='text-lg font-semibold'>Get In Touch</h4>
             <div className='space-y-2'>
               <p className='text-portfolio-text-muted'>
-                Email: your.email@example.com
+                Email: dirckmulder20@gmail.com
               </p>
               <p className='text-portfolio-text-muted'>
-                Phone: +1 (555) 123-4567
+                Phone: +31 6 250 217 55
               </p>
-              <div className='flex space-x-4'>
-                <a
-                  href='#'
-                  className='text-portfolio-text-muted hover:text-primary-400 transition-colors'
-                >
-                  LinkedIn
-                </a>
-                <a
-                  href='#'
-                  className='text-portfolio-text-muted hover:text-primary-400 transition-colors'
-                >
-                  GitHub
-                </a>
-                <a
-                  href='#'
-                  className='text-portfolio-text-muted hover:text-primary-400 transition-colors'
-                >
-                  Twitter
-                </a>
-              </div>
             </div>
           </div>
         </div>

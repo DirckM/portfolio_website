@@ -1,0 +1,27 @@
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: 600px;
+  max-width: calc(100% - 80px);
+  max-height: calc(100% - 80px);
+  background-color: white;
+  overflow: auto;
+  max-height: calc(100vh - 125px);
+}
+
+.modal .content {
+  overflow: auto;
+  max-height: calc(100vh - 125px);
+}
+
+
+.header {
+    background: #ca12ea;
+    color:white;
+    padding: 15px 30px;
+    height:45px
+  }
+  

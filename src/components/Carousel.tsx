@@ -65,19 +65,19 @@ export default function Carousel({ className = '', speed = 1 }: CarouselProps) {
       scale: 1,
     },
     {
-      path: '/3d-models/html-3d.glb',
+      path: '/3d-models/figma.glb',
       name: 'HTML',
-      scale: 0.3,
+      scale: 1,
+    },
+    {
+      path: '/3d-models/git_logo.glb',
+      name: 'SketchUp',
+      scale: 2.5,
     },
     {
       path: '/3d-models/python_programming_language.glb',
       name: 'Python',
       scale: 0.7,
-    },
-    {
-      path: '/3d-models/java.glb',
-      name: 'Java',
-      scale: 1,
     },
   ];
 

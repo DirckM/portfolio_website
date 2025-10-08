@@ -13,8 +13,24 @@ import ImageTrail from '../components/image-trail/ImageTrail';
 import ContactForm from '../components/ContactForm';
 import Model3DCanvas from '../components/ThreeDObject';
 import Carousel from '../components/Carousel';
-import ProjectModal from '../components/ProjectModal';
+import Modal from '../components/modal/Modal';
 import { RefObject, useRef, useState } from 'react';
+
+interface Project {
+  title: string;
+  description: string;
+  media: {
+    type: 'image' | 'video';
+    src: string;
+    alt?: string;
+  };
+  content: {
+    description: string;
+    technologies: string[];
+    features: string[];
+    link: string | null;
+  };
+}
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -37,70 +53,95 @@ export default function Home() {
     {
       title: 'Wakeup',
       image: '/projects/wakeup-not-rounded.svg',
-      description:
-        'A productivity app designed to help users wake up and start their day effectively.',
+      description: 'Competitive screentime tracking app',
       media: {
         type: 'image' as const,
         src: '/projects/wakeup-not-rounded.svg',
         alt: 'Wakeup app interface',
       },
       content: {
-        description:
-          'Wakeup is a comprehensive productivity application built with React and Next.js. It features a clean, intuitive interface that helps users establish morning routines and track their daily habits. The app includes customizable alarms, habit tracking, and motivational features to improve morning productivity.',
+        description: `
+      The idea for <strong>WakeUp</strong> began with the realization that too many people, including myself, spend an excessive amount of time on their screens. You see it everywhere, at festivals, in social settings, even among young children. I wanted to create something that could genuinely help people break free from this growing <strong>addiction</strong>.
+      As I developed the app, I discovered that <strong>phone addiction</strong> is even more serious and widespread than I initially thought. To understand it better, I started talking to people who felt they struggled with it, asking what they believed was at the root of their problem and what they had already tried to overcome it.
+      I've been documenting the entire creation process on <strong>social media</strong>, and WakeUp is still in <strong>active development</strong>. Through this project, I've learned a great deal about <strong>problem validation</strong>, <strong>user behavior</strong>, and the importance of designing <strong>meaningful experiences</strong>.
+      `,
         technologies: [
-          'React',
-          'Next.js',
+          'React Native',
+          'Expo',
           'TypeScript',
           'Tailwind CSS',
-          'Framer Motion',
+          'Supabase',
+          'Figma',
         ],
         features: [
-          'Customizable morning routines',
-          'Habit tracking and analytics',
-          'Motivational quotes and tips',
+          'Screentime tracking of friends',
+          'Personal screentime tracking',
+          'Custom challenges to reduce screentime',
           'Dark/light mode support',
-          'Responsive design for all devices',
+          'Evolving avatars to reflect your screentime',
         ],
-        link: 'https://github.com/yourusername/wakeup',
+        link: 'https://www.getwakeup.app',
       },
     },
     {
       title: 'Teckit',
       image: '/projects/teckit.svg',
-      description: 'A comprehensive toolkit application for developers.',
+      description: 'A comprehensive toolkit application for event managers.',
       media: {
         type: 'video' as const,
         src: '/projects/teckit_recording_one.mp4',
         alt: 'Teckit application demo',
       },
       content: {
-        description:
-          'Teckit is a developer-focused toolkit application that provides essential tools and utilities for software development. Built with modern web technologies, it offers a seamless experience for developers to access various coding tools, converters, and utilities in one place.',
-        technologies: ['React', 'TypeScript', 'Node.js', 'Express', 'MongoDB'],
-        features: [
-          'Code formatters and validators',
-          'API testing tools',
-          'Data conversion utilities',
-          'Real-time collaboration',
-          'Custom tool creation',
+        description: `
+<strong>Teckit</strong> started as a <strong>passion project</strong> between me and four friends who shared a deep interest in the <strong>event industry</strong>. We wanted to create a modern, <strong>all-in-one platform</strong> that made managing events easier for both organizers and visitors. Over time, we built a complete <strong>business dashboard</strong>, a <strong>client-side interface</strong>, and even a <strong>mobile scanner app</strong> to verify tickets on-site.
+We worked on Teckit <strong>full-time</strong> for about two years, putting a lot of energy into <strong>design</strong>, <strong>functionality</strong>, and <strong>user experience</strong>. Unfortunately, we eventually decided not to launch it due to the overwhelming <strong>competition</strong> in the market. Even though it was difficult to cut our losses after so much work, the experience was incredibly valuable, and it truly marked the beginning of my journey into <strong>frontend development</strong> and <strong>product design</strong>. Through Teckit, I learned the importance of creating interfaces that are both <strong>functional</strong> and <strong>visually engaging</strong>, and it sparked my passion for building <strong>digital experiences</strong>.
+`,
+        technologies: [
+          'React',
+          'TypeScript',
+          'NextJs',
+          'NestJS',
+          'Tailwind CSS',
+          'React Native',
+          'Prisma ORM',
+          'Figma',
         ],
-        link: 'https://github.com/yourusername/teckit',
+        features: [
+          'Business dashboard',
+          'Client-side interface',
+          'Mobile scanner app',
+          'Real-time',
+          'Ticket verification',
+          'Ticket management',
+          'Event management',
+          'Customer Contact',
+        ],
+        link: 'https://github.com/tekcit/repo',
       },
     },
     {
       title: 'EarnIt',
       image: '/projects/earnit.svg',
-      description:
-        'A gamified learning platform that rewards users for completing educational content.',
+      description: 'The job platform for internationals',
       media: {
         type: 'image' as const,
         src: '/projects/earnit.svg',
         alt: 'EarnIt platform interface',
       },
       content: {
-        description:
-          'EarnIt transforms learning into an engaging, reward-based experience. Users earn points and badges for completing courses, quizzes, and challenges. The platform uses gamification principles to increase user engagement and learning retention.',
-        technologies: ['React', 'Redux', 'Node.js', 'PostgreSQL', 'Stripe'],
+        description: `
+With <strong>EarnIt</strong>, our goal was to build a <strong>client dashboard</strong> for <strong>international students</strong> to easily register themselves and log their <strong>working hours</strong>. These entries were then <strong>automatically forwarded</strong> to the correct departments with proper <strong>invoicing</strong>, streamlining a process that was previously done <strong>manually</strong>.
+The project was a <strong>collaboration</strong> with a <strong>real company</strong>, and it challenged us to combine <strong>technical precision</strong> with <strong>real-world usability</strong>. In the end, our solution worked so effectively that we received the award for <strong>Best Project</strong> within the university, a recognition that made the experience even more rewarding.
+`,
+        technologies: [
+          'React',
+          'Java',
+          'Spring Boot',
+          'PostgreSQL',
+          'Tailwind CSS',
+          'Figma',
+        ],
         features: [
           'Gamified learning experience',
           'Point and badge system',
@@ -108,7 +149,7 @@ export default function Home() {
           'Social learning features',
           'Payment integration for premium content',
         ],
-        link: 'https://github.com/yourusername/earnit',
+        link: null,
       },
     },
     {
@@ -121,12 +162,14 @@ export default function Home() {
         alt: 'Othello game board',
       },
       content: {
-        description:
-          'A digital implementation of the classic Othello (Reversi) board game featuring an intelligent AI opponent. The game includes multiple difficulty levels, move validation, and a clean, intuitive interface. Built using vanilla JavaScript and HTML5 Canvas for smooth gameplay.',
+        description: `
+For this project, we developed a <strong>multiplayer</strong> version of the game <strong>Othello</strong>. The main goal was to gain a deeper understanding of <strong>device connectivity</strong> and <strong>network communication</strong>. We designed our own <strong>custom protocol</strong> for sending packets, which included implementing a <strong>handshake system</strong> and <strong>message forwarding</strong> to ensure data reached the correct endpoints.
+We built both the <strong>client</strong> and <strong>server</strong> from scratch, with the server managing communication between two active players. Through this project, I gained a strong grasp of the principles of <strong>object-oriented programming (OOP)</strong> and a better understanding of how <strong>networked systems</strong> communicate in <strong>real time</strong>. Additionally we had to make a <strong>MinMax algorithm</strong> to make the <strong>AI opponent</strong>.
+`,
         technologies: [
-          'JavaScript',
-          'HTML5 Canvas',
-          'CSS3',
+          'Java',
+          'Java Socket',
+          'Tailwind CSS',
           'Minimax Algorithm',
         ],
         features: [
@@ -134,23 +177,25 @@ export default function Home() {
           'Move validation and game rules enforcement',
           'Score tracking and game statistics',
           'Responsive design for mobile and desktop',
-          'Local multiplayer support',
+          'Online multiplayer support',
         ],
-        link: 'https://github.com/yourusername/othello-game',
+        link: null,
       },
     },
     {
       title: 'Iron Man Helmet',
       image: '/projects/iron-man-helmet.svg',
-      description: 'A 3D printed Iron Man helmet with LED integration.',
+      description: 'A 3D printed, moving Iron Man helmet with LED integration.',
       media: {
-        type: 'image' as const,
-        src: '/projects/iron-man-helmet.svg',
+        type: 'video' as const,
+        src: '/projects/iron_man_video_working.mp4',
         alt: '3D printed Iron Man helmet',
       },
       content: {
-        description:
-          'A detailed recreation of the iconic Iron Man helmet using 3D printing technology. The project includes custom LED lighting systems, Arduino-based control circuits, and precise modeling to achieve screen-accurate proportions and details.',
+        description: `
+        During the <strong>COVID-19 lockdown</strong>, I built an <strong>Iron Man helmet</strong> completely from scratch. I started by finding <strong>3D models</strong> online, then <strong>printed</strong> and <strong>assembled</strong> all the parts myself. I coded the <strong>electronics</strong> so the helmet could respond to <strong>motion</strong> and open on command, combining both <strong>hardware</strong> and <strong>software</strong> elements into one <strong>functional prototype</strong>.
+        There were many moments when I considered giving up, but this project ultimately taught me one of the most important lessons: <strong>persistence</strong>. Never stop just before the finish line, because that's often when you're closest to achieving something great.
+        `,
         technologies: [
           '3D Modeling',
           'Arduino',
@@ -165,7 +210,35 @@ export default function Home() {
           'Modular design for easy assembly',
           'Detailed documentation and build guide',
         ],
-        link: 'https://github.com/yourusername/iron-man-helmet',
+        link: null,
+      },
+    },
+    {
+      title: 'Bird CRM',
+      image: '/projects/bird.svg',
+      description: 'A CRM for University of Twente',
+      media: {
+        type: 'image' as const,
+        src: '/projects/bird.svg',
+        alt: 'Bird CRM',
+      },
+      content: {
+        description: `
+We developed a Relationship Management System for the University of Twente to help manage partnerships with external universities. The platform allows staff to register and track contact moments between individuals from different institutions, creating a clear overview of ongoing collaborations.
+The system gives the internal office a better understanding of existing connections — who is involved, how they are linked, and the nature of each relationship. This project provided valuable insight into building structured data systems that improve transparency and coordination across organizations.
+`,
+        technologies: [
+          'React',
+          'TypeScript',
+          'Next.js',
+          'Tailwind CSS',
+          'Figma',
+        ],
+        features: [
+          'CRM for University of Twente',
+          'Ability for the internal office to track and manage relationships',
+          'Role based access control',
+        ],
       },
     },
   ];
@@ -234,8 +307,8 @@ export default function Home() {
               key={project.title}
               imageSrc={project.image}
               altText={project.title}
-              captionText={project.title}
-              rotateAmplitude={12}
+              captionText={'click me'}
+              rotateAmplitude={15}
               scaleOnHover={1.1}
               showMobileWarning={false}
               showTooltip={true}
@@ -410,7 +483,7 @@ export default function Home() {
                 <div>
                   <h2 className='text-3xl font-bold mb-2'>Service Staff</h2>
                   <h3 className='text-xl font-medium opacity-90'>
-                    Restaurant De Haven
+                    Restaurant Lekker aan de Haven
                   </h3>
                 </div>
                 <p className='text-sm opacity-80 mt-4'>2019 – 2021</p>
@@ -450,7 +523,7 @@ export default function Home() {
       {/* Skills section with 3D model carousel */}
       <section id='skills' className='w-full'>
         <div className='w-full mx-auto'>
-          <Carousel className='h-64' />
+          <Carousel className='h-64 -mt-10' />
         </div>
       </section>
       {/* <section id='image-trail' className='w-full h-40 pb-20 relative'>
@@ -512,8 +585,12 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* Music section */}
-      <section>Th</section>
+      {/* Music section
+      <section id='music' className='w-full'>
+        <div className='relative isolate overflow-hidden'>
+          <ThreeDCarousel />
+        </div>
+      </section> */}
 
       {/* Contact Form */}
       <ContactForm />
@@ -581,10 +658,10 @@ export default function Home() {
       </section>
 
       {/* Project Modal */}
-      <ProjectModal
+      <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        project={selectedProject}
+        project={selectedProject as Project}
       />
     </div>
   );
