@@ -10,6 +10,7 @@ export interface Job {
       src: string;
       alt: string;
     };
+    color: string;
   }
   
   export const jobs: Job[] = [
@@ -30,10 +31,27 @@ export interface Job {
         src: "/frontend.svg",
         alt: "Frontend Development",
       },
+      color: "#f2f2f2",
+    },
+    {
+        title: "Co-Founder",
+        company: "Teckit",
+        period: "2022 – 2024",
+        description: "Teckit is a platform in which users can create their own events and sell tickets for these events. Users can then post about their events on the app and share them with their friends. We build this with four guys and spent a lot of time on the design and functionality of the platform. We also built a mobile app for the platform to scan tickets.",
+        responsibilities: [
+            "Developed the platform using React, TypeScript, Next.js, Tailwind CSS, and Figma.",
+            "Managing marketing and branding for the platform.",
+            "Built the platform from scratch using React, TypeScript, Next.js, Tailwind CSS, and Figma.",
+        ],
+        image: {
+            src: "/projects/teckit.svg",
+            alt: "Teckit",
+        },
+        color: "#ECDFFF",
     },
     {
       title: "Course Assistant (IT Education)",
-      company: "CTI Vaksteunpunt",
+      company: "Co-Teach",
       location: "Utrecht, NL",
       period: "Sep 2022 – Jun 2023",
       description:
@@ -47,6 +65,7 @@ export interface Job {
         src: "/cti-vaksteunpunt.svg",
         alt: "CTI Vaksteunpunt",
       },
+      color: "#FFE5FF",
     },
     {
       title: "Founder & Owner",
@@ -63,6 +82,7 @@ export interface Job {
         src: "/marinenet.svg",
         alt: "Ocean Bracelets",
       },
+      color: "#C7DBFF",
     },
     {
       title: "Service Staff",
@@ -79,6 +99,7 @@ export interface Job {
         src: "/lekker_aan_de_haven.svg",
         alt: "Restaurant Lekker aan de Haven",
       },
+      color: "#FFD2D3",
     },
   ];
   

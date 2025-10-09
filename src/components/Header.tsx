@@ -47,8 +47,8 @@ const Header = () => {
   };
 
   return (
-    <header className='fixed top-0 left-0 flex justify-center right-0 z-50 transition-all duration-30 my-8'>
-      <nav className=''>
+    <header className='fixed top-0 left-0 right-0 z-50 transition-all duration-30 my-8'>
+      <nav className='flex justify-center md:justify-center'>
         {/* Desktop Navigation */}
         <div className='hidden md:flex flex-row gap-12 w-fit px-10 py-3 rounded-4xl bg-black/10 backdrop-blur-md border border-white/20 shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/20 transition-all duration-300s'>
           <button
@@ -78,7 +78,7 @@ const Header = () => {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className='md:hidden'>
+        <div className='md:hidden flex justify-end w-full px-8'>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className='p-3 rounded-full bg-black/10 backdrop-blur-md border border-white/20 shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/20 transition-all duration-300'
