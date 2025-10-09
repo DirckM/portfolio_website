@@ -9,7 +9,7 @@ import { useRef } from 'react';
 export default function CollapseStack() {
   return (
     // Change this depending on the height of the cards
-    <div className='mt-[30vh] mb-[20rem] px-10'>
+    <div className='mt-[30vh] mb-[0rem] px-10'>
       {jobs.map((job, index) => (
         <Card key={index} {...job} index={index} />
       ))}
