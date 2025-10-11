@@ -33,11 +33,16 @@ function Model3D({
   }, [viewport.width, baseScale]);
 
   useFrame(() => {
-    if (ref.current) ref.current.rotation.y += rotationSpeed * 0.01;
+    if (ref.current) ref.current.rotation.y += rotationSpeed * 0.05;
   });
 
   return (
-    <group ref={ref} position={position} rotation={rotation} scale={responsiveScale}>
+    <group
+      ref={ref}
+      position={position}
+      rotation={rotation}
+      scale={responsiveScale}
+    >
       <primitive object={clonedScene} />
     </group>
   );
@@ -83,7 +88,7 @@ function CarouselScene({
           modelPath={model.path}
           baseScale={model.baseScale}
           position={[i * itemSpacing - totalWidth / 2, -1, 0]}
-          rotation={[0, Math.PI / 4, 0]}
+          rotation={model.name === 'Figma' ? [-Math.PI / 2, 0, 0] : [0, Math.PI / 4, 0]}
           rotationSpeed={0.2}
         />
       ))}
@@ -104,9 +109,13 @@ export default function Carousel({
   const models = [
     { path: '/3d-models/react_logo.glb', name: 'React', baseScale: 0.8 },
     { path: '/3d-models/typescript.glb', name: 'TypeScript', baseScale: 1 },
-    { path: '/3d-models/figma.glb', name: 'HTML', baseScale: 1 },
+    { path: '/3d-models/figma.glb', name: 'Figma', baseScale: 1 },
     { path: '/3d-models/git_logo.glb', name: 'SketchUp', baseScale: 2.5 },
-    { path: '/3d-models/python_programming_language.glb', name: 'Python', baseScale: 0.7 },
+    {
+      path: '/3d-models/python_programming_language.glb',
+      name: 'Python',
+      baseScale: 0.7,
+    },
   ];
 
   // ✅ Camera zooms out slightly on smaller screens

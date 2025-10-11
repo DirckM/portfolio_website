@@ -335,7 +335,7 @@ The system gives the internal office a better understanding of existing connecti
       {/* Skills section with 3D model carousel */}
       <section id='skills' className='w-full'>
         <div className='w-full mx-auto'>
-          <Carousel className='h-64 -mt-10' />
+          <Carousel speed={1} className='h-64 -mt-10' />
         </div>
       </section>
       {/* <section id='image-trail' className='w-full h-40 pb-20 relative'>
@@ -358,7 +358,7 @@ The system gives the internal office a better understanding of existing connecti
       </section> */}
       <section
         id='about'
-        className='flex justify-center items-start px-20 py-10'
+        className='flex justify-center items-start px-8 md:px-20 py-10'
       >
         <div className='flex flex-col md:flex-row gap-4 md:gap-10 max-w-4xl'>
           <div
@@ -409,9 +409,9 @@ The system gives the internal office a better understanding of existing connecti
 
       <section
         id='socials'
-        className='flex justify-center items-center w-full pb-20'
+        className='flex justify-center items-center w-full pb-20 px-10'
       >
-        <div className='flex flex-col md:flex-row gap-20 justify-around items-center'>
+        <div className='flex flex-row gap-20 justify-around items-center'>
           <a
             href='https://www.linkedin.com/in/dirck-mulder-1b2716222/'
             target='_blank'

@@ -4,12 +4,12 @@ import { Job, jobs } from '../../../data/jobs';
 import { div } from 'framer-motion/client';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function CollapseStack() {
   return (
     // Change this depending on the height of the cards
-    <div className='mt-[30vh] mb-[0rem] px-10'>
+    <div className='mt-[30vh] mb-[0rem] px-5 md:px-10'>
       {jobs.map((job, index) => (
         <Card key={index} {...job} index={index} />
       ))}
@@ -36,10 +36,19 @@ function Card({
 
   const scale = useTransform(scrollYProgress, [0, 1], [2, 1]);
 
+  // ✅ detect screen size (simple and hydration-safe)
+  const [isMd, setIsMd] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMd(window.innerWidth >= 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div
       className='h-[100vh] flex justify-center items-center sticky'
-      style={{ top: `calc(${index * 20}px)` }}
+      style={isMd ? { top: `calc(${index * 20}px)` } : { top: 0 }}
       ref={container}
     >
       {' '}
@@ -59,10 +68,10 @@ function Card({
           </div>
 
           {/* description and responsibilities */}
-          <div className='md:w-2/3 space-y-8'>
+          <div className='w-full space-y-8'>
             <p className='text-lg leading-relaxed'>{description}</p>
 
-            <ul className='list-disc list-inside space-y-1 text-base opacity-95'>
+            <ul className='list-disc flex flex-col gap-2 list-inside text-base opacity-95'>
               {responsibilities.map((responsibility, index) => (
                 <li key={index}>{responsibility}</li>
               ))}
