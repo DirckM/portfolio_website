@@ -23,7 +23,7 @@ const eslintConfig = [
       // TypeScript specific rules
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/prefer-const': 'error',
+      // '@typescript-eslint/prefer-const': 'error', // not a valid rule in @typescript-eslint
 
       // React specific rules
       'react/no-unescaped-entities': 'off',
