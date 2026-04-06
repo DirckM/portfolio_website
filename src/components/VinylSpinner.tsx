@@ -61,7 +61,7 @@ export default function VinylSpinner({
     onStop?.();
   };
 
-  const handleVolumeChange = (newVolume: number) => {
+  const _handleVolumeChange = (newVolume: number) => {
     setVolume(newVolume);
     onVolumeChange?.(newVolume);
   };

@@ -21,8 +21,7 @@ export default function BlurText({
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
 
-  const segments =
-    animateBy === 'words' ? text.split(' ') : text.split('');
+  const segments = animateBy === 'words' ? text.split(' ') : text.split('');
 
   const yOffset = direction === 'top' ? -20 : 20;
 
@@ -42,7 +41,7 @@ export default function BlurText({
             delay: i * delay,
             ease: [0.25, 0.1, 0.25, 1],
           }}
-          className="inline-block"
+          className='inline-block'
         >
           {segment}
           {animateBy === 'words' && i < segments.length - 1 && (

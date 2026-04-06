@@ -26,7 +26,12 @@ const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => {
   return Math.sqrt(dx * dx + dy * dy);
 };
 
-const getAttr = (distance: number, maxDist: number, minVal: number, maxVal: number) => {
+const getAttr = (
+  distance: number,
+  maxDist: number,
+  minVal: number,
+  maxVal: number
+) => {
   const val = maxVal - Math.abs((maxVal * distance) / maxDist);
   return Math.max(minVal, val + minVal);
 };
@@ -36,7 +41,7 @@ const debounce = (func: (...args: any[]) => void, delay: number) => {
   return (...args: any[]) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
-      func.apply(undefined, args);
+      func(...args);
     }, delay);
   };
 };
@@ -56,7 +61,7 @@ const TextPressure: React.FC<TextPressureProps> = ({
   strokeColor = '#FF0000',
   strokeWidth = 2,
   className = '',
-  minFontSize = 24
+  minFontSize = 24,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
@@ -86,7 +91,12 @@ const TextPressure: React.FC<TextPressureProps> = ({
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     if (containerRef.current) {
-      const { left, top, width: cw, height: ch } = containerRef.current.getBoundingClientRect();
+      const {
+        left,
+        top,
+        width: cw,
+        height: ch,
+      } = containerRef.current.getBoundingClientRect();
       mouseRef.current.x = left + cw / 2;
       mouseRef.current.y = top + ch / 2;
       cursorRef.current.x = mouseRef.current.x;
@@ -102,7 +112,8 @@ const TextPressure: React.FC<TextPressureProps> = ({
   const setSize = useCallback(() => {
     if (!containerRef.current || !titleRef.current) return;
 
-    const { width: containerW, height: containerH } = containerRef.current.getBoundingClientRect();
+    const { width: containerW, height: containerH } =
+      containerRef.current.getBoundingClientRect();
 
     let newFontSize = containerW / (chars.length / 2);
     newFontSize = Math.max(newFontSize, minFontSize);
@@ -146,7 +157,7 @@ const TextPressure: React.FC<TextPressureProps> = ({
           const rect = span.getBoundingClientRect();
           const charCenter = {
             x: rect.x + rect.width / 2,
-            y: rect.y + rect.height / 2
+            y: rect.y + rect.height / 2,
           };
 
           const d = dist(mouseRef.current, charCenter);
@@ -201,7 +212,10 @@ const TextPressure: React.FC<TextPressureProps> = ({
   }, [fontFamily, fontUrl, stroke, textColor, strokeColor, strokeWidth]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full overflow-hidden bg-transparent">
+    <div
+      ref={containerRef}
+      className='relative w-full h-full overflow-hidden bg-transparent'
+    >
       {styleElement}
       <h1
         ref={titleRef}
@@ -216,7 +230,7 @@ const TextPressure: React.FC<TextPressureProps> = ({
           transformOrigin: 'center top',
           margin: 0,
           fontWeight: 100,
-          color: stroke ? undefined : textColor
+          color: stroke ? undefined : textColor,
         }}
       >
         {chars.map((char, i) => (
@@ -226,7 +240,7 @@ const TextPressure: React.FC<TextPressureProps> = ({
               spansRef.current[i] = el;
             }}
             data-char={char}
-            className="inline-block"
+            className='inline-block'
           >
             {char}
           </span>

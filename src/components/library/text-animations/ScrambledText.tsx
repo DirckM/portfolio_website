@@ -24,7 +24,7 @@ const ScrambledText: React.FC<ScrambledTextProps> = ({
   scrambleChars = '.:',
   className = '',
   style = {},
-  children
+  children,
 }) => {
   const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -33,7 +33,7 @@ const ScrambledText: React.FC<ScrambledTextProps> = ({
 
     const split = SplitText.create(rootRef.current.querySelector('p'), {
       type: 'chars',
-      charsClass: 'inline-block will-change-transform'
+      charsClass: 'inline-block will-change-transform',
     });
 
     split.chars.forEach(el => {
@@ -56,9 +56,9 @@ const ScrambledText: React.FC<ScrambledTextProps> = ({
             scrambleText: {
               text: c.dataset.content || '',
               chars: scrambleChars,
-              speed
+              speed,
             },
-            ease: 'none'
+            ease: 'none',
           });
         }
       });

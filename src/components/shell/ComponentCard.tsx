@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react';
 import Link from 'next/link';
-import GlassmorphicOverlay from './GlassmorphicOverlay';
 import { type ComponentCategory } from '@/lib/components-registry';
 
 interface ComponentCardProps {
@@ -14,14 +13,12 @@ interface ComponentCardProps {
 }
 
 export default function ComponentCard({
-  name,
+  name: _name,
   slug,
-  category,
   children,
   perspective = false,
 }: ComponentCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
 
@@ -37,19 +34,17 @@ export default function ComponentCard({
   }
 
   function handleMouseLeave() {
-    setIsHovered(false);
     setRotateX(0);
     setRotateY(0);
   }
 
   return (
-    <Link href={`/components/${slug}`} className="no-underline">
+    <Link href={`/components/${slug}`} className='no-underline'>
       <div
         ref={cardRef}
-        onMouseEnter={() => setIsHovered(true)}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative overflow-hidden rounded-xl border border-library-border bg-library-cream aspect-[4/3] cursor-pointer transition-shadow duration-300 hover:shadow-xl"
+        className='relative overflow-hidden rounded-xl border border-library-border bg-library-cream aspect-[4/3] cursor-pointer transition-shadow duration-300 hover:shadow-xl'
         style={{
           transform: perspective
             ? `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
@@ -57,14 +52,9 @@ export default function ComponentCard({
           transition: 'transform 0.15s ease-out, box-shadow 0.3s ease',
         }}
       >
-        <div className="absolute inset-0 flex items-center justify-center overflow-hidden p-4">
+        <div className='absolute inset-0 flex items-center justify-center overflow-hidden p-4'>
           {children}
         </div>
-        <GlassmorphicOverlay
-          name={name}
-          category={category}
-          visible={isHovered}
-        />
       </div>
     </Link>
   );

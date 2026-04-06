@@ -1,7 +1,6 @@
 'use client';
 
 import { Job, jobs } from '../../../data/jobs';
-import { div } from 'framer-motion/client';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
@@ -20,7 +19,7 @@ export default function CollapseStack() {
 function Card({
   title,
   company,
-  location,
+  location: _location,
   period,
   description,
   responsibilities,

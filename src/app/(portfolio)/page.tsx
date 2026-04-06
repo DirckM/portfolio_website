@@ -3,15 +3,8 @@
 import Image from 'next/image';
 import TiltedCard from '@/components/tilted-card/TiltedCard';
 import { motion } from 'motion/react';
-import ThreeDCarousel from '@/components/CarouselThreeD/ThreeDCarousel';
 import VariableProximity from '@/components/proximity-text/ProximityText';
-import ScrollStack, {
-  ScrollStackItem,
-} from '@/components/scrollstack/ScrollStack';
-import { div } from 'framer-motion/client';
-import ImageTrail from '@/components/image-trail/ImageTrail';
 import ContactForm from '@/components/ContactForm';
-import Model3DCanvas from '@/components/ThreeDObject';
 import Carousel from '@/components/Carousel';
 import Modal from '@/components/modal/Modal';
 import { RefObject, useRef, useState } from 'react';

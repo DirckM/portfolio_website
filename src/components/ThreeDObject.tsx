@@ -1,5 +1,5 @@
 import React, { Suspense, useMemo } from 'react';
-import { Canvas, useFrame, ThreeEvent } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { Group } from 'three';
 

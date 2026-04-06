@@ -84,10 +84,5 @@ export default function LineWaves({
     };
   }, [lineCount, lineColor, lineWidth, amplitude, frequency, speed]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className={`w-full h-full ${className}`}
-    />
-  );
+  return <canvas ref={canvasRef} className={`w-full h-full ${className}`} />;
 }

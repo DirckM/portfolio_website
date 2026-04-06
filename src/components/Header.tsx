@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 const Header = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [_isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 

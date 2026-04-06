@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function ComponentsPage() {
   return (
     <>
-      <Hero3DCarousel componentPreviews={cardPreviews} />
+      <Hero3DCarousel />
       <ComponentGrid
         components={componentRegistry}
         componentPreviews={cardPreviews}

@@ -18,16 +18,13 @@ export default function ElectricBorder({
   borderWidth = 2,
 }: ElectricBorderProps) {
   return (
-    <div
-      className={`relative ${className}`}
-      style={{ borderRadius }}
-    >
+    <div className={`relative ${className}`} style={{ borderRadius }}>
       <div
-        className="absolute inset-0 overflow-hidden"
+        className='absolute inset-0 overflow-hidden'
         style={{ borderRadius }}
       >
         <div
-          className="absolute inset-0"
+          className='absolute inset-0'
           style={{
             borderRadius,
             padding: `${borderWidth}px`,
@@ -40,7 +37,7 @@ export default function ElectricBorder({
         />
       </div>
 
-      <div className="relative" style={{ borderRadius }}>
+      <div className='relative' style={{ borderRadius }}>
         {children}
       </div>
 

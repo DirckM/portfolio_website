@@ -22,7 +22,7 @@ const FallingText: React.FC<FallingTextProps> = ({
   wireframes = false,
   gravity = 1,
   mouseConstraintStiffness = 0.2,
-  fontSize = '1rem'
+  fontSize = '1rem',
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const textRef = useRef<HTMLDivElement | null>(null);
@@ -71,7 +71,8 @@ const FallingText: React.FC<FallingTextProps> = ({
   useEffect(() => {
     if (!effectStarted) return;
 
-    const { Engine, Render, World, Bodies, Runner, Mouse, MouseConstraint } = Matter;
+    const { Engine, Render, World, Bodies, Runner, Mouse, MouseConstraint } =
+      Matter;
 
     if (!containerRef.current || !canvasContainerRef.current) return;
 
@@ -91,18 +92,42 @@ const FallingText: React.FC<FallingTextProps> = ({
         width,
         height,
         background: backgroundColor,
-        wireframes
-      }
+        wireframes,
+      },
     });
 
     const boundaryOptions = {
       isStatic: true,
-      render: { fillStyle: 'transparent' }
+      render: { fillStyle: 'transparent' },
     };
-    const floor = Bodies.rectangle(width / 2, height + 25, width, 50, boundaryOptions);
-    const leftWall = Bodies.rectangle(-25, height / 2, 50, height, boundaryOptions);
-    const rightWall = Bodies.rectangle(width + 25, height / 2, 50, height, boundaryOptions);
-    const ceiling = Bodies.rectangle(width / 2, -25, width, 50, boundaryOptions);
+    const floor = Bodies.rectangle(
+      width / 2,
+      height + 25,
+      width,
+      50,
+      boundaryOptions
+    );
+    const leftWall = Bodies.rectangle(
+      -25,
+      height / 2,
+      50,
+      height,
+      boundaryOptions
+    );
+    const rightWall = Bodies.rectangle(
+      width + 25,
+      height / 2,
+      50,
+      height,
+      boundaryOptions
+    );
+    const ceiling = Bodies.rectangle(
+      width / 2,
+      -25,
+      width,
+      50,
+      boundaryOptions
+    );
 
     if (!textRef.current) return;
     const wordSpans = textRef.current.querySelectorAll('span');
@@ -116,11 +141,11 @@ const FallingText: React.FC<FallingTextProps> = ({
         render: { fillStyle: 'transparent' },
         restitution: 0.8,
         frictionAir: 0.01,
-        friction: 0.2
+        friction: 0.2,
       });
       Matter.Body.setVelocity(body, {
         x: (Math.random() - 0.5) * 5,
-        y: 0
+        y: 0,
       });
       Matter.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.05);
 
@@ -139,12 +164,19 @@ const FallingText: React.FC<FallingTextProps> = ({
       mouse,
       constraint: {
         stiffness: mouseConstraintStiffness,
-        render: { visible: false }
-      }
+        render: { visible: false },
+      },
     });
     render.mouse = mouse;
 
-    World.add(engine.world, [floor, leftWall, rightWall, ceiling, mouseConstraint, ...wordBodies.map(wb => wb.body)]);
+    World.add(engine.world, [
+      floor,
+      leftWall,
+      rightWall,
+      ceiling,
+      mouseConstraint,
+      ...wordBodies.map(wb => wb.body),
+    ]);
 
     const runner = Runner.create();
     Runner.run(runner, engine);
@@ -171,7 +203,13 @@ const FallingText: React.FC<FallingTextProps> = ({
       World.clear(engine.world, false);
       Engine.clear(engine);
     };
-  }, [effectStarted, gravity, wireframes, backgroundColor, mouseConstraintStiffness]);
+  }, [
+    effectStarted,
+    gravity,
+    wireframes,
+    backgroundColor,
+    mouseConstraintStiffness,
+  ]);
 
   const handleTrigger = () => {
     if (!effectStarted && (trigger === 'click' || trigger === 'hover')) {
@@ -182,20 +220,20 @@ const FallingText: React.FC<FallingTextProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative z-[1] w-full h-full cursor-pointer text-center pt-8 overflow-hidden"
+      className='relative z-[1] w-full h-full cursor-pointer text-center pt-8 overflow-hidden'
       onClick={trigger === 'click' ? handleTrigger : undefined}
       onMouseEnter={trigger === 'hover' ? handleTrigger : undefined}
     >
       <div
         ref={textRef}
-        className="inline-block"
+        className='inline-block'
         style={{
           fontSize,
-          lineHeight: 1.4
+          lineHeight: 1.4,
         }}
       />
 
-      <div className="absolute top-0 left-0 z-0" ref={canvasContainerRef} />
+      <div className='absolute top-0 left-0 z-0' ref={canvasContainerRef} />
     </div>
   );
 };

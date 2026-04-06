@@ -1,7 +1,13 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { motion, useAnimation, useMotionValue, MotionValue, Transition } from 'motion/react';
+import {
+  motion,
+  useAnimation,
+  useMotionValue,
+  MotionValue,
+  Transition,
+} from 'motion/react';
 
 interface CircularTextProps {
   text: string;
@@ -10,13 +16,17 @@ interface CircularTextProps {
   className?: string;
 }
 
-const getRotationTransition = (duration: number, from: number, loop: boolean = true) => ({
+const getRotationTransition = (
+  duration: number,
+  from: number,
+  loop: boolean = true
+) => ({
   from,
   to: from + 360,
   ease: 'linear' as const,
   duration,
   type: 'tween' as const,
-  repeat: loop ? Infinity : 0
+  repeat: loop ? Infinity : 0,
 });
 
 const getTransition = (duration: number, from: number) => ({
@@ -24,15 +34,15 @@ const getTransition = (duration: number, from: number) => ({
   scale: {
     type: 'spring' as const,
     damping: 20,
-    stiffness: 300
-  }
+    stiffness: 300,
+  },
 });
 
 const CircularText: React.FC<CircularTextProps> = ({
   text,
   spinDuration = 20,
   onHover = 'speedUp',
-  className = ''
+  className = '',
 }) => {
   const letters = Array.from(text);
   const controls = useAnimation();
@@ -43,7 +53,7 @@ const CircularText: React.FC<CircularTextProps> = ({
     controls.start({
       rotate: start + 360,
       scale: 1,
-      transition: getTransition(spinDuration, start)
+      transition: getTransition(spinDuration, start),
     });
   }, [spinDuration, text, onHover, controls]);
 
@@ -65,7 +75,7 @@ const CircularText: React.FC<CircularTextProps> = ({
       case 'pause':
         transitionConfig = {
           rotate: { type: 'spring', damping: 20, stiffness: 300 },
-          scale: { type: 'spring', damping: 20, stiffness: 300 }
+          scale: { type: 'spring', damping: 20, stiffness: 300 },
         };
         break;
       case 'goBonkers':
@@ -79,7 +89,7 @@ const CircularText: React.FC<CircularTextProps> = ({
     controls.start({
       rotate: start + 360,
       scale: scaleVal,
-      transition: transitionConfig
+      transition: transitionConfig,
     });
   };
 
@@ -88,7 +98,7 @@ const CircularText: React.FC<CircularTextProps> = ({
     controls.start({
       rotate: start + 360,
       scale: 1,
-      transition: getTransition(spinDuration, start)
+      transition: getTransition(spinDuration, start),
     });
   };
 
@@ -111,7 +121,7 @@ const CircularText: React.FC<CircularTextProps> = ({
         return (
           <span
             key={i}
-            className="absolute inline-block inset-0 text-2xl transition-all duration-500 ease-[cubic-bezier(0,0,0,1)]"
+            className='absolute inline-block inset-0 text-2xl transition-all duration-500 ease-[cubic-bezier(0,0,0,1)]'
             style={{ transform, WebkitTransform: transform }}
           >
             {letter}

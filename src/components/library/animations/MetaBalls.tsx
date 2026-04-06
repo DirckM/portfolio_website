@@ -1,7 +1,15 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { Renderer, Program, Mesh, Triangle, Transform, Vec3, Camera } from 'ogl';
+import {
+  Renderer,
+  Program,
+  Mesh,
+  Triangle,
+  Transform,
+  Vec3,
+  Camera,
+} from 'ogl';
 
 type MetaBallsProps = {
   color?: string;
@@ -29,9 +37,12 @@ function fract(x: number): number {
 }
 
 function hash31(p: number): number[] {
-  let r = [p * 0.1031, p * 0.103, p * 0.0973].map(fract);
+  const r = [p * 0.1031, p * 0.103, p * 0.0973].map(fract);
   const r_yzx = [r[1], r[2], r[0]];
-  const dotVal = r[0] * (r_yzx[0] + 33.33) + r[1] * (r_yzx[1] + 33.33) + r[2] * (r_yzx[2] + 33.33);
+  const dotVal =
+    r[0] * (r_yzx[0] + 33.33) +
+    r[1] * (r_yzx[1] + 33.33) +
+    r[2] * (r_yzx[2] + 33.33);
   for (let i = 0; i < 3; i++) {
     r[i] = fract(r[i] + dotVal);
   }
@@ -39,9 +50,12 @@ function hash31(p: number): number[] {
 }
 
 function hash33(v: number[]): number[] {
-  let p = [v[0] * 0.1031, v[1] * 0.103, v[2] * 0.0973].map(fract);
+  const p = [v[0] * 0.1031, v[1] * 0.103, v[2] * 0.0973].map(fract);
   const p_yxz = [p[1], p[0], p[2]];
-  const dotVal = p[0] * (p_yxz[0] + 33.33) + p[1] * (p_yxz[1] + 33.33) + p[2] * (p_yxz[2] + 33.33);
+  const dotVal =
+    p[0] * (p_yxz[0] + 33.33) +
+    p[1] * (p_yxz[1] + 33.33) +
+    p[2] * (p_yxz[2] + 33.33);
   for (let i = 0; i < 3; i++) {
     p[i] = fract(p[i] + dotVal);
   }
@@ -126,7 +140,7 @@ const MetaBalls: React.FC<MetaBallsProps> = ({
   clumpFactor = 1,
   cursorBallSize = 3,
   cursorBallColor = '#ffffff',
-  enableTransparency = false
+  enableTransparency = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -138,7 +152,7 @@ const MetaBalls: React.FC<MetaBallsProps> = ({
     const renderer = new Renderer({
       dpr,
       alpha: true,
-      premultipliedAlpha: false
+      premultipliedAlpha: false,
     });
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, enableTransparency ? 0 : 1);
@@ -150,7 +164,7 @@ const MetaBalls: React.FC<MetaBallsProps> = ({
       top: 1,
       bottom: -1,
       near: 0.1,
-      far: 10
+      far: 10,
     });
     camera.position.z = 1;
 
@@ -177,8 +191,8 @@ const MetaBalls: React.FC<MetaBallsProps> = ({
         iCursorBallSize: { value: cursorBallSize },
         iMetaBalls: { value: metaBallsUniform },
         iClumpFactor: { value: clumpFactor },
-        enableTransparency: { value: enableTransparency }
-      }
+        enableTransparency: { value: enableTransparency },
+      },
     });
 
     const mesh = new Mesh(gl, { geometry, program });
@@ -212,7 +226,11 @@ const MetaBalls: React.FC<MetaBallsProps> = ({
       renderer.setSize(width * dpr, height * dpr);
       gl.canvas.style.width = `${width}px`;
       gl.canvas.style.height = `${height}px`;
-      program.uniforms.iResolution.value.set(gl.canvas.width, gl.canvas.height, 0);
+      program.uniforms.iResolution.value.set(
+        gl.canvas.width,
+        gl.canvas.height,
+        0
+      );
     }
     window.addEventListener('resize', resize);
     resize();
@@ -294,10 +312,10 @@ const MetaBalls: React.FC<MetaBallsProps> = ({
     ballCount,
     clumpFactor,
     cursorBallSize,
-    enableTransparency
+    enableTransparency,
   ]);
 
-  return <div ref={containerRef} className="w-full h-full relative" />;
+  return <div ref={containerRef} className='w-full h-full relative' />;
 };
 
 export default MetaBalls;

@@ -61,7 +61,7 @@ function bezierArcPoints(
   return points;
 }
 
-const WORLD_SVG_PATH =
+const _WORLD_SVG_PATH =
   'M 0 90 L 0 270 L 720 270 L 720 90 Z M 60 90 L 90 60 L 120 90 Z M 300 60 L 360 30 L 420 60 L 390 90 L 330 90 Z';
 
 const DEFAULT_DOTS: Dot[] = [
@@ -202,7 +202,7 @@ export default function WorldMap({
 
     const speed = 0.004;
     const tick = () => {
-      progressRef.current = progressRef.current.map((p, i) => {
+      progressRef.current = progressRef.current.map((p, _i) => {
         const next = p + speed * (0.5 + Math.random() * 0.5);
         return next > 1.3 ? 0 : next;
       });

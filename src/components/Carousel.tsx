@@ -88,7 +88,9 @@ function CarouselScene({
           modelPath={model.path}
           baseScale={model.baseScale}
           position={[i * itemSpacing - totalWidth / 2, -1, 0]}
-          rotation={model.name === 'Figma' ? [-Math.PI / 2, 0, 0] : [0, Math.PI / 4, 0]}
+          rotation={
+            model.name === 'Figma' ? [-Math.PI / 2, 0, 0] : [0, Math.PI / 4, 0]
+          }
           rotationSpeed={0.2}
         />
       ))}

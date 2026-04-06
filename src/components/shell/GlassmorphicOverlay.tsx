@@ -1,4 +1,7 @@
-import { type ComponentCategory, CATEGORY_LABELS } from '@/lib/components-registry';
+import {
+  type ComponentCategory,
+  CATEGORY_LABELS,
+} from '@/lib/components-registry';
 
 interface GlassmorphicOverlayProps {
   name: string;
@@ -19,8 +22,8 @@ export default function GlassmorphicOverlay({
           : 'opacity-0 translate-y-2 pointer-events-none'
       }`}
     >
-      <p className="text-white text-sm font-medium">{name}</p>
-      <p className="text-white/60 text-xs mt-0.5">
+      <p className='text-white text-sm font-medium'>{name}</p>
+      <p className='text-white/60 text-xs mt-0.5'>
         {CATEGORY_LABELS[category]}
       </p>
     </div>

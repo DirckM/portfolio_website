@@ -7,7 +7,7 @@ export default function LibraryLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="library-theme min-h-screen bg-white text-black font-[family-name:var(--font-inter)]">
+    <div className='library-theme min-h-screen bg-white text-black font-[family-name:var(--font-inter)]'>
       <LibraryHeader />
       <main>{children}</main>
       <LibraryFooter />

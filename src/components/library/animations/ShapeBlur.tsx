@@ -146,7 +146,7 @@ const ShapeBlur: FC<ShapeBlurProps> = ({
   roundness = 0.4,
   borderSize = 0.05,
   circleSize = 0.3,
-  circleEdge = 0.5
+  circleEdge = 0.5,
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const materialRef = useRef<THREE.ShaderMaterial | null>(null);
@@ -188,10 +188,10 @@ const ShapeBlur: FC<ShapeBlurProps> = ({
         u_roundness: { value: roundness },
         u_borderSize: { value: borderSize },
         u_circleSize: { value: circleSize },
-        u_circleEdge: { value: circleEdge }
+        u_circleEdge: { value: circleEdge },
       },
       defines: { VAR: variation },
-      transparent: true
+      transparent: true,
     });
     materialRef.current = material;
 
@@ -263,7 +263,15 @@ const ShapeBlur: FC<ShapeBlurProps> = ({
       renderer.dispose();
       renderer.forceContextLoss();
     };
-  }, [variation, pixelRatioProp, shapeSize, roundness, borderSize, circleSize, circleEdge]);
+  }, [
+    variation,
+    pixelRatioProp,
+    shapeSize,
+    roundness,
+    borderSize,
+    circleSize,
+    circleEdge,
+  ]);
 
   return <div className={`w-full h-full ${className}`} ref={mountRef} />;
 };

@@ -5,13 +5,16 @@ import { gsap } from 'gsap';
 
 const lerp = (a: number, b: number, n: number): number => (1 - n) * a + n * b;
 
-const getMousePos = (e: Event, container?: HTMLElement | null): { x: number; y: number } => {
+const getMousePos = (
+  e: Event,
+  container?: HTMLElement | null
+): { x: number; y: number } => {
   const mouseEvent = e as MouseEvent;
   if (container) {
     const bounds = container.getBoundingClientRect();
     return {
       x: mouseEvent.clientX - bounds.left,
-      y: mouseEvent.clientY - bounds.top
+      y: mouseEvent.clientY - bounds.top,
     };
   }
   return { x: mouseEvent.clientX, y: mouseEvent.clientY };
@@ -22,7 +25,10 @@ interface CrosshairProps {
   containerRef?: RefObject<HTMLElement>;
 }
 
-const Crosshair: React.FC<CrosshairProps> = ({ color = 'white', containerRef = null }) => {
+const Crosshair: React.FC<CrosshairProps> = ({
+  color = 'white',
+  containerRef = null,
+}) => {
   const cursorRef = useRef<HTMLDivElement>(null);
   const lineHorizontalRef = useRef<HTMLDivElement>(null);
   const lineVerticalRef = useRef<HTMLDivElement>(null);
@@ -43,9 +49,19 @@ const Crosshair: React.FC<CrosshairProps> = ({ color = 'white', containerRef = n
           mouseEvent.clientY < bounds.top ||
           mouseEvent.clientY > bounds.bottom
         ) {
-          gsap.to([lineHorizontalRef.current, lineVerticalRef.current].filter(Boolean), { opacity: 0 });
+          gsap.to(
+            [lineHorizontalRef.current, lineVerticalRef.current].filter(
+              Boolean
+            ),
+            { opacity: 0 }
+          );
         } else {
-          gsap.to([lineHorizontalRef.current, lineVerticalRef.current].filter(Boolean), { opacity: 1 });
+          gsap.to(
+            [lineHorizontalRef.current, lineVerticalRef.current].filter(
+              Boolean
+            ),
+            { opacity: 1 }
+          );
         }
       }
     };
@@ -57,20 +73,26 @@ const Crosshair: React.FC<CrosshairProps> = ({ color = 'white', containerRef = n
       [key: string]: { previous: number; current: number; amt: number };
     } = {
       tx: { previous: 0, current: 0, amt: 0.15 },
-      ty: { previous: 0, current: 0, amt: 0.15 }
+      ty: { previous: 0, current: 0, amt: 0.15 },
     };
 
-    gsap.set([lineHorizontalRef.current, lineVerticalRef.current].filter(Boolean), { opacity: 0 });
+    gsap.set(
+      [lineHorizontalRef.current, lineVerticalRef.current].filter(Boolean),
+      { opacity: 0 }
+    );
 
     const onMouseMove = (_ev: Event) => {
       renderedStyles.tx.previous = renderedStyles.tx.current = mouse.x;
       renderedStyles.ty.previous = renderedStyles.ty.current = mouse.y;
 
-      gsap.to([lineHorizontalRef.current, lineVerticalRef.current].filter(Boolean), {
-        duration: 0.9,
-        ease: 'Power3.easeOut',
-        opacity: 1
-      });
+      gsap.to(
+        [lineHorizontalRef.current, lineVerticalRef.current].filter(Boolean),
+        {
+          duration: 0.9,
+          ease: 'Power3.easeOut',
+          opacity: 1,
+        }
+      );
 
       requestAnimationFrame(render);
 
@@ -94,8 +116,14 @@ const Crosshair: React.FC<CrosshairProps> = ({ color = 'white', containerRef = n
         },
         onUpdate: () => {
           if (filterXRef.current && filterYRef.current) {
-            filterXRef.current.setAttribute('baseFrequency', primitiveValues.turbulence.toString());
-            filterYRef.current.setAttribute('baseFrequency', primitiveValues.turbulence.toString());
+            filterXRef.current.setAttribute(
+              'baseFrequency',
+              primitiveValues.turbulence.toString()
+            );
+            filterYRef.current.setAttribute(
+              'baseFrequency',
+              primitiveValues.turbulence.toString()
+            );
           }
         },
         onComplete: () => {
@@ -103,13 +131,13 @@ const Crosshair: React.FC<CrosshairProps> = ({ color = 'white', containerRef = n
             lineHorizontalRef.current.style.filter = 'none';
             lineVerticalRef.current.style.filter = 'none';
           }
-        }
+        },
       })
       .to(primitiveValues, {
         duration: 0.5,
         ease: 'power1',
         startAt: { turbulence: 1 },
-        turbulence: 0
+        turbulence: 0,
       });
 
     const enter = () => tl.restart();
@@ -158,15 +186,25 @@ const Crosshair: React.FC<CrosshairProps> = ({ color = 'white', containerRef = n
       ref={cursorRef}
       className={`${containerRef ? 'absolute' : 'fixed'} top-0 left-0 w-full h-full pointer-events-none z-[10000]`}
     >
-      <svg className="absolute top-0 left-0 w-full h-full">
+      <svg className='absolute top-0 left-0 w-full h-full'>
         <defs>
-          <filter id="filter-noise-x">
-            <feTurbulence type="fractalNoise" baseFrequency="0.000001" numOctaves="1" ref={filterXRef} />
-            <feDisplacementMap in="SourceGraphic" scale="40" />
+          <filter id='filter-noise-x'>
+            <feTurbulence
+              type='fractalNoise'
+              baseFrequency='0.000001'
+              numOctaves='1'
+              ref={filterXRef}
+            />
+            <feDisplacementMap in='SourceGraphic' scale='40' />
           </filter>
-          <filter id="filter-noise-y">
-            <feTurbulence type="fractalNoise" baseFrequency="0.000001" numOctaves="1" ref={filterYRef} />
-            <feDisplacementMap in="SourceGraphic" scale="40" />
+          <filter id='filter-noise-y'>
+            <feTurbulence
+              type='fractalNoise'
+              baseFrequency='0.000001'
+              numOctaves='1'
+              ref={filterYRef}
+            />
+            <feDisplacementMap in='SourceGraphic' scale='40' />
           </filter>
         </defs>
       </svg>

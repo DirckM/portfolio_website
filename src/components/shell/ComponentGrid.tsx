@@ -28,9 +28,9 @@ export default function ComponentGrid({
   return (
     <section>
       <FilterBar active={filter} onChange={setFilter} />
-      <div className="max-w-[1200px] mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AnimatePresence mode="popLayout">
+      <div className='max-w-[1200px] mx-auto px-6 py-16'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+          <AnimatePresence mode='popLayout'>
             {filtered.map(component => (
               <motion.div
                 key={component.slug}
@@ -46,16 +46,16 @@ export default function ComponentGrid({
                   category={component.category}
                 >
                   {componentPreviews[component.slug] || (
-                    <div className="text-library-gray text-sm text-center">
+                    <div className='text-library-gray text-sm text-center'>
                       {component.name}
                     </div>
                   )}
                 </ComponentCard>
-                <div className="mt-3">
-                  <p className="text-sm font-medium text-black">
+                <div className='mt-3'>
+                  <p className='text-sm font-medium text-black'>
                     {component.name}
                   </p>
-                  <p className="text-xs text-library-gray uppercase tracking-wider mt-0.5">
+                  <p className='text-xs text-library-gray uppercase tracking-wider mt-0.5'>
                     {component.category}
                   </p>
                 </div>

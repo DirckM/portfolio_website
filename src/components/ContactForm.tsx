@@ -117,7 +117,9 @@ export default function ContactForm() {
           viewport={{ once: true }}
           className='text-center mb-12'
         >
-          <h2 className='text-4xl text-primary mb-4 font-roboto-flex'>Get In Touch</h2>
+          <h2 className='text-4xl text-primary mb-4 font-roboto-flex'>
+            Get In Touch
+          </h2>
           <p className='text-lg text-text-muted max-w-2xl mx-auto'>
             Have a project in mind or just want to chat? I'd love to hear from
             you. Send me a message and I'll get back to you as soon as possible.

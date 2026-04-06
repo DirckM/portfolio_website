@@ -10,13 +10,6 @@ interface GooeyFilterProps {
   strength?: number;
 }
 
-interface DotMaterialUniforms {
-  resolution: THREE.Vector2;
-  mouseTrail: THREE.Texture | null;
-  gridSize: number;
-  pixelColor: THREE.Color;
-}
-
 interface SceneProps {
   gridSize: number;
   trailSize: number;
@@ -39,14 +32,26 @@ interface PixelTrailProps {
   className?: string;
 }
 
-const GooeyFilter: React.FC<GooeyFilterProps> = ({ id = 'goo-filter', strength = 10 }) => {
+const GooeyFilter: React.FC<GooeyFilterProps> = ({
+  id = 'goo-filter',
+  strength = 10,
+}) => {
   return (
-    <svg className="z-1 absolute overflow-hidden">
+    <svg className='z-1 absolute overflow-hidden'>
       <defs>
         <filter id={id}>
-          <feGaussianBlur in="SourceGraphic" stdDeviation={strength} result="blur" />
-          <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
-          <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+          <feGaussianBlur
+            in='SourceGraphic'
+            stdDeviation={strength}
+            result='blur'
+          />
+          <feColorMatrix
+            in='blur'
+            type='matrix'
+            values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9'
+            result='goo'
+          />
+          <feComposite in='SourceGraphic' in2='goo' operator='atop' />
         </filter>
       </defs>
     </svg>
@@ -58,7 +63,7 @@ const DotMaterial = shaderMaterial(
     resolution: new THREE.Vector2(),
     mouseTrail: null,
     gridSize: 100,
-    pixelColor: new THREE.Color('#ffffff')
+    pixelColor: new THREE.Color('#ffffff'),
   },
   /* glsl vertex shader */ `
     varying vec2 vUv;
@@ -98,7 +103,14 @@ const DotMaterial = shaderMaterial(
 
 const identityEase = (x: number) => x;
 
-function Scene({ gridSize, trailSize, maxAge, interpolate, easingFunction, pixelColor }: SceneProps) {
+function Scene({
+  gridSize,
+  trailSize,
+  maxAge,
+  interpolate,
+  easingFunction,
+  pixelColor,
+}: SceneProps) {
   const size = useThree(s => s.size);
   const viewport = useThree(s => s.viewport);
 
@@ -118,7 +130,7 @@ function Scene({ gridSize, trailSize, maxAge, interpolate, easingFunction, pixel
     radius: trailSize,
     maxAge: maxAge,
     interpolate: interpolate || 0.1,
-    ease: easingFunction || identityEase
+    ease: easingFunction || identityEase,
   }) as [THREE.Texture | null, (e: ThreeEvent<PointerEvent>) => void];
 
   useEffect(() => {
@@ -154,15 +166,17 @@ export default function PixelTrail({
   glProps = {
     antialias: false,
     powerPreference: 'high-performance',
-    alpha: true
+    alpha: true,
   },
   gooeyFilter,
   color = '#ffffff',
-  className = ''
+  className = '',
 }: PixelTrailProps) {
   return (
     <>
-      {gooeyFilter && <GooeyFilter id={gooeyFilter.id} strength={gooeyFilter.strength} />}
+      {gooeyFilter && (
+        <GooeyFilter id={gooeyFilter.id} strength={gooeyFilter.strength} />
+      )}
       <Canvas
         {...canvasProps}
         gl={glProps}

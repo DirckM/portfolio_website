@@ -21,8 +21,8 @@ const categories: (ComponentCategory | 'all')[] = [
 
 export default function FilterBar({ active, onChange }: FilterBarProps) {
   return (
-    <div className="sticky top-[68px] z-40 bg-white/80 backdrop-blur-sm border-b border-library-border">
-      <div className="max-w-[1200px] mx-auto px-6 py-4 flex gap-8">
+    <div className='sticky top-[68px] z-40 bg-white/80 backdrop-blur-sm'>
+      <div className='max-w-[1200px] mx-auto px-6 py-4 flex justify-center gap-8'>
         {categories.map(cat => (
           <button
             key={cat}

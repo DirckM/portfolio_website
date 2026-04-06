@@ -21,7 +21,14 @@ const eslintConfig = [
       'prettier/prettier': 'error',
 
       // TypeScript specific rules
-      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       // '@typescript-eslint/prefer-const': 'error', // not a valid rule in @typescript-eslint
 

@@ -9,7 +9,22 @@ import {
   Environment,
   Lightformer,
 } from '@react-three/drei';
-import type { RigidBodyProps } from '@react-three/rapier';
+type RigidBodyProps = { type: string };
+
+declare module '@react-three/fiber' {
+  interface ThreeElements {
+    meshLineGeometry: object;
+    meshLineMaterial: object & {
+      color?: string;
+      depthTest?: boolean;
+      resolution?: [number, number];
+      useMap?: boolean;
+      map?: THREE.Texture;
+      repeat?: [number, number];
+      lineWidth?: number;
+    };
+  }
+}
 import * as THREE from 'three';
 
 // These packages must be installed: @react-three/rapier meshline
@@ -27,6 +42,7 @@ let MeshLineGeometry: any = null;
 let MeshLineMaterial: any = null;
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const rapier = require('@react-three/rapier');
   BallCollider = rapier.BallCollider;
   CuboidCollider = rapier.CuboidCollider;
@@ -39,6 +55,7 @@ try {
 }
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ml = require('meshline');
   MeshLineGeometry = ml.MeshLineGeometry;
   MeshLineMaterial = ml.MeshLineMaterial;

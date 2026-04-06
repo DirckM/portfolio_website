@@ -171,7 +171,12 @@ function processImage(img: HTMLImageElement): ImageData {
   let width = img.naturalWidth || img.width;
   let height = img.naturalHeight || img.height;
 
-  if (width > MAX_SIZE || height > MAX_SIZE || width < MIN_SIZE || height < MIN_SIZE) {
+  if (
+    width > MAX_SIZE ||
+    height > MAX_SIZE ||
+    width < MIN_SIZE ||
+    height < MIN_SIZE
+  ) {
     const scale =
       width > height
         ? width > MAX_SIZE
@@ -271,7 +276,11 @@ function processImage(img: HTMLImageElement): ImageData {
 function hexToRgb(hex: string): [number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
-    ? [parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255]
+    ? [
+        parseInt(result[1], 16) / 255,
+        parseInt(result[2], 16) / 255,
+        parseInt(result[3], 16) / 255,
+      ]
     : [1, 1, 1];
 }
 
@@ -296,7 +305,7 @@ export default function MetallicPaint({
   mouseAnimation = false,
   distortion = 1,
   contour = 0.2,
-  tintColor = '#feb3ff'
+  tintColor = '#feb3ff',
 }: MetallicPaintProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const glRef = useRef<WebGL2RenderingContext | null>(null);
@@ -392,7 +401,17 @@ export default function MetallicPaint({
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, imgData.width, imgData.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, imgData.data);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      imgData.width,
+      imgData.height,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      imgData.data
+    );
     gl.uniform1i(uniforms.u_tex, 0);
 
     const ratio = imgData.width / imgData.height;
@@ -485,7 +504,7 @@ export default function MetallicPaint({
     chromaticSpread,
     distortion,
     contour,
-    tintColor
+    tintColor,
   ]);
 
   useEffect(() => {
@@ -531,5 +550,7 @@ export default function MetallicPaint({
     };
   }, [ready, textureReady]);
 
-  return <canvas ref={canvasRef} className="block h-full w-full object-contain" />;
+  return (
+    <canvas ref={canvasRef} className='block h-full w-full object-contain' />
+  );
 }

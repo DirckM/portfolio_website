@@ -119,10 +119,27 @@ export default function MagicRings({
   const burstRef = useRef(0);
 
   propsRef.current = {
-    color, colorTwo, speed, ringCount, attenuation, lineThickness,
-    baseRadius, radiusStep, scaleRate, opacity, blur, noiseAmount,
-    rotation, ringGap, fadeIn, fadeOut, followMouse, mouseInfluence,
-    hoverScale, parallax, clickBurst,
+    color,
+    colorTwo,
+    speed,
+    ringCount,
+    attenuation,
+    lineThickness,
+    baseRadius,
+    radiusStep,
+    scaleRate,
+    opacity,
+    blur,
+    noiseAmount,
+    rotation,
+    ringGap,
+    fadeIn,
+    fadeOut,
+    followMouse,
+    mouseInfluence,
+    hoverScale,
+    parallax,
+    clickBurst,
   };
 
   useEffect(() => {
@@ -173,7 +190,12 @@ export default function MagicRings({
       uBurst: { value: 0 },
     };
 
-    const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms, transparent: true });
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms,
+      transparent: true,
+    });
     const quad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material);
     scene.add(quad);
 
@@ -196,13 +218,17 @@ export default function MagicRings({
       mouseRef.current[0] = (e.clientX - rect.left) / rect.width - 0.5;
       mouseRef.current[1] = -((e.clientY - rect.top) / rect.height - 0.5);
     };
-    const onMouseEnter = () => { isHoveredRef.current = true; };
+    const onMouseEnter = () => {
+      isHoveredRef.current = true;
+    };
     const onMouseLeave = () => {
       isHoveredRef.current = false;
       mouseRef.current[0] = 0;
       mouseRef.current[1] = 0;
     };
-    const onClick = () => { burstRef.current = 1; };
+    const onClick = () => {
+      burstRef.current = 1;
+    };
 
     mount.addEventListener('mousemove', onMouseMove);
     mount.addEventListener('mouseenter', onMouseEnter);
@@ -214,9 +240,12 @@ export default function MagicRings({
       frameId = requestAnimationFrame(animate);
       const p = propsRef.current!;
 
-      smoothMouseRef.current[0] += (mouseRef.current[0] - smoothMouseRef.current[0]) * 0.08;
-      smoothMouseRef.current[1] += (mouseRef.current[1] - smoothMouseRef.current[1]) * 0.08;
-      hoverAmountRef.current += ((isHoveredRef.current ? 1 : 0) - hoverAmountRef.current) * 0.08;
+      smoothMouseRef.current[0] +=
+        (mouseRef.current[0] - smoothMouseRef.current[0]) * 0.08;
+      smoothMouseRef.current[1] +=
+        (mouseRef.current[1] - smoothMouseRef.current[1]) * 0.08;
+      hoverAmountRef.current +=
+        ((isHoveredRef.current ? 1 : 0) - hoverAmountRef.current) * 0.08;
       burstRef.current *= 0.95;
       if (burstRef.current < 0.001) burstRef.current = 0;
 
@@ -235,7 +264,10 @@ export default function MagicRings({
       uniforms.uRingGap.value = p.ringGap;
       uniforms.uFadeIn.value = p.fadeIn;
       uniforms.uFadeOut.value = p.fadeOut;
-      uniforms.uMouse.value.set(smoothMouseRef.current[0], smoothMouseRef.current[1]);
+      uniforms.uMouse.value.set(
+        smoothMouseRef.current[0],
+        smoothMouseRef.current[1]
+      );
       uniforms.uMouseInfluence.value = p.followMouse ? p.mouseInfluence : 0;
       uniforms.uHoverAmount.value = hoverAmountRef.current;
       uniforms.uHoverScale.value = p.hoverScale;
@@ -260,5 +292,11 @@ export default function MagicRings({
     };
   }, []);
 
-  return <div ref={mountRef} className="w-full h-full" style={blur > 0 ? { filter: `blur(${blur}px)` } : undefined} />;
+  return (
+    <div
+      ref={mountRef}
+      className='w-full h-full'
+      style={blur > 0 ? { filter: `blur(${blur}px)` } : undefined}
+    />
+  );
 }
