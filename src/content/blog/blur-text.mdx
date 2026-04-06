@@ -1,0 +1,30 @@
+---
+title: "Build a Blur Text Animation in React"
+description: "Create a smooth blur-to-sharp text reveal effect using Framer Motion. Each word or character fades from blurred to crisp on scroll."
+date: "2026-04-06"
+category: "Text Animations"
+componentSlug: "blur-text"
+---
+
+## What it does
+
+The Blur Text component animates text by transitioning each word or character from a blurred, transparent state to sharp and fully visible. The animation triggers when the element scrolls into view.
+
+## How it works
+
+The component splits the input text into segments (words or characters) and wraps each in a motion.span from Framer Motion. Each segment starts with filter blur 12px and opacity 0, then animates to filter blur 0px and opacity 1 with a staggered delay.
+
+The useInView hook from Framer Motion detects when the component enters the viewport, triggering the animation only once.
+
+## Key properties
+
+- **text** - The string to animate
+- **animateBy** - Split by words or characters
+- **delay** - Stagger delay between each segment (default: 0.05s)
+- **direction** - Animate from top or bottom
+
+## When to use it
+
+This works well for hero headings, section titles, or any text that should feel like it is materializing on screen. The blur effect adds a sense of depth that a simple fade-in lacks.
+
+Keep the delay subtle (0.03-0.08s) for natural reading flow. Going too slow makes users wait; too fast and you lose the effect.
