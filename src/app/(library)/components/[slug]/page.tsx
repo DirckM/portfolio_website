@@ -7,6 +7,7 @@ import {
   CATEGORY_LABELS,
 } from '@/lib/components-registry';
 import ComponentCard from '@/components/shell/ComponentCard';
+import { fullDemos, cardPreviews } from '@/lib/component-previews';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -29,8 +30,6 @@ export async function generateMetadata({
   };
 }
 
-const componentPreviews: Record<string, React.ReactNode> = {};
-
 export default async function ComponentDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const component = getComponentBySlug(slug);
@@ -52,7 +51,7 @@ export default async function ComponentDetailPage({ params }: PageProps) {
   return (
     <div className="pt-24">
       <section className="w-full min-h-[60vh] flex items-center justify-center bg-library-cream border-b border-library-border">
-        {componentPreviews[slug] || (
+        {fullDemos[slug] || (
           <div className="text-library-gray">
             Live demo: {component.name}
           </div>
@@ -92,7 +91,7 @@ export default async function ComponentDetailPage({ params }: PageProps) {
                 slug={r.slug}
                 category={r.category}
               >
-                {componentPreviews[r.slug] || (
+                {cardPreviews[r.slug] || (
                   <div className="text-library-gray text-sm">{r.name}</div>
                 )}
               </ComponentCard>
