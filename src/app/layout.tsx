@@ -13,8 +13,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Dirck Mulder',
-  description: 'Designer & Developer',
+  title: {
+    default: 'Dirck Mulder | Designer & Developer',
+    template: '%s | Dirck Mulder',
+  },
+  description:
+    'Designer and developer building beautiful interactive experiences. Component library, blog, and portfolio.',
+  metadataBase: new URL('https://dirckmulder.com'),
 };
 
 export default function RootLayout({
