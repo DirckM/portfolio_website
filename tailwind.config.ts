@@ -34,6 +34,15 @@ const config: Config = {
           muted: '#6B6B6B', // Secondary info or captions
           onDark: '#F7F5F2', // Light text on dark backgrounds
         },
+
+        library: {
+          white: '#ffffff',
+          cream: '#f5f5f0',
+          black: '#000000',
+          gray: '#6b6b6b',
+          border: '#e5e5e5',
+          code: '#1a1a1a',
+        },
       },
 
       fontFamily: {
@@ -41,6 +50,7 @@ const config: Config = {
         display: ['Playfair Display', 'serif'],
         serif: ['Instrument Serif', 'serif'],
         'roboto-flex': ['Roboto Flex', 'sans-serif'],
+        mono: ['var(--font-jetbrains-mono)', 'JetBrains Mono', 'monospace'],
       },
 
       animation: {
