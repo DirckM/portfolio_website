@@ -8,9 +8,16 @@ componentSlug: "text-type"
 
 The typewriter effect never really goes out of style. It communicates something being composed in real time, which makes it feel alive in a way that static text just does not. It is one of the oldest web animations and still one of the most effective.
 
-## What we are building
+## The final result
 
 TextType types out a string character by character, pauses, deletes it, and moves to the next one. It supports looping through multiple strings, variable typing speed, a blinking cursor, and optional scroll-triggered start.
+
+<LiveStep
+  codeId="text-type-final"
+  controls={[
+    { type: 'slider', prop: 'typingSpeed', label: 'typingSpeed', min: 20, max: 100, default: 55 },
+  ]}
+/>
 
 ## Setting up
 

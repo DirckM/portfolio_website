@@ -8,9 +8,16 @@ componentSlug: "split-text"
 
 There is something satisfying about watching text arrive letter by letter. It draws the eye, holds attention for just a moment longer, and makes a heading feel earned rather than static.
 
-## What we are building
+## The final result
 
 Split Text breaks a string into individual characters and animates each one in sequence. Letters slide up from below with a staggered delay, creating a flowing cascade across the full word or sentence. The animation fires once when the element scrolls into view.
+
+<LiveStep
+  codeId="split-text-final"
+  controls={[
+    { type: 'select', prop: 'splitType', label: 'splitType', options: ['chars', 'words'], default: 'chars' },
+  ]}
+/>
 
 ## Setting up
 

@@ -8,9 +8,17 @@ componentSlug: "circular-text"
 
 You have seen it on vinyl record labels, magazine covers, and those retro badge stickers. Circular text is one of those design details that immediately signals craft. And it is surprisingly simple to pull off in React.
 
-## What we are building
+## The final result
 
 CircularText places each character of a string along the perimeter of a circle and continuously rotates the whole arrangement. You can control the spin speed and configure what happens on hover: slow down, speed up, pause, or go completely off the rails.
+
+<LiveStep
+  codeId="circular-text-final"
+  controls={[
+    { type: 'slider', prop: 'spinDuration', label: 'spinDuration', min: 5, max: 30, default: 10 },
+    { type: 'select', prop: 'onHover', label: 'onHover', options: ['speedUp', 'pause', 'slowDown'], default: 'speedUp' },
+  ]}
+/>
 
 ## Setting up
 

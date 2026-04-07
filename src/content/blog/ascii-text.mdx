@@ -8,9 +8,17 @@ componentSlug: "ascii-text"
 
 Before high-resolution screens, programmers rendered images and text using nothing but printable characters. ASCII art was practical necessity. Today it is pure aesthetic, and it hits differently in a world of polished UI. This component brings that texture to the browser, with real-time waves and mouse interaction.
 
-## What we are building
+## The final result
 
 ASCIIText renders a string as an ASCII art display using a Three.js scene with a custom post-processing filter. The text undulates with shader-driven waves, reacts to mouse movement, and renders with a radial color gradient applied through CSS `mix-blend-mode`.
+
+<LiveStep
+  codeId="ascii-text-final"
+  previewBg="bg-black"
+  controls={[
+    { type: 'select', prop: 'text', label: 'text', options: ['Hello', 'World', 'React'], default: 'Hello' },
+  ]}
+/>
 
 ## Setting up
 

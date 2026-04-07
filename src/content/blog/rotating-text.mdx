@@ -8,9 +8,16 @@ componentSlug: "rotating-text"
 
 "I design things." is fine. "I design websites / apps / experiences" cycling one after another is far more interesting. Rotating Text is the simplest way to fit multiple ideas into a single fixed space without a carousel.
 
-## What we are building
+## The final result
 
 RotatingText cycles through an array of strings at a configurable interval. Each string animates in from below while the previous one exits upward. Characters can be split and staggered individually. The component exposes an imperative API via `ref` so you can control it programmatically.
+
+<LiveStep
+  codeId="rotating-text-final"
+  controls={[
+    { type: 'slider', prop: 'rotationInterval', label: 'rotationInterval', min: 500, max: 4000, step: 500, default: 2000 },
+  ]}
+/>
 
 ## Setting up
 

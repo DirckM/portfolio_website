@@ -8,9 +8,16 @@ componentSlug: "scroll-velocity"
 
 Most marquees scroll at a fixed pace regardless of what you do. That feels mechanical. A scroll velocity marquee responds to you: scroll fast and it races, slow down and it coasts. That responsiveness makes it feel alive in a way a static ticker never does.
 
-## What we are building
+## The final result
 
 ScrollVelocity renders one or more looping text rows where the scroll speed of the page directly accelerates or decelerates the marquee. Odd-indexed rows move in the opposite direction for contrast.
+
+<LiveStep
+  codeId="scroll-velocity-final"
+  controls={[
+    { type: 'slider', prop: 'velocity', label: 'velocity', min: 20, max: 200, default: 80 },
+  ]}
+/>
 
 ## Setting up
 

@@ -8,9 +8,17 @@ componentSlug: "shiny-text"
 
 Some UI elements just need to gleam. A premium label, a "new" badge, a call to action you want people to notice. The shiny text effect does exactly one thing, and it does it well: it drags a highlight across your text like light catching a metallic surface.
 
-## What we are building
+## The final result
 
 ShinyText applies a moving gradient highlight across a string of text using Motion's `useAnimationFrame` and `useMotionValue`. The shimmer sweeps from one side to the other on a continuous loop, with options for yoyo, pause on hover, and direction control.
+
+<LiveStep
+  codeId="shiny-text-final"
+  controls={[
+    { type: 'slider', prop: 'speed', label: 'speed', min: 1, max: 5, step: 0.5, default: 2.5 },
+    { type: 'color', prop: 'color', label: 'color', default: '#888888' },
+  ]}
+/>
 
 ## Setting up
 

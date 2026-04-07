@@ -8,9 +8,17 @@ componentSlug: "glitch-text"
 
 Glitch effects tap into something visceral. They look like a system failing, a reality breaking, a signal corrupting. That visual tension is exactly why they work so well in design: controlled chaos is compelling in a way that perfect polish cannot always match.
 
-## What we are building
+## The final result
 
 GlitchText renders text with two pseudo-element layers that show different horizontal slices of the text, offset in opposite directions and colored red and blue. CSS keyframe animations shift the clip boundaries rapidly, creating the scan-line glitch effect.
+
+<LiveStep
+  codeId="glitch-text-final"
+  controls={[
+    { type: 'slider', prop: 'speed', label: 'speed', min: 100, max: 1000, step: 50, default: 500 },
+    { type: 'toggle', prop: 'enableShadow', label: 'enableShadow', default: true },
+  ]}
+/>
 
 ## Setting up
 

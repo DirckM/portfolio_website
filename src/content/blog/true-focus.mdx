@@ -8,9 +8,17 @@ componentSlug: "true-focus"
 
 Reading comprehension tools have known for a while that isolating words helps focus. True Focus borrows that idea and turns it into a UI animation. Every word is blurred out except the one in the spotlight. It is striking, and oddly meditative.
 
-## What we are building
+## The final result
 
 TrueFocus splits a sentence into words and blurs all of them except the currently active word. A focus box with glowing corner brackets tracks the active word with a smooth animation. In auto mode it advances on a timer; in manual mode it follows the cursor.
+
+<LiveStep
+  codeId="true-focus-final"
+  controls={[
+    { type: 'slider', prop: 'blurAmount', label: 'blurAmount', min: 2, max: 10, default: 5 },
+    { type: 'color', prop: 'borderColor', label: 'borderColor', default: '#000000' },
+  ]}
+/>
 
 ## Setting up
 

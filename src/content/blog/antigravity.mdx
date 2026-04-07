@@ -12,6 +12,14 @@ Gravity pulls everything down. Flip that and you immediately create a sense of l
 
 A field of particles scattered across the canvas. When your cursor moves close, particles peel away from their resting positions and orbit the cursor in a ring. Move the cursor away and they drift back. The whole scene runs inside a React Three Fiber canvas.
 
+<LiveStep
+  codeId="antigravity-final"
+  controls={[
+    { type: 'slider', prop: 'count', label: 'count', min: 50, max: 500, default: 200 },
+    { type: 'color', prop: 'color', label: 'color', default: '#5227FF' },
+  ]}
+/>
+
 ## Setting up
 
 You need `@react-three/fiber` and `three`:

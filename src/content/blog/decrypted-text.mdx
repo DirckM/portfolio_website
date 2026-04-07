@@ -8,9 +8,17 @@ componentSlug: "decrypted-text"
 
 There is something cinematic about watching encrypted text decode itself in real time. Think spy films, hacker interfaces, classified document reveals. The Decrypted Text component brings that energy to your React app.
 
-## What we are building
+## The final result
 
 DecryptedText scrambles each character through random symbols, then resolves them in sequence until the full intended text is visible. It supports hover, click, and scroll-into-view triggers, sequential or simultaneous reveals, and even a reverse mode that re-encrypts on mouse leave.
+
+<LiveStep
+  codeId="decrypted-text-final"
+  controls={[
+    { type: 'select', prop: 'animateOn', label: 'animateOn', options: ['hover', 'view'], default: 'hover' },
+    { type: 'slider', prop: 'speed', label: 'speed', min: 20, max: 100, default: 60 },
+  ]}
+/>
 
 ## Setting up
 

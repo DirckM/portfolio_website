@@ -8,9 +8,16 @@ componentSlug: "shuffle"
 
 Imagine text that does not know what it wants to say yet. It cycles through random characters, flickers, then locks into place. It looks like something decoding, something arriving from a signal. That energy is exactly what this component delivers.
 
-## What we are building
+## The final result
 
 Shuffle uses GSAP's `SplitText` plugin to break text into individual characters, then wraps each one in a strip that scrolls through to the final character. It supports hover re-triggering, color transitions, even-odd stagger patterns, and scroll-triggered start.
+
+<LiveStep
+  codeId="shuffle-final"
+  controls={[
+    { type: 'select', prop: 'shuffleDirection', label: 'shuffleDirection', options: ['up', 'down', 'left', 'right'], default: 'up' },
+  ]}
+/>
 
 ## Setting up
 
