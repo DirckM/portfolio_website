@@ -1305,4 +1305,72 @@ export const fullDemos: Record<string, React.ReactNode> = {
       </div>
     </div>
   ),
+  'animated-list': (
+    <div className='flex items-center justify-center p-12 w-full h-full'>
+      <div className='w-full max-w-md h-80'>
+        <AnimatedList
+          items={['Design the interface', 'Build the components', 'Write the tests', 'Deploy to production', 'Ship it', 'Iterate and improve']}
+          showGradients={true}
+          enableArrowNavigation={true}
+        />
+      </div>
+    </div>
+  ),
+  'scroll-stack': (
+    <div className='w-full h-full overflow-auto'>
+      <ScrollStack useWindowScroll={false}>
+        <ScrollStackItem itemClassName='bg-black text-white flex items-center justify-center rounded-2xl'>
+          <span className='text-2xl font-[family-name:var(--font-instrument-serif)]'>First Card</span>
+        </ScrollStackItem>
+        <ScrollStackItem itemClassName='bg-[#5227FF] text-white flex items-center justify-center rounded-2xl'>
+          <span className='text-2xl font-[family-name:var(--font-instrument-serif)]'>Second Card</span>
+        </ScrollStackItem>
+        <ScrollStackItem itemClassName='bg-[#FF9FFC] text-black flex items-center justify-center rounded-2xl'>
+          <span className='text-2xl font-[family-name:var(--font-instrument-serif)]'>Third Card</span>
+        </ScrollStackItem>
+      </ScrollStack>
+    </div>
+  ),
+  'magic-bento': (
+    <div className='w-full h-full'>
+      <MagicBento enableStars={true} enableSpotlight={true} particleCount={12} />
+    </div>
+  ),
+  'circular-gallery': (
+    <div className='w-full h-full'>
+      <CircularGallery
+        items={[
+          { image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600', text: 'Mountains' },
+          { image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600', text: 'Forest' },
+          { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600', text: 'Beach' },
+          { image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600', text: 'Hiking' },
+          { image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600', text: 'Forest Path' },
+        ]}
+        bend={2}
+        textColor='#fff'
+        borderRadius={0.06}
+      />
+    </div>
+  ),
+  'reflective-card': (
+    <div className='flex items-center justify-center gap-8 p-12 bg-gray-900 w-full h-full'>
+      <ReflectiveCard className='w-64 h-80 rounded-2xl' />
+      <ReflectiveCard className='w-48 h-64 rounded-xl' color='#5227FF' />
+    </div>
+  ),
+  'fluid-glass': (
+    <div className='w-full h-full'>
+      <FluidGlass />
+    </div>
+  ),
+  'glass-surface': (
+    <div className='relative flex items-center justify-center gap-8 w-full h-full bg-gradient-to-br from-blue-400 to-purple-600'>
+      <GlassSurface width={220} height={120} borderRadius={16} blur={10} opacity={0.3}>
+        <span className='text-white text-lg font-medium px-6'>Frosted Glass</span>
+      </GlassSurface>
+      <GlassSurface width={180} height={100} borderRadius={999} blur={8} opacity={0.2}>
+        <span className='text-white text-sm font-medium px-6'>Rounded</span>
+      </GlassSurface>
+    </div>
+  ),
 };
