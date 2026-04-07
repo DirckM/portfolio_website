@@ -1093,4 +1093,88 @@ export const fullDemos: Record<string, React.ReactNode> = {
     </div>
   ),
   'variable-proximity': <VariableProximityFullDemo />,
+  'curved-loop': (
+    <div className='w-full h-full overflow-hidden bg-black flex items-center'>
+      <CurvedLoop
+        marqueeText='CURVED LOOP * FLOWING TEXT * '
+        speed={3}
+        className='text-white'
+        curveAmount={300}
+      />
+    </div>
+  ),
+  'falling-text': (
+    <div className='flex flex-col items-center gap-4 w-full h-full'>
+      <div className='w-full h-full'>
+        <FallingText
+          text='Click or hover to interact with the falling words and watch physics in action'
+          trigger='auto'
+          gravity={0.8}
+          fontSize='1.2rem'
+        />
+      </div>
+    </div>
+  ),
+  'scroll-float': (
+    <div className='flex flex-col items-center justify-center gap-8 p-12 overflow-auto h-full'>
+      <ScrollFloat
+        containerClassName='!my-0'
+        textClassName='!text-4xl text-black font-[family-name:var(--font-instrument-serif)]'
+      >
+        Scroll Float Effect
+      </ScrollFloat>
+      <ScrollFloat
+        containerClassName='!my-0'
+        textClassName='!text-2xl text-[#6b6b6b]'
+        animationDuration={1.5}
+      >
+        Text floats upward smoothly
+      </ScrollFloat>
+    </div>
+  ),
+  'scroll-reveal': (
+    <div className='flex items-center justify-center p-12 overflow-auto h-full'>
+      <ScrollReveal
+        containerClassName='!my-0'
+        textClassName='!text-3xl text-black font-[family-name:var(--font-instrument-serif)]'
+      >
+        Words reveal progressively as you scroll through the page creating a reading experience
+      </ScrollReveal>
+    </div>
+  ),
+  'ascii-text': (
+    <div className='w-full h-full bg-black'>
+      <ASCIIText
+        text='Hello'
+        asciiFontSize={8}
+        textFontSize={200}
+        enableWaves={true}
+        textColor='#fdf9f3'
+      />
+    </div>
+  ),
+  'scrambled-text': (
+    <div className='flex flex-col items-center justify-center gap-8 p-12 bg-black w-full h-full'>
+      <ScrambledText className='!m-0 !text-4xl text-white font-bold' scrambleChars='.:'>
+        Hover to scramble
+      </ScrambledText>
+      <ScrambledText className='!m-0 !text-2xl text-gray-400' scrambleChars='#*' speed={0.3}>
+        Different scramble characters
+      </ScrambledText>
+    </div>
+  ),
+  'scroll-velocity': (
+    <div className='w-full h-full overflow-hidden flex flex-col items-center justify-center gap-4'>
+      <ScrollVelocity
+        texts={['Scroll Velocity', 'Speed Changes']}
+        velocity={80}
+        className='text-black text-4xl font-bold'
+      />
+      <ScrollVelocity
+        texts={['Slower Track', 'Different Speed']}
+        velocity={30}
+        className='text-[#6b6b6b] text-2xl'
+      />
+    </div>
+  ),
 };
