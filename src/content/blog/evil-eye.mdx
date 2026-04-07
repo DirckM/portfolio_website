@@ -8,6 +8,10 @@ componentSlug: "evil-eye"
 
 The eye is the shape the human brain reacts to fastest. We notice eyes in noise, in clouds, in abstract patterns. EvilEye leans into that instinct deliberately, rendering a watching iris with a WebGL shader and a procedurally generated noise texture.
 
+## The final result
+
+<LiveStep codeId="evil-eye-final" previewBg="bg-black" controls={[{ type: "color", prop: "eyeColor", label: "Eye Color", default: "#FF6F37" }, { type: "slider", prop: "intensity", label: "Intensity", min: 0.5, max: 3, step: 0.1, default: 1.5 }]} />
+
 ## What we are building
 
 A full-canvas eye rendered entirely in GLSL. The iris has flame-like texture from a noise texture sampled in polar coordinates. The pupil tracks the mouse with a smoothed follow. No SVG, no canvas 2D, just a fragment shader and a noise texture uploaded to the GPU.

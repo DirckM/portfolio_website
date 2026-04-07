@@ -8,6 +8,10 @@ componentSlug: "glass-surface"
 
 Frosted glass is one of those effects that looks effortless when done right and terrible when done halfway. The tricky part is not the blur, it is the chromatic aberration. This component handles both.
 
+## The final result
+
+<LiveStep codeId="glass-surface-final" controls={[{ type: "slider", prop: "blur", label: "Blur", min: 4, max: 20, default: 10 }, { type: "slider", prop: "borderRadius", label: "Border Radius", min: 4, max: 40, default: 16 }]} />
+
 ## What we are building
 
 A `GlassSurface` component that uses SVG displacement maps to split the backdrop into red, green, and blue channels with slight offsets between them. On browsers that support it, this creates genuine chromatic aberration through the glass. On others, it falls back to standard `backdrop-filter: blur()`.

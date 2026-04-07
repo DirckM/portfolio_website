@@ -8,6 +8,10 @@ componentSlug: "light-pillar"
 
 Volumetric light is one of those effects that makes people stop scrolling. It looks physical, like the light is actually occupying space. LightPillar achieves this in the browser with a raymarching fragment shader built on Three.js. No 3D models, no textures, just math.
 
+## The final result
+
+<LiveStep codeId="light-pillar-final" previewBg="bg-black" controls={[{ type: "color", prop: "topColor", label: "Top Color", default: "#5227FF" }, { type: "color", prop: "bottomColor", label: "Bottom Color", default: "#FF9FFC" }]} />
+
 ## What we are building
 
 A glowing vertical beam of light that rises from the base of the canvas and softens at the top. The beam has animated density variation, a color gradient from bottom to top, and an optional mouse-interactive rotation.

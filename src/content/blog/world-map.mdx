@@ -8,6 +8,10 @@ componentSlug: "world-map"
 
 Global reach is a story that is hard to tell with words alone. Showing it on a map, with arcs flying between cities, makes the point instantly. WorldMap renders a canvas-based world map with animated connection arcs that you configure with plain coordinate pairs.
 
+## The final result
+
+<LiveStep codeId="world-map-final" previewBg="bg-black" controls={[{ type: "color", prop: "dotColor", label: "Dot Color", default: "#38bdf8" }]} />
+
 ## What we are building
 
 A canvas component that draws a lat/lng grid over a dark background, places glowing dots at city coordinates, and animates bezier arcs between defined connection pairs. Each arc draws itself on over time and resets, creating a continuous live-data effect.

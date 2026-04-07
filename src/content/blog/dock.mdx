@@ -8,6 +8,10 @@ componentSlug: "dock"
 
 The macOS Dock magnification effect has been around since 2001 and it still feels great every single time. There is something deeply satisfying about icons growing toward your cursor like plants toward light. Here is how to build it with Framer Motion in about 200 lines.
 
+## The final result
+
+<LiveStep codeId="dock-final" controls={[{ type: "slider", prop: "magnification", label: "Magnification", min: 50, max: 100, default: 80 }, { type: "slider", prop: "baseItemSize", label: "Base Item Size", min: 40, max: 70, default: 56 }]} />
+
 ## What we are building
 
 A horizontal row of icons that magnify as the cursor approaches. The icon closest to the pointer grows largest. Neighboring icons scale up progressively less. The dock panel height grows to accommodate the magnified icons. Tooltips appear on hover.

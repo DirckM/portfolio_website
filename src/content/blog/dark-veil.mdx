@@ -8,6 +8,10 @@ componentSlug: "dark-veil"
 
 Some pages need to feel like something is happening deep inside them. Dark Veil uses a CPPN (Compositional Pattern Producing Network) fragment shader to generate an organic, ever-shifting pattern from hardcoded neural network weights baked directly into the GLSL code.
 
+## The final result
+
+<LiveStep codeId="dark-veil-final" controls={[{ type: "slider", prop: "speed", label: "Speed", min: 0.1, max: 1, step: 0.1, default: 0.5 }]} />
+
 ## What we are building
 
 A full-canvas WebGL background that runs a mini neural network per pixel to produce continuously evolving abstract imagery. On top of that, optional scanlines, film grain, and hue shifting let you dial in the exact mood you want.

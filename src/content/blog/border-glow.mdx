@@ -8,6 +8,10 @@ componentSlug: "border-glow"
 
 A static glowing border is decorative. A border glow that follows your cursor is interactive. That small distinction turns a passive element into something that responds to you. This implementation is one of the more technically interesting CSS tricks in this library.
 
+## The final result
+
+<LiveStep codeId="border-glow-final" controls={[{ type: "color", prop: "glowColor", label: "Glow Color", default: "#55aa55" }]} />
+
 ## What we are building
 
 A card wrapper with three layered effects: a conic gradient border that illuminates in the direction of the cursor, a mesh gradient fill that bleeds softly through the border region, and a box shadow glow that radiates outward from the cursor angle. All three are driven by the same angle value computed from mouse position.

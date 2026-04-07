@@ -8,6 +8,10 @@ componentSlug: "circular-gallery"
 
 A flat image grid is functional. A circular gallery is a statement. It signals that you thought carefully about how your work is presented, not just what you are presenting. The implementation is more interesting than you might expect.
 
+## The final result
+
+<LiveStep codeId="circular-gallery-final" controls={[{ type: "slider", prop: "bend", label: "Bend", min: 1, max: 5, default: 2 }]} />
+
 ## What we are building
 
 An infinite-scrolling, drag-enabled gallery rendered on a WebGL canvas using the OGL library. Images curve along the edge of a virtual cylinder. Dragging or scrolling spins the ring. Each image has a text label rendered as a WebGL texture.

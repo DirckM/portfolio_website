@@ -8,6 +8,10 @@ componentSlug: "circling-elements"
 
 Orbiting elements are a great way to show relationships visually. Tech stacks circling a logo, team avatars around a company mark, feature icons surrounding a product image. CirclingElements gives you a reusable orbital system where you supply the children and it handles the distribution and spin.
 
+## The final result
+
+<LiveStep codeId="circling-elements-final" controls={[{ type: "slider", prop: "radius", label: "Radius", min: 60, max: 200, default: 120 }, { type: "slider", prop: "duration", label: "Duration", min: 3, max: 15, default: 8 }]} />
+
 ## What we are building
 
 A container component that places any number of child elements in a circular orbit, evenly distributed by angle. Each element uses a CSS animation with custom properties to drive its position. The whole system accepts a direction, speed, and optional hover pause.

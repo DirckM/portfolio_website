@@ -8,6 +8,10 @@ componentSlug: "color-bends"
 
 A gradient that actually moves is a different beast from a CSS keyframe sliding a color stop. ColorBends uses a GLSL fragment shader running in Three.js to warp coordinate space itself, making colors bend and fold like liquid on glass.
 
+## The final result
+
+<LiveStep codeId="color-bends-final" controls={[{ type: "slider", prop: "speed", label: "Speed", min: 0.1, max: 1, step: 0.1, default: 0.2 }, { type: "slider", prop: "rotation", label: "Rotation", min: 0, max: 360, step: 15, default: 45 }]} />
+
 ## What we are building
 
 A full-canvas WebGL background where up to eight custom colors flow and distort continuously. The warping is mouse-aware, and you can rotate the entire color field or let it auto-spin. No textures are needed, everything is computed per-pixel at runtime.

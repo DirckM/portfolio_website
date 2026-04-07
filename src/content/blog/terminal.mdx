@@ -8,6 +8,10 @@ componentSlug: "terminal"
 
 Nothing communicates "built for engineers" faster than a terminal. The Terminal component lets you script a realistic command-line sequence that plays back automatically, character by character, making your product demo itself to every visitor without any interaction required.
 
+## The final result
+
+<LiveStep codeId="terminal-final" controls={[{ type: "slider", prop: "typingSpeed", label: "Typing Speed", min: 20, max: 100, default: 45 }]} />
+
 ## What we are building
 
 A styled terminal window with a title bar, green command prompt, blinking cursor, and a fully async playback engine. Commands type out one character at a time. Output appears after each command runs. The whole sequence plays through once and stops at the last line.

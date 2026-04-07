@@ -8,6 +8,10 @@ componentSlug: "radar"
 
 Radar immediately signals surveillance, detection, and data in motion. It is a classic metaphor for a reason. The Radar component brings that energy to React with a WebGL fragment shader that makes rings and sweeps look genuinely glowing and dimensional.
 
+## The final result
+
+<LiveStep codeId="radar-final" previewBg="bg-black" controls={[{ type: "color", prop: "color", label: "Color", default: "#00ff88" }, { type: "slider", prop: "sweepSpeed", label: "Sweep Speed", min: 0.5, max: 3, step: 0.5, default: 1 }]} />
+
 ## What we are building
 
 A full-canvas radar display with concentric rings, radial spokes, and a rotating sweep beam. Everything is drawn per-pixel in GLSL using polar coordinate math. The sweep leaves behind a natural falloff as it rotates. Mouse interaction optionally shifts the center of the display.

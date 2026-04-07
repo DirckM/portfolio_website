@@ -8,6 +8,10 @@ componentSlug: "pixel-card"
 
 Pixels dissolving into sharp content is a visual trick that never really gets old. It triggers the same satisfaction as a developing photograph, and your brain cannot help but watch it finish. This implementation uses a canvas element and a custom particle system for smooth, controllable results.
 
+## The final result
+
+<LiveStep codeId="pixel-card-final" controls={[{ type: "select", prop: "variant", label: "Variant", options: ["default", "blue", "yellow", "pink"], default: "default" }]} />
+
 ## What we are building
 
 A card container with a canvas overlay that fills with pixel particles on hover and dissolves away on mouse leave. Each pixel appears with a slight delay based on its distance from center, creating a radial reveal pattern. The animation respects `prefers-reduced-motion`.
