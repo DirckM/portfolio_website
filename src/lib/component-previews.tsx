@@ -746,7 +746,7 @@ export const cardPreviews: Record<string, React.ReactNode> = {
   ),
   lanyard: (
     <div className='w-full h-full bg-[#060010] overflow-hidden'>
-      <Lanyard position={[0, 0, 20]} gravity={[0, -40, 0]} fov={25} />
+      <Lanyard />
     </div>
   ),
   'magic-bento': (
