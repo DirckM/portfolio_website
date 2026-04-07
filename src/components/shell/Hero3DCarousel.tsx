@@ -5,8 +5,6 @@ import Link from 'next/link';
 import type { ComponentCategory } from '@/lib/components-registry';
 import LineWaves from '@/components/library/backgrounds/LineWaves';
 import GlitchText from '@/components/library/text-animations/GlitchText';
-import BlurText from '@/components/library/text-animations/BlurText';
-import ElectricBorder from '@/components/library/animations/ElectricBorder';
 
 // Lazy load heavy WebGL backgrounds
 const SoftAurora = lazy(
@@ -113,21 +111,6 @@ const heroCards: HeroCard[] = [
     ),
   },
   {
-    slug: 'electric-border',
-    name: 'Electric Border',
-    category: 'animations',
-    fallbackBg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    content: (
-      <div className='w-full h-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center'>
-        <ElectricBorder color='#ffffff' duration={1.5} borderWidth={2}>
-          <div className='px-6 py-4 text-white text-sm tracking-widest uppercase'>
-            Electric
-          </div>
-        </ElectricBorder>
-      </div>
-    ),
-  },
-  {
     slug: 'evil-eye',
     name: 'Evil Eye',
     category: 'backgrounds',
@@ -136,21 +119,6 @@ const heroCards: HeroCard[] = [
       <BgWrap fallback='linear-gradient(135deg, #1a0a0a 0%, #0a1a0a 100%)'>
         <EvilEye />
       </BgWrap>
-    ),
-  },
-  {
-    slug: 'blur-text',
-    name: 'Blur Text',
-    category: 'text',
-    fallbackBg: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-    content: (
-      <div className='w-full h-full bg-gradient-to-br from-[#ffecd2] to-[#fcb69f] flex items-center justify-center'>
-        <BlurText
-          text='Hello World'
-          className='text-2xl font-bold text-black/80'
-          delay={0.08}
-        />
-      </div>
     ),
   },
   {
@@ -177,19 +145,6 @@ const heroCards: HeroCard[] = [
           amplitude={30}
           speed={0.03}
         />
-      </div>
-    ),
-  },
-  {
-    slug: 'tilted-card',
-    name: 'Tilted Card',
-    category: 'components',
-    fallbackBg: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-    content: (
-      <div className='w-full h-full bg-gradient-to-br from-[#f5f7fa] to-[#c3cfe2] flex items-center justify-center'>
-        <div className='w-[60%] h-[50%] rounded-xl bg-white shadow-2xl flex items-center justify-center'>
-          <span className='text-black/50 text-xs'>3D Card</span>
-        </div>
       </div>
     ),
   },

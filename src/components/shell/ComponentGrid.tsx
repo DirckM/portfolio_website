@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ComponentCard from './ComponentCard';
 import FilterBar from './FilterBar';
@@ -8,6 +8,34 @@ import {
   type ComponentCategory,
   type ComponentEntry,
 } from '@/lib/components-registry';
+
+function LazyCard({
+  children,
+  fallback,
+}: {
+  children: ReactNode;
+  fallback: ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { rootMargin: '300px' }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return <div ref={ref}>{isVisible ? children : fallback}</div>;
+}
 
 interface ComponentGridProps {
   components: ComponentEntry[];
@@ -40,17 +68,31 @@ export default function ComponentGrid({
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
               >
-                <ComponentCard
-                  name={component.name}
-                  slug={component.slug}
-                  category={component.category}
+                <LazyCard
+                  fallback={
+                    <ComponentCard
+                      name={component.name}
+                      slug={component.slug}
+                      category={component.category}
+                    >
+                      <div className='text-library-gray text-sm text-center'>
+                        {component.name}
+                      </div>
+                    </ComponentCard>
+                  }
                 >
-                  {componentPreviews[component.slug] || (
-                    <div className='text-library-gray text-sm text-center'>
-                      {component.name}
-                    </div>
-                  )}
-                </ComponentCard>
+                  <ComponentCard
+                    name={component.name}
+                    slug={component.slug}
+                    category={component.category}
+                  >
+                    {componentPreviews[component.slug] || (
+                      <div className='text-library-gray text-sm text-center'>
+                        {component.name}
+                      </div>
+                    )}
+                  </ComponentCard>
+                </LazyCard>
                 <div className='mt-3'>
                   <p className='text-sm font-medium text-black'>
                     {component.name}
