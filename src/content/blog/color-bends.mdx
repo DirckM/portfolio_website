@@ -6,27 +6,114 @@ category: "Backgrounds"
 componentSlug: "color-bends"
 ---
 
-There is something satisfying about a gradient that actually moves. Not a CSS keyframe that slides a color stop, but something that bends and warps like it has physics behind it. Color Bends delivers that with a GLSL shader running on the GPU.
+A gradient that actually moves is a different beast from a CSS keyframe sliding a color stop. ColorBends uses a GLSL fragment shader running in Three.js to warp coordinate space itself, making colors bend and fold like liquid on glass.
 
-## What it does
+## What we are building
 
-Color Bends renders a continuously animating background where color regions distort and flow into one another. The result looks like ink dropped in water, caught in slow motion. It is vivid without being overwhelming.
+A full-canvas WebGL background where up to eight custom colors flow and distort continuously. The warping is mouse-aware, and you can rotate the entire color field or let it auto-spin. No textures are needed, everything is computed per-pixel at runtime.
 
-## How it works
+## Setting up
 
-The component initializes a WebGL canvas and compiles a fragment shader that samples color based on screen coordinates warped by multiple sine and cosine waves. Each wave has a different frequency and phase, and a `uTime` uniform drives their progression. The combination of warps produces the fluid bending motion that makes the effect feel three-dimensional.
+```bash
+npm install three
+```
 
-Color mixing happens entirely in the shader with smooth blending between hue stops defined as uniforms.
+```tsx
+import * as THREE from 'three';
+import React, { useEffect, useRef } from 'react';
+```
 
-## Key properties
+## Building the component
 
-- **colors** - Array of up to four hue stops to blend between
-- **speed** - Animation playback rate (default: 0.6)
-- **warpStrength** - How aggressively coordinates are distorted
-- **scale** - Zoom level of the color regions
+The shader lives in a GLSL string. The vertex shader is trivial, just a pass-through for UV coordinates. The fragment shader does the real work.
 
-## When to use it
+First, the coordinate setup. UV coordinates are centered and aspect-corrected, then rotated by the `uRot` uniform (a precomputed sin/cos pair):
 
-This component shines in hero backgrounds where you want bold, branded color without reaching for a static image. It is also a strong choice for loading screens or transitions where you need something visually interesting that does not compete with content.
+```glsl
+void main() {
+  float t = uTime * uSpeed;
+  vec2 p = vUv * 2.0 - 1.0;
+  p += uPointer * uParallax * 0.1;
+  vec2 rp = vec2(p.x * uRot.x - p.y * uRot.y, p.x * uRot.y + p.y * uRot.x);
+  vec2 q = vec2(rp.x * (uCanvas.x / uCanvas.y), rp.y);
+  q /= max(uScale, 0.0001);
+  q /= 0.5 + 0.2 * dot(q, q);
+  q += 0.2 * cos(t) - 7.56;
+```
 
-Match the color stops to your brand palette and dial back the warp strength for a more professional, less psychedelic result.
+The `q /= 0.5 + 0.2 * dot(q, q)` line is where the bending comes from. It computes a fisheye-style distortion based on distance from the center, making the coordinate space fold inward.
+
+Then each color layer is accumulated by iterating through the `uColors` array:
+
+```glsl
+for (int i = 0; i < MAX_COLORS; ++i) {
+  if (i >= uColorCount) break;
+  s -= 0.01;
+  vec2 r = sin(1.5 * (s.yx * uFrequency) + 2.0 * cos(s * uFrequency));
+  float m0 = length(r + sin(5.0 * r.y * uFrequency - 3.0 * t + float(i)) / 4.0);
+  float kBelow = clamp(uWarpStrength, 0.0, 1.0);
+  float kMix = pow(kBelow, 0.3);
+  float gain = 1.0 + max(uWarpStrength - 1.0, 0.0);
+  vec2 disp = (r - s) * kBelow;
+  vec2 warped = s + disp * gain;
+  float m1 = length(warped + sin(5.0 * warped.y * uFrequency - 3.0 * t + float(i)) / 4.0);
+  float m = mix(m0, m1, kMix);
+  float w = 1.0 - exp(-6.0 / exp(6.0 * m));
+  sumCol += uColors[i] * w;
+  cover = max(cover, w);
+}
+```
+
+The `w = 1.0 - exp(-6.0 / exp(6.0 * m))` is a smooth thresholding function. When `m` is small (near the color center), `w` approaches 1. When `m` is large, `w` falls off exponentially. Each color region bleeds naturally into its neighbors.
+
+In React, set up Three.js with an orthographic camera so the plane fills the screen:
+
+```tsx
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const geometry = new THREE.PlaneGeometry(2, 2);
+const material = new THREE.ShaderMaterial({
+  vertexShader: vert,
+  fragmentShader: frag,
+  uniforms: {
+    uCanvas: { value: new THREE.Vector2(1, 1) },
+    uTime: { value: 0 },
+    uColors: { value: uColorsArray },
+    uColorCount: { value: 0 },
+    uWarpStrength: { value: warpStrength },
+    // ... all other uniforms
+  },
+  transparent: true,
+});
+```
+
+Mouse pointer tracking sends a smoothed pointer position to the shader each frame:
+
+```tsx
+const amt = Math.min(1, dt * pointerSmoothRef.current);
+cur.lerp(tgt, amt);
+(material.uniforms.uPointer.value as THREE.Vector2).copy(cur);
+```
+
+## How to use it
+
+```tsx
+<div className="relative h-screen">
+  <ColorBends
+    colors={['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4']}
+    speed={0.2}
+    warpStrength={1}
+    frequency={1}
+    noise={0.05}
+  />
+  <div className="relative z-10">Your content</div>
+</div>
+```
+
+Pass an empty `colors` array to get the default RGB channel rendering, which generates a psychedelic but color-accurate output.
+
+## Key takeaways
+
+- The fisheye distortion `q /= 0.5 + 0.2 * dot(q, q)` bends the coordinate space before any color lookup, giving the effect its liquid quality.
+- `warpStrength` above 1 extrapolates the displacement rather than clamping it, which creates sharper folds for a more dramatic look.
+- Film grain via the `uNoise` uniform adds texture and prevents banding on gradients displayed on 8-bit monitors.

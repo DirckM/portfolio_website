@@ -6,28 +6,148 @@ category: "Blocks"
 componentSlug: "terminal"
 ---
 
-Developer tools live and die by their first impression, and nothing communicates "this is built for engineers" faster than a terminal. The Animated Terminal component lets you script a realistic command-line sequence that plays back automatically, making your product demo itself.
+Nothing communicates "built for engineers" faster than a terminal. The Terminal component lets you script a realistic command-line sequence that plays back automatically, character by character, making your product demo itself to every visitor without any interaction required.
 
-## What it does
+## What we are building
 
-The Terminal component renders a styled terminal window with a title bar, blinking cursor, and a configurable sequence of commands and responses. Each command types out character by character, then the output appears line by line. The whole sequence loops or stops at the end, depending on your configuration.
+A styled terminal window with a title bar, green command prompt, blinking cursor, and a fully async playback engine. Commands type out one character at a time. Output appears after each command runs. The whole sequence plays through once and stops at the last line.
 
-## How it works
+## Setting up
 
-The component works through a steps array, where each step is either a command or a block of output. Commands are typed using a character-by-character interval that simulates human typing speed. Output lines are printed with a shorter delay, giving the impression the terminal is responding.
+No external dependencies beyond React and Tailwind.
 
-A `useEffect` with cleanup handles the timing chain, clearing all intervals when the component unmounts so there are no memory leaks.
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
+```
 
-## Key properties
+## Building the component
 
-- **steps** - Array of step objects with type (`command` or `output`) and content
-- **typingSpeed** - Milliseconds per character for command typing (default: 50)
-- **outputDelay** - Milliseconds between each output line (default: 80)
-- **loop** - Whether to restart the sequence after it completes
-- **theme** - Color scheme preset (`dark`, `light`, or `dracula`)
+The history state holds an ordered list of entries. Each entry is either a command (with partial typing support) or a block of output lines:
 
-## When to use it
+```tsx
+type HistoryEntry =
+  | { type: 'command'; text: string; partial: boolean }
+  | { type: 'output'; lines: string[] };
+```
 
-The Animated Terminal works well on CLI tool landing pages, developer API documentation, or any product where the target audience is technical. Seeing a command run and produce output is more convincing than reading about what the tool does.
+The `partial` flag on command entries drives the blinking cursor. While `partial` is true, the cursor renders. When the character loop completes, `partial` flips to false.
 
-Keep the scripted sequence short, three to five commands is enough to make the point without losing attention.
+The entire playback runs inside an async function in `useEffect`. A `cancelled` flag handles cleanup when the component unmounts mid-sequence:
+
+```tsx
+const run = async () => {
+  await sleep(initialDelay);
+
+  for (let cmdIdx = 0; cmdIdx < commands.length; cmdIdx++) {
+    if (cancelled) break;
+    const cmd = commands[cmdIdx];
+
+    // Start with an empty partial command
+    setHistory(prev => [
+      ...prev,
+      { type: 'command', text: '', partial: true },
+    ]);
+
+    // Type characters one by one
+    for (let charIdx = 0; charIdx <= cmd.length; charIdx++) {
+      if (cancelled) break;
+      await sleep(typingSpeed);
+      setHistory(prev => {
+        const next = [...prev];
+        const last = next[next.length - 1];
+        if (last && last.type === 'command') {
+          next[next.length - 1] = {
+            type: 'command',
+            text: cmd.slice(0, charIdx),
+            partial: charIdx < cmd.length,
+          };
+        }
+        return next;
+      });
+    }
+```
+
+Updating state inside a `for` loop with `await` between each iteration is the cleanest way to animate a sequence in React without setting up a complex state machine. Each `await sleep(typingSpeed)` hands control back to the browser, lets a frame render, then resumes.
+
+The output lines appear after a short pause that simulates the command running:
+
+```tsx
+    if (cancelled) break;
+    await sleep(200);
+
+    const outputLines = outputs[cmdIdx];
+    if (outputLines && outputLines.length > 0) {
+      setHistory(prev => [...prev, { type: 'output', lines: outputLines }]);
+    }
+
+    await sleep(delayBetweenCommands);
+  }
+};
+
+run();
+return () => { cancelled = true; };
+```
+
+The cleanup function sets `cancelled = true`. Since the async loop checks this flag before every sleep and state update, it stops immediately when the component unmounts. No timeout IDs to track, no `clearTimeout` calls needed.
+
+Auto-scrolling keeps the latest output visible. A `ref` on an empty div at the bottom of the history list scrolls into view whenever history changes:
+
+```tsx
+useEffect(() => {
+  bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+}, [history]);
+```
+
+The render maps history entries to styled elements:
+
+```tsx
+{history.map((entry, i) => {
+  if (entry.type === 'command') {
+    return (
+      <div key={i} className='flex items-start gap-2 text-green-400'>
+        <span className='text-neutral-500 shrink-0'>{username}@local:~$</span>
+        <span>
+          {entry.text}
+          {entry.partial && (
+            <span className='animate-pulse ml-px border-r-2 border-green-400 h-4 inline-block' />
+          )}
+        </span>
+      </div>
+    );
+  }
+  return (
+    <div key={i} className='text-neutral-300 space-y-0.5'>
+      {entry.lines.map((line, j) => (
+        <div key={j} className='whitespace-pre-wrap'>{line || '\u00A0'}</div>
+      ))}
+    </div>
+  );
+})}
+```
+
+The `\u00A0` non-breaking space preserves empty lines in the output. A plain empty string collapses to nothing in the DOM.
+
+## How to use it
+
+```tsx
+<Terminal
+  commands={['npm install', 'npm run build', 'npm run dev']}
+  outputs={{
+    0: ['added 312 packages in 4.2s'],
+    1: ['> next build', '', 'compiled successfully'],
+    2: ['> next dev', '', 'ready - started server on http://localhost:3000'],
+  }}
+  username="user"
+  typingSpeed={50}
+  title="terminal"
+/>
+```
+
+The `outputs` object is keyed by command index. Commands with no output simply have no entry in the object.
+
+## Key takeaways
+
+- An async `for` loop with `await sleep()` is the simplest way to sequence timed state updates without managing multiple timeouts.
+- A `cancelled` flag checked before each `await` is a clean cancellation pattern that needs no cleanup beyond setting the flag to true.
+- The `partial` flag on the last command entry drives the blinking cursor without needing a separate cursor state variable.

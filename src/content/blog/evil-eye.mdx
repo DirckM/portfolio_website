@@ -1,33 +1,127 @@
 ---
 title: "Create an Evil Eye Background in React"
-description: "Animate a hypnotic iris that tracks the mouse and blinks, built with layered canvas drawing and trigonometry."
+description: "Animate a hypnotic iris that tracks the mouse and blinks, built with a WebGL shader and a procedural noise texture."
 date: "2026-04-07"
 category: "Backgrounds"
 componentSlug: "evil-eye"
 ---
 
-The eye is the most attention-grabbing shape the human brain knows. We are wired to notice it, track it, make eye contact with it. The Evil Eye component exploits that instinct deliberately, rendering an animated iris that feels like it is watching the viewer right back.
+The eye is the shape the human brain reacts to fastest. We notice eyes in noise, in clouds, in abstract patterns. EvilEye leans into that instinct deliberately, rendering a watching iris with a WebGL shader and a procedurally generated noise texture.
 
-## What it does
+## What we are building
 
-Evil Eye draws a detailed animated iris on a canvas background. The pupil tracks the mouse cursor in real time, rotating to follow as the user moves. The eye blinks on a randomized interval, and the iris pattern rotates slowly on its own, giving the whole thing an eerie, alive quality.
+A full-canvas eye rendered entirely in GLSL. The iris has flame-like texture from a noise texture sampled in polar coordinates. The pupil tracks the mouse with a smoothed follow. No SVG, no canvas 2D, just a fragment shader and a noise texture uploaded to the GPU.
 
-## How it works
+## Setting up
 
-The component listens to `mousemove` events and calculates the angle between the eye center and the cursor using `Math.atan2`. The pupil offset is clamped to stay within the iris, then the position is applied each frame via `requestAnimationFrame`.
+```bash
+npm install ogl
+```
 
-The iris itself is drawn with layered arcs, radial lines, and color fills that build up a believable eye texture. Blinking is implemented as a vertical scale animation that collapses the eye to a line and opens it back up.
+```tsx
+import { Renderer, Program, Mesh, Triangle, Texture } from 'ogl';
+import { useEffect, useRef } from 'react';
+```
 
-## Key properties
+## Building the component
 
-- **irisColor** - Base hue of the iris (default: deep amber)
-- **pupilSize** - Radius of the pupil relative to the iris
-- **blinkInterval** - Approximate time between blinks in milliseconds
-- **trackingStrength** - How far the pupil shifts toward the cursor
-- **size** - Diameter of the entire eye in pixels
+The noise texture is generated in JavaScript at startup. It builds fractional Brownian motion noise by combining eight octaves:
 
-## When to use it
+```tsx
+function generateNoiseTexture(size = 256): Uint8Array {
+  const data = new Uint8Array(size * size * 4);
 
-Evil Eye is a deliberate design choice. It suits projects with a dark, mystical, or unsettling theme. Think Halloween microsites, occult branding, or interactive art installations.
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      let v = 0;
+      let amp = 0.4;
+      let totalAmp = 0;
+      for (let o = 0; o < 8; o++) {
+        const f = 32 * (1 << o);
+        v += amp * noise(x, y, f, o * 31);
+        totalAmp += amp;
+        amp *= 0.65;
+      }
+      v /= totalAmp;
+      v = (v - 0.5) * 2.2 + 0.5;
+      v = Math.max(0, Math.min(1, v));
+      const val = Math.round(v * 255);
+      const i = (y * size + x) * 4;
+      data[i] = data[i + 1] = data[i + 2] = val;
+      data[i + 3] = 255;
+    }
+  }
 
-It is not subtle. Use it only when the tone of the page can carry the weight of a giant watching eye.
+  return data;
+}
+```
+
+The `1 << o` doubles the frequency each octave. Amplitude decays by 0.65 per octave so fine detail is subtler than coarse structure. The contrast stretch `(v - 0.5) * 2.2 + 0.5` pushes the values toward the extremes for a sharper noise look.
+
+The texture is uploaded once:
+
+```tsx
+const noiseTexture = new Texture(gl, {
+  image: noiseData,
+  width: 256,
+  height: 256,
+  generateMipmaps: false,
+  flipY: false,
+});
+noiseTexture.wrapS = gl.REPEAT;
+noiseTexture.wrapT = gl.REPEAT;
+```
+
+The fragment shader converts Cartesian UV coordinates to polar coordinates, then uses the polar UV to sample the noise texture at different scales and speeds:
+
+```glsl
+float polarRadius = length(uv) * 2.0;
+float polarAngle = (2.0 * atan(uv.x, uv.y)) / 6.28 * 0.3;
+vec2 polarUv = vec2(polarRadius, polarAngle);
+
+vec4 noiseA = texture2D(uNoiseTexture, polarUv * vec2(0.2, 7.0) * uNoiseScale + vec2(-ft * 0.1, 0.0));
+vec4 noiseB = texture2D(uNoiseTexture, polarUv * vec2(0.3, 4.0) * uNoiseScale + vec2(-ft * 0.2, 0.0));
+```
+
+The `polarUv * vec2(0.2, 7.0)` stretches the texture radially tight and angularly loose, creating the flame-like iris streaks. The time offset `ft * 0.1` scrolls the texture outward from the center continuously.
+
+The pupil position is offset by the mouse:
+
+```glsl
+vec2 pupilOffset = uMouse * uPupilFollow * 0.12;
+vec2 pupilUv = uv - pupilOffset;
+float pupil = 1.0 - length(pupilUv * vec2(9.0, 2.3));
+pupil *= uPupilSize;
+pupil = clamp(pupil, 0.0, 1.0);
+pupil /= 0.35;
+```
+
+The `vec2(9.0, 2.3)` stretch makes the pupil oval rather than round. Mouse smoothing in JavaScript lerps toward the target at 5% per frame:
+
+```tsx
+mouse.x += (mouse.tx - mouse.x) * 0.05;
+mouse.y += (mouse.ty - mouse.y) * 0.05;
+```
+
+## How to use it
+
+```tsx
+<div className="relative h-screen">
+  <EvilEye
+    eyeColor="#FF6F37"
+    intensity={1.5}
+    pupilSize={0.6}
+    irisWidth={0.25}
+    glowIntensity={0.35}
+    scale={0.8}
+    backgroundColor="#000000"
+  />
+  <div className="relative z-10">Your content</div>
+</div>
+```
+
+## Key takeaways
+
+- Generating the noise texture once in JavaScript and uploading it to the GPU is faster at runtime than computing noise per-pixel in the fragment shader.
+- Polar coordinate sampling of a tileable texture creates natural radial patterns. Stretching one axis more than the other shapes those patterns into streaks.
+- Lerping the mouse position at a fixed factor per frame (not per millisecond) gives a feel that is smooth but not laggy at standard frame rates.

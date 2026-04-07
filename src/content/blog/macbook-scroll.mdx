@@ -1,32 +1,125 @@
 ---
 title: "Build a MacBook Scroll Animation in React"
-description: "Create a scroll-driven animation where a MacBook opens and loads a screenshot as the user scrolls down the page."
+description: "Create a scroll-driven animation where a MacBook lid opens and reveals a screenshot as the user scrolls down the page."
 date: "2026-04-07"
 category: "Blocks"
 componentSlug: "macbook-scroll"
 ---
 
-Product screenshots are essential, but they are also boring. A static image on a white background does not inspire confidence. The MacBook Scroll component turns your screenshot into a reveal moment, letting users scroll into the product experience rather than just looking at a picture of it.
+Product screenshots are essential but often boring. A static image on a white background does not inspire confidence. MacbookScroll turns your screenshot into a reveal moment, letting the user scroll into the product experience rather than just looking at a picture of it.
 
-## What it does
+## What we are building
 
-MacBook Scroll shows a 3D-perspective laptop that starts closed at the top of the scroll trigger zone. As the user scrolls down, the lid opens progressively and reveals a screenshot inside the display. By the time the laptop is fully open, the screenshot is fully visible and the product speaks for itself.
+A scroll-driven 3D MacBook model built from plain HTML divs and CSS perspective transforms. As the user scrolls through the component's scroll container, the lid opens from -28 degrees to fully flat. The screenshot inside fades in and scales up simultaneously. No 3D library needed.
 
-## How it works
+## Setting up
 
-The component uses an Intersection Observer combined with a scroll event listener to calculate how far through the trigger zone the user has scrolled, expressed as a value from 0 to 1. This progress value drives the lid rotation angle (from closed to open) via a CSS custom property applied to a 3D-transformed element.
+```bash
+npm install framer-motion
+```
 
-The screenshot fades in as the lid approaches its fully open position, timed to match the animation so the reveal feels intentional.
+```tsx
+import { useRef, useEffect, useState } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+```
 
-## Key properties
+## Building the component
 
-- **screenshot** - URL of the image to display inside the laptop screen
-- **scrollRange** - Height of the scroll trigger zone in pixels (default: 800)
-- **lidAngle** - Maximum opening angle in degrees (default: 135)
-- **perspective** - CSS perspective value for the 3D scene
+The outer wrapper needs `min-h-[200vh]` to create enough scroll distance for the animation to play out comfortably:
 
-## When to use it
+```tsx
+<div
+  ref={ref}
+  className={`flex min-h-[200vh] flex-col items-center justify-start py-20 md:py-80 [perspective:800px] ${className}`}
+>
+```
 
-This is the go-to component for SaaS landing pages where showing the product in context is important. Place it after the hero with a strong heading above it and the product screenshot inside.
+The `[perspective:800px]` creates the 3D viewing cone. Without this, the CSS 3D transforms on child elements have no visible perspective effect.
 
-Make sure the screenshot is high resolution. It will be displayed prominently and a blurry image will undercut the whole effect.
+`useScroll` with a target ref tracks how far through the element's scroll the user is:
+
+```tsx
+const { scrollYProgress } = useScroll({
+  target: ref,
+  offset: ['start start', 'end start'],
+});
+```
+
+`offset: ['start start', 'end start']` means progress goes from 0 when the element's top aligns with the viewport top, to 1 when the element's bottom reaches the viewport top. That covers the full 200vh scroll range.
+
+Transform scroll progress into animated values:
+
+```tsx
+const scaleX = useTransform(scrollYProgress, [0, 0.3], [1.2, isMobile ? 1 : 1.5]);
+const scaleY = useTransform(scrollYProgress, [0, 0.3], [0.6, isMobile ? 1 : 1.5]);
+const rotate = useTransform(scrollYProgress, [0.1, 0.12, 0.3], [-28, -28, 0]);
+const textOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+```
+
+The lid rotation uses three keypoints: hold at -28 degrees until 10% scrolled, then open to 0 by 30%. The slight delay before opening builds anticipation.
+
+The MacBook body is built from two stacked divs. The bottom half (keyboard/trackpad area) is static:
+
+```tsx
+<div className='relative [perspective:800px]'>
+  <div
+    style={{
+      transform: 'perspective(800px) rotateX(-25deg) translateZ(0px)',
+      transformOrigin: 'bottom',
+      transformStyle: 'preserve-3d',
+    }}
+    className='relative h-[12rem] w-[32rem] rounded-2xl bg-[#010101] p-2'
+  >
+    <div style={{ boxShadow: '0px 2px 0px 2px #171717 inset' }}
+      className='absolute inset-0 flex items-center justify-center rounded-lg bg-[#010101]'>
+      <span className='text-white text-sm font-medium'>DM</span>
+    </div>
+  </div>
+```
+
+The screen lid is a `motion.div` that shares the same origin. Its `scaleX`, `scaleY`, and `rotateX` animate from the scroll-driven values:
+
+```tsx
+  <motion.div
+    style={{
+      scaleX,
+      scaleY,
+      rotateX: rotate,
+      transformStyle: 'preserve-3d',
+      transformOrigin: 'top',
+    }}
+    className='absolute inset-0 h-96 w-[32rem] rounded-2xl bg-[#010101] p-2'
+  >
+    <div className='absolute inset-0 rounded-lg bg-[#272729]' />
+    <img
+      src={src}
+      alt='screen content'
+      className='absolute inset-0 h-full w-full rounded-lg object-cover object-left-top'
+    />
+  </motion.div>
+</div>
+```
+
+`transformOrigin: 'top'` is critical. Without it, the lid scales and rotates around its center, which looks wrong. The hinge needs to be at the top edge of the lid.
+
+The `scaleY` starting at 0.6 makes the closed lid look flat and thin, like a real laptop screen seen from a steep angle. As it opens, `scaleY` reaches 1.5, which exaggerates the open angle for visual drama on desktop.
+
+Mobile detection adjusts the target scale values to prevent the lid from appearing comically oversized on small screens.
+
+## How to use it
+
+```tsx
+<MacbookScroll
+  src="/screenshot.png"
+  title="See it in action"
+  showGradient={true}
+/>
+```
+
+The `showGradient` prop fades the bottom of the keyboard area to white, which blends cleanly into a white page background below the component.
+
+## Key takeaways
+
+- `useScroll` with `offset: ['start start', 'end start']` tracks a component's entire scroll distance through the viewport with one hook call.
+- `transformOrigin: 'top'` on the lid makes rotation pivot from the hinge rather than the center.
+- Using three keypoints in `useTransform` (hold then move) lets you build deliberate timing into scroll animations without `useSpring` or `useAnimate`.

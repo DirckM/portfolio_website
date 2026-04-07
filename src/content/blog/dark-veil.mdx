@@ -1,33 +1,121 @@
 ---
 title: "Create a Dark Veil Background in React"
-description: "Render an animated neural network of glowing nodes and connecting lines that pulse and shift, creating a dark, technical atmosphere."
+description: "Render an animated neural-network CPPN pattern with scanlines and hue shift, powered by a WebGL fragment shader."
 date: "2026-04-07"
 category: "Backgrounds"
 componentSlug: "dark-veil"
 ---
 
-Some pages need to feel smart. Technical. Like something important is happening underneath. The Dark Veil component draws that impression literally, with an animated network of nodes and connections that evokes data, intelligence, and depth.
+Some pages need to feel like something is happening deep inside them. Dark Veil uses a CPPN (Compositional Pattern Producing Network) fragment shader to generate an organic, ever-shifting pattern from hardcoded neural network weights baked directly into the GLSL code.
 
-## What it does
+## What we are building
 
-Dark Veil animates a neural network-style pattern across a dark canvas. Nodes drift slowly across the space and draw connections to their nearest neighbors. The connections fade with distance, and nodes pulse gently over time, giving the whole thing an organic heartbeat.
+A full-canvas WebGL background that runs a mini neural network per pixel to produce continuously evolving abstract imagery. On top of that, optional scanlines, film grain, and hue shifting let you dial in the exact mood you want.
 
-## How it works
+## Setting up
 
-The component spawns a configurable number of particles, each with a random position and velocity. Every frame, it updates positions, bounces particles off edges, then draws connection lines between any two particles within a proximity threshold. Line opacity is proportional to proximity, so connections fade in as nodes approach and fade out as they drift apart.
+```bash
+npm install ogl
+```
 
-Everything runs on a 2D canvas with `requestAnimationFrame`, keeping it smooth and performant even at high particle counts.
+```tsx
+import { Renderer, Program, Mesh, Triangle, Vec2 } from 'ogl';
+import { useRef, useEffect } from 'react';
+```
 
-## Key properties
+## Building the component
 
-- **particleCount** - Number of nodes in the network (default: 80)
-- **connectionDistance** - Maximum distance for drawing a connection line
-- **nodeColor** - Fill color for the node circles
-- **lineColor** - Stroke color for the connection lines
-- **speed** - Base velocity multiplier for particle movement
+The GLSL fragment shader contains the neural network. It uses eight `vec4` buffers to pass activations between layers. Each layer is a hardcoded matrix multiplication followed by a sigmoid activation:
 
-## When to use it
+```glsl
+buf[0] = mat4(...) * buf[6] + mat4(...) * buf[7] + vec4(...);
+buf[1] = mat4(...) * buf[6] + mat4(...) * buf[7] + vec4(...);
+buf[0] = sigmoid(buf[0]);
+buf[1] = sigmoid(buf[1]);
+```
 
-Dark Veil is ideal for tech product landing pages, AI-related projects, or anything that wants to communicate complexity and intelligence. It works best on very dark backgrounds where the glowing nodes stand out clearly.
+The input to the network is the pixel's UV coordinate plus three slowly oscillating time values:
 
-Keep node count reasonable (60-120) to avoid visual noise. More particles do not always mean more impact.
+```glsl
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  vec2 uv = fragCoord / uResolution.xy * 2.0 - 1.0;
+  uv.y *= -1.0;
+  uv += uWarp * vec2(sin(uv.y * 6.283 + uTime * 0.5), cos(uv.x * 6.283 + uTime * 0.5)) * 0.05;
+  fragColor = cppn_fn(uv, 0.1 * sin(0.3 * uTime), 0.1 * sin(0.69 * uTime), 0.1 * sin(0.44 * uTime));
+}
+```
+
+The three `sin` inputs at different frequencies are what drive the animation. As time progresses, the network receives slightly different inputs, causing the pattern to morph.
+
+After the CPPN output, two post-processing passes run:
+
+```glsl
+// Hue shift in YIQ color space
+col.rgb = hueShiftRGB(col.rgb, uHueShift);
+
+// Scanlines
+float scanline_val = sin(gl_FragCoord.y * uScanFreq) * 0.5 + 0.5;
+col.rgb *= 1.0 - (scanline_val * scanline_val) * uScan;
+
+// Film grain
+col.rgb += (rand(gl_FragCoord.xy + uTime) - 0.5) * uNoise;
+gl_FragColor = vec4(clamp(col.rgb, 0.0, 1.0), 1.0);
+```
+
+Hue shift uses YIQ color space so rotation preserves luminance. The scanline multiply darkens alternating rows. Film grain adds random noise per frame to give the output that analog texture.
+
+In React, set up the OGL renderer and update uniforms each frame:
+
+```tsx
+const renderer = new Renderer({
+  dpr: Math.min(window.devicePixelRatio, 2),
+  canvas,
+});
+const gl = renderer.gl;
+const geometry = new Triangle(gl);
+const program = new Program(gl, {
+  vertex,
+  fragment,
+  uniforms: {
+    uTime: { value: 0 },
+    uResolution: { value: new Vec2() },
+    uHueShift: { value: hueShift },
+    uNoise: { value: noiseIntensity },
+    uScan: { value: scanlineIntensity },
+    uScanFreq: { value: scanlineFrequency },
+    uWarp: { value: warpAmount },
+  },
+});
+
+const loop = () => {
+  program.uniforms.uTime.value = ((performance.now() - start) / 1000) * speed;
+  renderer.render({ scene: mesh });
+  frame = requestAnimationFrame(loop);
+};
+```
+
+Notice that uniforms are also updated inside the loop on each frame. This makes prop changes react immediately without needing to recreate the program.
+
+## How to use it
+
+```tsx
+<div className="relative h-screen">
+  <DarkVeil
+    speed={0.5}
+    hueShift={0}
+    noiseIntensity={0.02}
+    scanlineIntensity={0.1}
+    scanlineFrequency={800}
+    warpAmount={0.3}
+  />
+  <div className="relative z-10">Your content</div>
+</div>
+```
+
+Set `hueShift` to 180 to invert the color palette entirely. Pair `scanlineIntensity` with `scanlineFrequency` around 400 for a visible CRT look.
+
+## Key takeaways
+
+- A CPPN generates complex imagery from nothing. The neural network weights are baked into the GLSL, so there is zero runtime overhead for computing them in JavaScript.
+- Driving animation by feeding oscillating `sin` values into the network inputs means the pattern loops gently without sharp transitions.
+- YIQ hue rotation keeps luminance constant during hue shifts, so the pattern stays readable at any hue value.

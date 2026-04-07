@@ -1,30 +1,125 @@
 ---
 title: "Create Parallax Floating Images in React"
-description: "Build a collection of images that shift at different depths in response to mouse movement, creating a convincing 3D parallax effect."
+description: "Build a collection of elements that shift at different depths in response to mouse movement, creating a convincing 3D parallax effect."
 date: "2026-04-07"
 category: "Blocks"
 componentSlug: "parallax-floating"
 ---
 
-Depth is hard to achieve on a flat screen, but parallax is one of the oldest tricks for faking it. When objects move at different rates relative to the mouse, the brain interprets them as sitting at different distances. Parallax Floating Images turns that illusion into a ready-to-use React component.
+Depth is hard to achieve on a flat screen, but parallax is one of the oldest tricks for faking it. When objects move at different rates relative to the mouse, the brain interprets them as sitting at different distances. The ParallaxFloating component exposes this illusion through a clean context-based API.
 
-## What it does
+## What we are building
 
-Parallax Floating Images renders a group of images at different visual depths. As the mouse moves across the container, each image shifts by a different amount based on its assigned depth layer. Images at deeper layers move less, while surface-layer images shift more, reinforcing the sense of three-dimensional space.
+A `Floating` container that tracks mouse position and a `FloatingElement` child that registers itself with a depth value. The container drives all elements' transforms in a single `useAnimationFrame` loop. No prop drilling, no per-element event listeners.
 
-## How it works
+## Setting up
 
-The component tracks mouse position relative to the container using an `onMouseMove` handler and calculates a normalized offset between -1 and 1 on each axis. Each image is assigned a depth value, and its CSS `transform: translate` is multiplied by that depth times a maximum shift distance. The transforms are applied with a CSS transition for smooth interpolation rather than frame-by-frame updates.
+```bash
+npm install motion
+```
 
-## Key properties
+```tsx
+import { createContext, useCallback, useContext, useEffect, useRef } from 'react';
+import { useAnimationFrame } from 'motion/react';
+```
 
-- **images** - Array of image sources with an associated depth value (0 to 1)
-- **maxShift** - Maximum pixel offset at depth 1 (default: 30px)
-- **easing** - CSS transition timing function for smoothing (default: ease-out)
-- **resetOnLeave** - Whether elements return to center when the mouse exits
+## Building the component
 
-## When to use it
+Start with a custom hook that tracks the mouse position in a ref. Using a ref rather than state means position updates never trigger re-renders:
 
-This component works well for hero sections with product screenshots, team photos layered with abstract shapes, or any section where you have multiple visual elements and want to add tactile depth.
+```tsx
+function useMousePositionRef(containerRef?: RefObject<HTMLElement | SVGElement | null>) {
+  const positionRef = useRef({ x: 0, y: 0 });
 
-Three to five layers is the sweet spot. More than that and the effect becomes busy rather than immersive.
+  useEffect(() => {
+    const updatePosition = (x: number, y: number) => {
+      if (containerRef && containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        positionRef.current = { x: x - rect.left, y: y - rect.top };
+      } else {
+        positionRef.current = { x, y };
+      }
+    };
+
+    const handleMouseMove = (ev: MouseEvent) =>
+      updatePosition(ev.clientX, ev.clientY);
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [containerRef]);
+
+  return positionRef;
+}
+```
+
+When a `containerRef` is provided, positions are relative to the container. Without one, they use absolute page coordinates. This is what lets the effect work correctly when the container is not at the page origin.
+
+The `FloatingContext` provides `registerElement` and `unregisterElement` methods:
+
+```tsx
+const FloatingContext = createContext<FloatingContextType | null>(null);
+```
+
+The `Floating` container maintains a map of registered elements. The animation loop runs through each registered element and updates its transform:
+
+```tsx
+useAnimationFrame(() => {
+  if (!containerRef.current) return;
+
+  elementsMap.current.forEach(data => {
+    const strength = (data.depth * sensitivity) / 20;
+
+    const newTargetX = mousePositionRef.current.x * strength;
+    const newTargetY = mousePositionRef.current.y * strength;
+
+    const dx = newTargetX - data.currentPosition.x;
+    const dy = newTargetY - data.currentPosition.y;
+
+    data.currentPosition.x += dx * easingFactor;
+    data.currentPosition.y += dy * easingFactor;
+
+    data.element.style.transform = `translate3d(${data.currentPosition.x}px, ${data.currentPosition.y}px, 0)`;
+  });
+});
+```
+
+The easing is a simple exponential approach: multiply the gap between current and target by `easingFactor` each frame. With `easingFactor = 0.05`, you close 5% of the remaining gap per frame. That gives a smooth, never-quite-arriving feel.
+
+`translate3d` forces GPU compositing so the transform does not trigger layout or paint. The `will-change-transform` class on `FloatingElement` hints to the browser to promote the element to its own layer upfront.
+
+The `FloatingElement` component registers itself on mount and unregisters on unmount:
+
+```tsx
+useEffect(() => {
+  if (!elementRef.current || !context) return;
+  const nonNullDepth = depth ?? 0.01;
+  context.registerElement(idRef.current, elementRef.current, nonNullDepth);
+  return () => context.unregisterElement(idRef.current);
+}, [depth]);
+```
+
+A random `idRef` is generated on mount so multiple instances never collide in the map.
+
+## How to use it
+
+```tsx
+<Floating sensitivity={1} easingFactor={0.05} className="w-full h-96">
+  <FloatingElement depth={0.5} className="top-1/4 left-1/4">
+    <img src="/photo-1.jpg" className="w-32 rounded-xl" />
+  </FloatingElement>
+  <FloatingElement depth={2} className="top-1/2 right-1/4">
+    <img src="/photo-2.jpg" className="w-24 rounded-xl" />
+  </FloatingElement>
+  <FloatingElement depth={0.2} className="bottom-1/4 left-1/2">
+    <img src="/photo-3.jpg" className="w-40 rounded-xl" />
+  </FloatingElement>
+</Floating>
+```
+
+Higher `depth` values move more aggressively. Depth 0.2 gives a subtle ambient drift while depth 3 creates exaggerated foreground movement.
+
+## Key takeaways
+
+- Storing mouse position and element transforms in refs keeps the animation loop entirely outside of React's render cycle.
+- A context-based registration pattern lets child elements opt in to the parallax effect without any prop plumbing through intermediate components.
+- Exponential approach (`position += gap * factor`) is the simplest possible spring that requires no velocity tracking and always converges.

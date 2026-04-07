@@ -6,28 +6,122 @@ category: "Backgrounds"
 componentSlug: "light-pillar"
 ---
 
-Volumetric light is one of those effects that makes people stop scrolling. When it is done well, it feels physical, like the light is actually occupying the space. The Light Pillar component achieves this in the browser with a raymarching shader, no 3D engine required.
+Volumetric light is one of those effects that makes people stop scrolling. It looks physical, like the light is actually occupying space. LightPillar achieves this in the browser with a raymarching fragment shader built on Three.js. No 3D models, no textures, just math.
 
-## What it does
+## What we are building
 
-Light Pillar renders a glowing, vertical beam of light that rises from the bottom of the canvas and softens into the background at the top. The beam has visible density variation that shifts over time, giving it the appearance of foggy, atmospheric light.
+A glowing vertical beam of light that rises from the base of the canvas and softens at the top. The beam has animated density variation, a color gradient from bottom to top, and an optional mouse-interactive rotation.
 
-## How it works
+## Setting up
 
-The fragment shader uses raymarching to simulate volumetric scattering. For each pixel, a ray is marched through a virtual scene and samples are accumulated along the beam volume. A noise function adds density variation, and a `uTime` uniform animates those variations so the glow shifts and pulses slowly.
+```bash
+npm install three
+```
 
-The final color accumulates based on sample density and the beam's falloff function, producing a soft, convincing glow without any 3D geometry.
+```tsx
+import * as THREE from 'three';
+import React, { useRef, useEffect, useState } from 'react';
+```
 
-## Key properties
+## Building the component
 
-- **color** - The primary hue of the light beam as an RGB vector
-- **intensity** - Brightness of the glow at the beam center
-- **width** - Angular width of the pillar
-- **speed** - How quickly the internal density noise animates
-- **height** - How high the beam extends before fading out
+The component generates the fragment shader dynamically, injecting quality settings as GLSL constants:
 
-## When to use it
+```tsx
+const settings = qualitySettings[quality];
+const fragmentShader = `
+  // ...
+  const int ITERATIONS = ${settings.iterations};
+  const int WAVE_ITERATIONS = ${settings.waveIterations};
+  const float STEP_MULT = ${settings.stepMultiplier.toFixed(1)};
+  // ...
+`;
+```
 
-This component makes a strong statement in hero sections where you want a single dramatic focal point. It works well centered on the page with a title or CTA placed in or above the beam.
+This sidesteps the GLSL limitation of not allowing loop bounds to be runtime values. By injecting the constant at compile time, the GPU can unroll the loop efficiently.
 
-Use it sparingly, one pillar per view at most. Its power comes from being the only dramatic element on the screen.
+The raymarching loop is the heart of the effect. For each pixel, a ray is marched from a virtual camera position:
+
+```glsl
+for(int i = 0; i < ITERATIONS; i++) {
+  vec3 pos = origin + direction * depth;
+
+  // Rotate position around Y axis
+  float newX = pos.x * rotCos - pos.z * rotSin;
+  float newZ = pos.x * rotSin + pos.z * rotCos;
+  pos.x = newX;
+  pos.z = newZ;
+
+  vec3 deformed = pos;
+  deformed.y *= uPillarHeight;
+  deformed = deformed + vec3(0.0, uTime, 0.0);
+
+  // Apply wave octaves
+  for(int j = 0; j < WAVE_ITERATIONS; j++) {
+    vec3 oscillation = cos(deformed.zxy * frequency - phase);
+    deformed += oscillation * amplitude;
+    frequency *= 2.0;
+    amplitude *= 0.5;
+  }
+
+  float fieldDistance = length(cosinePair) - 0.2;
+  float radialBound = length(pos.xz) - uPillarWidth;
+
+  // Smooth union of field and radial bounds
+  float k = 4.0;
+  float h = max(k - abs(-radialBound - (-fieldDistance)), 0.0);
+  fieldDistance = -(min(-radialBound, -fieldDistance) - h * h * 0.25 / k);
+```
+
+The smooth union `h * h * 0.25 / k` blends the pillar's cylindrical boundary with the wave field, creating the organic edges. Each step accumulates color based on the current gradient and field proximity:
+
+```glsl
+vec3 gradient = mix(uBottomColor, uTopColor, smoothstep(15.0, -15.0, pos.y));
+color += gradient / fieldDistance;
+```
+
+Dividing by `fieldDistance` is the key: small distances (near the surface) contribute large color values, and large distances contribute almost nothing. This naturally creates the glow falloff.
+
+After raymarching, the accumulated color is compressed with `tanh` to keep it in a displayable range:
+
+```glsl
+color = tanh(color * uGlowAmount / widthNormalization);
+```
+
+The Three.js setup uses separate `useEffect` hooks for initialization and prop updates, so changing colors or intensity does not tear down and rebuild the WebGL context:
+
+```tsx
+useEffect(() => {
+  // One-time setup: renderer, geometry, material
+}, [webGLSupported, quality]);
+
+useEffect(() => {
+  if (!materialRef.current) return;
+  materialRef.current.uniforms.uTopColor.value = parseColor(topColor);
+}, [topColor]);
+```
+
+## How to use it
+
+```tsx
+<div className="relative h-screen bg-black">
+  <LightPillar
+    topColor="#5227FF"
+    bottomColor="#FF9FFC"
+    intensity={1.0}
+    rotationSpeed={0.3}
+    pillarWidth={3.0}
+    glowAmount={0.005}
+    mixBlendMode="screen"
+  />
+  <div className="relative z-10">Your content</div>
+</div>
+```
+
+The `mixBlendMode="screen"` style keeps dark areas transparent when compositing over a dark background.
+
+## Key takeaways
+
+- Injecting loop counts as GLSL compile-time constants via template literals gives you quality presets without runtime branching overhead.
+- The smooth union operation blends two signed distance fields so the pillar boundary feels organic rather than hard-edged.
+- Separating init and update into multiple `useEffect` hooks lets you change props without destroying the WebGL context.

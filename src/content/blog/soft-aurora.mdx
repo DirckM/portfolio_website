@@ -6,28 +6,143 @@ category: "Backgrounds"
 componentSlug: "soft-aurora"
 ---
 
-The aurora borealis is one of nature's most dramatic light shows. Bringing that energy to a web background sounds impossible until you realize a fragment shader can approximate it beautifully. The Soft Aurora component does exactly that with a tiny WebGL program.
+The aurora borealis is one of nature's most dramatic light shows. Recreating it in a browser sounds ambitious until you discover that a short fragment shader can approximate it beautifully. SoftAurora does exactly this with a few hundred lines of GLSL and the OGL library for WebGL setup.
 
-## What it does
+## What we are building
 
-Soft Aurora renders a full-canvas WebGL background with slowly shifting bands of color that blend and pulse organically. The colors flow from cool blues and greens into purples and pinks, mimicking the shifting curtains of light you would see in the Arctic sky.
+A full-canvas WebGL background with slowly shifting bands of color that blend and pulse organically. Two color layers stack on top of each other, driven by layered Perlin noise. Mouse movement optionally shifts the entire scene.
 
-## How it works
+## Setting up
 
-The component sets up a WebGL context on a canvas element and compiles a custom fragment shader. The shader uses layered noise functions with time-varying offsets to produce smooth, organic color regions. A `requestAnimationFrame` loop feeds a `uTime` uniform into the shader each frame, which drives the animation.
+Install the OGL rendering library:
 
-The math is all GPU-side, so the CPU cost is minimal regardless of canvas size.
+```bash
+npm install ogl
+```
 
-## Key properties
+Import what you need:
 
-- **speed** - Controls how fast the aurora shifts (default: 0.4)
-- **colorA** - Primary hue as an RGB vector (default: teal-blue)
-- **colorB** - Secondary hue blended into the animation
-- **intensity** - Brightness multiplier for the light bands
-- **blur** - Additional softness applied to transitions
+```tsx
+import { Renderer, Program, Mesh, Triangle } from 'ogl';
+import { useEffect, useRef } from 'react';
+```
 
-## When to use it
+A helper converts hex colors to the `[r, g, b]` float triples the shader expects:
 
-Aurora backgrounds work best on pages that want to feel atmospheric and premium. Think SaaS landing pages, portfolio hero sections, or dark-mode product showcases.
+```tsx
+function hexToVec3(hex: string): [number, number, number] {
+  const h = hex.replace('#', '');
+  return [
+    parseInt(h.slice(0, 2), 16) / 255,
+    parseInt(h.slice(2, 4), 16) / 255,
+    parseInt(h.slice(4, 6), 16) / 255,
+  ];
+}
+```
 
-Avoid combining it with too many animated foreground elements. The background already moves, and competing motion will feel chaotic.
+## Building the component
+
+The vertex shader is minimal. OGL's `Triangle` geometry fills the screen with a single triangle, so the vertex shader just passes UV coordinates through:
+
+```glsl
+attribute vec2 uv;
+attribute vec2 position;
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position, 0, 1);
+}
+```
+
+The fragment shader is where the effect lives. The aurora shape comes from a `auroraGlow` function that samples layered Perlin noise and applies a band mask:
+
+```glsl
+float auroraGlow(float t, vec2 shift) {
+  vec2 uv = gl_FragCoord.xy / uResolution.y;
+  uv += shift;
+
+  float noiseVal = 0.0;
+  float freq = uNoiseFreq;
+  float amp = uNoiseAmp;
+  vec2 samplePos = uv * uScale;
+
+  for (float i = 0.0; i < 3.0; i += 1.0) {
+    noiseVal += perlin3D(amp, freq, samplePos.x, samplePos.y, t);
+    amp *= uOctaveDecay;
+    freq *= 2.0;
+  }
+
+  float yBand = uv.y * 10.0 - uBandHeight * 10.0;
+  return 0.3 * max(exp(uBandSpread * (1.0 - 1.1 * abs(noiseVal + yBand))), 0.0);
+}
+```
+
+The loop runs three octaves of noise. Each octave doubles the frequency and halves the amplitude (controlled by `uOctaveDecay`), building up fine detail on top of the broad shape. The `yBand` term pins the glow to a horizontal band in the image.
+
+The main function composites two aurora layers with cosine gradient colors:
+
+```glsl
+vec3 col = vec3(0.0);
+col += 0.99 * auroraGlow(t, shift) * cosineGradient(...) * uColor1;
+col += 0.99 * auroraGlow(t + uLayerOffset, shift) * cosineGradient(...) * uColor2;
+col *= uBrightness;
+float alpha = clamp(length(col), 0.0, 1.0);
+gl_FragColor = vec4(col, alpha);
+```
+
+Alpha is derived from brightness rather than set to 1, so dark areas are transparent. That lets the component layer over page backgrounds cleanly.
+
+In React, set up the renderer inside a `useEffect` and run the animation loop:
+
+```tsx
+const renderer = new Renderer({ alpha: true, premultipliedAlpha: false });
+const gl = renderer.gl;
+gl.clearColor(0, 0, 0, 0);
+
+const geometry = new Triangle(gl);
+const program = new Program(gl, {
+  vertex: vertexShader,
+  fragment: fragmentShader,
+  uniforms: {
+    uTime: { value: 0 },
+    uColor1: { value: hexToVec3(color1) },
+    uColor2: { value: hexToVec3(color2) },
+    // ... all other uniforms
+  },
+});
+
+function update(time: number) {
+  animationFrameId = requestAnimationFrame(update);
+  program.uniforms.uTime.value = time * 0.001;
+  renderer.render({ scene: mesh });
+}
+animationFrameId = requestAnimationFrame(update);
+```
+
+Mouse tracking uses a target and current position with lerp smoothing, so the aurora drifts toward the cursor rather than snapping:
+
+```tsx
+currentMouse[0] += 0.05 * (targetMouse[0] - currentMouse[0]);
+currentMouse[1] += 0.05 * (targetMouse[1] - currentMouse[1]);
+```
+
+## How to use it
+
+```tsx
+<div className="relative h-screen bg-black">
+  <SoftAurora
+    color1="#f7f7f7"
+    color2="#e100ff"
+    speed={0.6}
+    brightness={1.0}
+    enableMouseInteraction={true}
+  />
+  <div className="relative z-10">Your content</div>
+</div>
+```
+
+## Key takeaways
+
+- Layered Perlin noise (three octaves) produces organic movement that no single sine wave could match.
+- Using `alpha = clamp(length(col), 0)` lets dark regions stay transparent, making the component composable over any background.
+- The `uLayerOffset` uniform staggers the two aurora layers in time so they move independently.

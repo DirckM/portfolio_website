@@ -6,28 +6,121 @@ category: "Blocks"
 componentSlug: "marquee-svg-path"
 ---
 
-A straight marquee is fine. A marquee that follows a curve is something you actually remember. The Marquee SVG Path component lets you define any path, then sends your content flowing along it in a smooth, continuous loop.
+A straight marquee is fine. A marquee that follows a curve is something you actually remember. MarqueeAlongSvgPath lets you define any SVG path, then sends your content flowing along it in a smooth, continuous loop with scroll-awareness, drag support, and configurable easing.
 
-## What it does
+## What we are building
 
-Marquee SVG Path distributes elements evenly along a custom SVG path and animates them so they travel along the curve continuously. The items maintain their tangent orientation as they move, rotating to follow the direction of the path at each point. The loop is seamless.
+A component that distributes child elements evenly along a custom SVG path and animates them so they travel along the curve. It uses the CSS `offset-path` property to position elements and Framer Motion's `useAnimationFrame` to drive the offset. Optional scroll velocity and drag input feed directly into the animation speed.
 
-## How it works
+## Setting up
 
-The component uses the SVG `getTotalLength` and `getPointAtLength` APIs to measure the path and sample positions along it. Each element is placed at its calculated position using CSS `transform: translate` combined with a rotation derived from the tangent angle at that point.
+```bash
+npm install motion
+```
 
-An animation loop increments a shared offset value each frame. All elements sample their new position from `(baseOffset + itemOffset) % pathLength`, wrapping seamlessly at the end.
+```tsx
+import {
+  motion,
+  useAnimationFrame,
+  useMotionValue,
+  useScroll,
+  useSpring,
+  useTransform,
+  useVelocity,
+} from 'motion/react';
+```
 
-## Key properties
+## Building the component
 
-- **path** - The SVG `d` attribute string defining the curve
-- **items** - Array of React nodes to place along the path
-- **speed** - Pixels advanced along the path per frame
-- **gap** - Spacing between items in path-length units
-- **rotate** - Whether items should rotate to follow the path tangent
+The core data structure multiplies children across a `repeat` count to fill the path. Each item gets an `itemIndex` that positions it evenly:
 
-## When to use it
+```tsx
+const items = React.useMemo(() => {
+  const childrenArray = React.Children.toArray(children);
+  return childrenArray.flatMap((child, childIndex) =>
+    Array.from({ length: repeat }, (_, repeatIndex) => {
+      const itemIndex = repeatIndex * childrenArray.length + childIndex;
+      const key = `${childIndex}-${repeatIndex}`;
+      return { child, childIndex, repeatIndex, itemIndex, key };
+    })
+  );
+}, [children, repeat]);
+```
 
-This component is ideal for circular marquees (sending logos around a ring), wave-shaped text flows, or any decorative layout where you want motion that follows a deliberate shape rather than a straight line.
+With `repeat={3}` and three children, you get nine items total. This gives the loop enough density to fill the path without any visible gaps as items wrap around.
 
-Define your path in an SVG editor first, then paste the `d` string in. Freehand curves work just as well as geometric ones.
+Each item becomes a `MarqueeItem` component. The item's offset distance is a derived value from the shared `baseOffset` motion value:
+
+```tsx
+const itemOffset = useTransform(baseOffset, v => {
+  const position = (itemIndex * 100) / totalItems;
+  const wrappedValue = wrap(0, 100, v + position);
+  return `${easing ? easing(wrappedValue / 100) * 100 : wrappedValue}%`;
+});
+```
+
+The `wrap` utility ensures the value wraps cleanly between 0 and 100 percent. The `easing` callback lets you map the linear progress to a non-linear position, which creates interesting clustering effects.
+
+The CSS `offset-path` property handles the actual curve positioning:
+
+```tsx
+<motion.div
+  style={{
+    offsetPath: `path('${path}')`,
+    offsetDistance: itemOffset,
+    willChange: 'offset-distance',
+  }}
+>
+  {child}
+</motion.div>
+```
+
+The browser automatically handles tangent rotation when `offset-rotate` is not overridden, so elements face the direction of travel along the curve.
+
+The animation loop uses `useAnimationFrame` to advance `baseOffset` each frame:
+
+```tsx
+useAnimationFrame((_, delta) => {
+  let moveBy =
+    directionFactor.current *
+    baseVelocity *
+    (delta / 1000) *
+    smoothHoverFactor.get();
+
+  if (scrollAwareDirection && !isDragging.current) {
+    if (velocityFactor.get() < 0) directionFactor.current = -1;
+    else if (velocityFactor.get() > 0) directionFactor.current = 1;
+  }
+
+  moveBy += directionFactor.current * moveBy * velocityFactor.get();
+  baseOffset.set(baseOffset.get() + moveBy);
+});
+```
+
+Delta time (`delta / 1000`) normalizes the speed so it is consistent regardless of frame rate. Multiplying by `velocityFactor` from a scroll spring adds natural acceleration when the page is scrolled quickly.
+
+## How to use it
+
+```tsx
+<MarqueeAlongSvgPath
+  path="M 10 80 Q 95 10 180 80 T 350 80"
+  viewBox="0 0 360 100"
+  width="100%"
+  height={100}
+  baseVelocity={5}
+  slowdownOnHover
+  repeat={4}
+>
+  <span className="px-4 py-1 bg-neutral-800 rounded-full text-sm">React</span>
+  <span className="px-4 py-1 bg-neutral-800 rounded-full text-sm">TypeScript</span>
+  <span className="px-4 py-1 bg-neutral-800 rounded-full text-sm">WebGL</span>
+</MarqueeAlongSvgPath>
+```
+
+Set `showPath={true}` during development to see the path your elements are following.
+
+## Key takeaways
+
+- CSS `offset-path` with a path string is all you need for curved element motion. No trigonometry in JavaScript.
+- Multiplying children across a `repeat` count is simpler than computing path length and filling it dynamically.
+- Delta-time normalization (`delta / 1000`) keeps the animation speed consistent whether the browser is running at 30fps or 120fps.

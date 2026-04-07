@@ -1,33 +1,119 @@
 ---
 title: "Build Circling Elements in React"
-description: "Create a set of elements that orbit a center point with configurable speed, radius, and stagger using CSS transforms and requestAnimationFrame."
+description: "Create a set of elements that orbit a center point with configurable speed, radius, and stagger using CSS animation and Framer Motion."
 date: "2026-04-07"
 category: "Blocks"
 componentSlug: "circling-elements"
 ---
 
-Orbiting elements are a classic way to show relationships, teams, or technology stacks visually. The Circling Elements component gives you a reusable orbital system where you supply the content and it handles the physics of the spin.
+Orbiting elements are a great way to show relationships visually. Tech stacks circling a logo, team avatars around a company mark, feature icons surrounding a product image. CirclingElements gives you a reusable orbital system where you supply the children and it handles the distribution and spin.
 
-## What it does
+## What we are building
 
-Circling Elements places any number of child elements in a circular orbit around a central point. Each element maintains its upright orientation as it moves around the circle, and items are evenly distributed by default. The whole system rotates continuously, and individual items can have offset speeds for interesting layered motion.
+A container component that places any number of child elements in a circular orbit, evenly distributed by angle. Each element uses a CSS animation with custom properties to drive its position. The whole system accepts a direction, speed, and optional hover pause.
 
-## How it works
+## Setting up
 
-Each element is positioned using trigonometry: its x and y coordinates are calculated from `Math.cos` and `Math.sin` of the current angle plus its index offset. A `requestAnimationFrame` loop increments a shared angle value each frame, and all elements recompute their positions together.
+```bash
+npm install motion
+```
 
-CSS `transform: translate` is applied directly to avoid layout reflows, keeping the animation smooth even with many elements.
+```tsx
+import { Children } from 'react';
+import { motion } from 'motion/react';
+import { cn } from '@/lib/utils';
+```
 
-## Key properties
+## Building the component
 
-- **radius** - Orbital radius in pixels
-- **speed** - Degrees advanced per frame (default: 0.4)
-- **items** - Array of React nodes to place in orbit
-- **clockwise** - Boolean to reverse rotation direction
-- **stagger** - Additional angle offset per item beyond even distribution
+The component accepts an `easing`, `direction`, `radius`, and `duration`, plus children and a `pauseOnHover` flag:
 
-## When to use it
+```tsx
+type CirclingElementsProps = {
+  children: React.ReactNode;
+  radius?: number;
+  duration?: number;
+  easing?: string;
+  direction?: 'normal' | 'reverse';
+  className?: string;
+  pauseOnHover?: boolean;
+};
+```
 
-Circling elements work well for showcasing logos of tech partners, team avatars around a company logo, or feature icons surrounding a central product image. The motion draws attention without demanding it.
+Inside the render, `Children.count` gives the total number of children so each element can be assigned an evenly spaced angle offset:
 
-Keep the orbiting items visually consistent in size and shape. Mixed sizes look unbalanced as they rotate.
+```tsx
+{Children.map(children, (child, index) => {
+  const offset = (index * 360) / Children.count(children);
+
+  const animationProps = {
+    '--circling-duration': duration,
+    '--circling-radius': radius,
+    '--circling-offset': offset,
+    '--circling-direction': direction === 'reverse' ? -1 : 1,
+    animation: `circling ${duration}s ${easing} infinite`,
+    animationName: 'circling',
+    animationDuration: `${duration}s`,
+    animationTimingFunction: easing,
+    animationIterationCount: 'infinite',
+  } as React.CSSProperties;
+```
+
+The CSS custom properties (`--circling-offset`, `--circling-radius`, etc.) are read by the `animate-circling` Tailwind keyframe animation. That animation uses `@property` registered variables so each element can have its own starting angle without needing JavaScript to calculate positions per-frame.
+
+Each element gets wrapped in a `motion.div` with those animation styles applied:
+
+```tsx
+  return (
+    <motion.div
+      key={index}
+      style={animationProps}
+      className={cn(
+        'transform-gpu animate-circling absolute -translate-x-1/2 -translate-y-1/2',
+        pauseOnHover &&
+          'group-hover/circling:![animation-play-state:paused]'
+      )}
+    >
+      {child}
+    </motion.div>
+  );
+})}
+```
+
+The parent container uses the `group/circling` Tailwind variant class. When `pauseOnHover` is true, hovering the container triggers `[animation-play-state:paused]` on all children simultaneously via the group selector. The `!` prefix forces the override even when the animation was set inline.
+
+The container itself is just a relative-positioned div:
+
+```tsx
+return (
+  <div className={cn('relative z-0 group/circling', className)}>
+    {Children.map(children, ...)}
+  </div>
+);
+```
+
+Place whatever you want at the center of the orbit as a sibling element, absolutely positioned with `inset-0 m-auto`.
+
+## How to use it
+
+```tsx
+<div className="relative w-64 h-64">
+  {/* Center element */}
+  <div className="absolute inset-0 flex items-center justify-center">
+    <img src="/logo.svg" className="w-12 h-12" />
+  </div>
+
+  <CirclingElements radius={100} duration={10} direction="normal" pauseOnHover>
+    <img src="/icon-1.svg" className="w-8 h-8" />
+    <img src="/icon-2.svg" className="w-8 h-8" />
+    <img src="/icon-3.svg" className="w-8 h-8" />
+    <img src="/icon-4.svg" className="w-8 h-8" />
+  </CirclingElements>
+</div>
+```
+
+## Key takeaways
+
+- Dividing 360 degrees by the child count produces a perfectly even angular distribution without any special case for different numbers of children.
+- CSS custom properties per element let you drive per-element starting positions from a single shared keyframe animation rather than generating unique keyframes for each index.
+- The group hover variant `group-hover/circling:![animation-play-state:paused]` pauses all children simultaneously with one CSS rule.

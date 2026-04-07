@@ -1,33 +1,146 @@
 ---
 title: "Build an Interactive World Map in React"
-description: "Render a dotted world map with animated arcs connecting locations, built with a dot-grid projection and SVG curve drawing."
+description: "Render a world map with animated arcs connecting locations, built with equirectangular projection and canvas bezier curves."
 date: "2026-04-07"
 category: "Blocks"
 componentSlug: "world-map"
 ---
 
-Global reach is a story that is hard to tell with words alone. Showing it on a map, with live arcs flying between cities, makes the point instantly. The World Map component gives you a stylish dotted projection with animated connection arcs that you configure with just coordinate pairs.
+Global reach is a story that is hard to tell with words alone. Showing it on a map, with arcs flying between cities, makes the point instantly. WorldMap renders a canvas-based world map with animated connection arcs that you configure with plain coordinate pairs.
 
-## What it does
+## What we are building
 
-World Map renders a world map as a grid of dots that follow the coastlines and landmasses of the globe. You supply pairs of geographic coordinates and the component draws animated curved arcs between them. The arcs travel from source to destination with a draw-on animation, then repeat or hold in place.
+A canvas component that draws a lat/lng grid over a dark background, places glowing dots at city coordinates, and animates bezier arcs between defined connection pairs. Each arc draws itself on over time and resets, creating a continuous live-data effect.
 
-## How it works
+## Setting up
 
-The map is built from a precomputed dataset of dot positions that correspond to land areas in an equirectangular projection. Each dot is rendered as a small circle on an SVG canvas scaled to its container.
+No external dependencies. Everything uses the browser's `Canvas2D` API.
 
-Arcs are drawn as SVG `path` elements using a quadratic bezier curve between the projected source and destination coordinates. The draw-on effect uses `stroke-dashoffset` animation, starting with the path fully hidden and animating the offset to zero so the line appears to travel across the map.
+```tsx
+import { useEffect, useRef } from 'react';
+import { cn } from '@/lib/utils';
+```
 
-## Key properties
+## Building the component
 
-- **arcs** - Array of objects with `from` and `to` as `[lat, lng]` pairs
-- **arcColor** - Stroke color for the animated arcs
-- **dotColor** - Fill color for the land-area dots
-- **dotSize** - Radius of each dot in pixels (default: 1.5)
-- **animationDuration** - Time in milliseconds for each arc to complete its draw-on
+Two coordinate conversion utilities handle all the mapping math.
 
-## When to use it
+The projection converts geographic coordinates to canvas pixels using equirectangular projection. This is the simplest map projection: longitude maps linearly to x, latitude maps linearly to y (inverted, because canvas y increases downward):
 
-World Map is ideal for company landing pages that want to show customer distribution, infrastructure coverage, or office locations. It is a strong "social proof through geography" tool.
+```tsx
+function latLngToXY(
+  lat: number,
+  lng: number,
+  width: number,
+  height: number
+): [number, number] {
+  const x = ((lng + 180) / 360) * width;
+  const y = ((90 - lat) / 180) * height;
+  return [x, y];
+}
+```
 
-Limit arcs to the genuinely interesting connections. A map with 50 arcs crisscrossing everywhere looks busy and loses the impact of the visualization.
+The arc builder computes a quadratic bezier curve between two projected points. The control point is placed above the midpoint, with height proportional to the distance between the endpoints:
+
+```tsx
+function bezierArcPoints(x1, y1, x2, y2, steps = 40): [number, number][] {
+  const midX = (x1 + x2) / 2;
+  const midY = (y1 + y2) / 2;
+  const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  const cx = midX;
+  const cy = midY - dist * 0.35;
+
+  const points: [number, number][] = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const bx = (1 - t) ** 2 * x1 + 2 * (1 - t) * t * cx + t ** 2 * x2;
+    const by = (1 - t) ** 2 * y1 + 2 * (1 - t) * t * cy + t ** 2 * y2;
+    points.push([bx, by]);
+  }
+  return points;
+}
+```
+
+Pre-computing the arc points as an array rather than using `ctx.quadraticCurveTo` directly gives you easy control over partial drawing, which is exactly what the animation uses.
+
+The `draw` function runs every frame. Arc progress is stored in a `progressRef` array, one value per arc between 0 and 1:
+
+```tsx
+arcs.forEach((_, i) => {
+  const points = arcPaths[i];
+  const color = arcs[i].color || lineColor;
+  const progress = animated ? progressRef.current[i] : 1;
+  const endIdx = Math.floor(progress * (points.length - 1));
+
+  if (endIdx < 1) return;
+
+  ctx.beginPath();
+  ctx.moveTo(points[0][0], points[0][1]);
+  for (let j = 1; j <= endIdx; j++) {
+    ctx.lineTo(points[j][0], points[j][1]);
+  }
+
+  const grad = ctx.createLinearGradient(
+    points[0][0], points[0][1],
+    points[endIdx][0], points[endIdx][1]
+  );
+  grad.addColorStop(0, `${color}00`);
+  grad.addColorStop(0.5, color);
+  grad.addColorStop(1, color);
+
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  const tip = points[endIdx];
+  ctx.beginPath();
+  ctx.arc(tip[0], tip[1], 3, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+});
+```
+
+The gradient fades from transparent at the start to full color at the midpoint and tip. This gives the arc a "traveling head" look where the leading edge is brightest and the trail fades behind it. The glowing dot at `points[endIdx]` reinforces the leading head.
+
+Progress advances each tick and resets when it exceeds 1.3 (the extra 0.3 gives the arc a moment to hold fully drawn before resetting):
+
+```tsx
+const tick = () => {
+  progressRef.current = progressRef.current.map(p => {
+    const next = p + speed * (0.5 + Math.random() * 0.5);
+    return next > 1.3 ? 0 : next;
+  });
+  draw();
+  animRef.current = requestAnimationFrame(tick);
+};
+```
+
+The random speed variation `(0.5 + Math.random() * 0.5)` means arcs reset at slightly different times, so they never all redraw simultaneously.
+
+## How to use it
+
+```tsx
+<WorldMap
+  dots={[
+    { lat: 40.7128, lng: -74.006, label: 'New York' },
+    { lat: 51.5074, lng: -0.1278, label: 'London' },
+    { lat: 35.6762, lng: 139.6503, label: 'Tokyo' },
+  ]}
+  arcs={[
+    { from: { lat: 40.7128, lng: -74.006 }, to: { lat: 51.5074, lng: -0.1278 } },
+    { from: { lat: 51.5074, lng: -0.1278 }, to: { lat: 35.6762, lng: 139.6503 } },
+  ]}
+  dotColor="#38bdf8"
+  lineColor="#38bdf8"
+  backgroundColor="#0f172a"
+  animated={true}
+/>
+```
+
+Set `animated={false}` to render all arcs at full progress instantly. Useful for static exports or print views.
+
+## Key takeaways
+
+- Pre-computing arc points as an array makes partial drawing trivial: just slice to `endIdx` instead of needing to parameterize a bezier curve evaluation at render time.
+- A transparent-to-opaque gradient along the arc creates the traveling-head effect without needing to track a separate "head" position.
+- Resetting progress at 1.3 rather than 1.0 gives each arc a brief fully-drawn pause before it disappears, which looks more intentional than an immediate reset.

@@ -6,27 +6,134 @@ category: "Blocks"
 componentSlug: "pixel-trail-block"
 ---
 
-Interactive backgrounds are more memorable than static ones, and few interactions feel as satisfying as leaving a trail as you move. The Pixel Trail component turns the entire page into a canvas where the mouse paints and fades, creating a dynamic texture that responds to every visitor differently.
+Interactive backgrounds are more memorable than static ones. The PixelTrail component turns the entire canvas into a surface where mouse movement leaves a trail of glowing pixels. It uses React Three Fiber, a custom GLSL shader, and a trail texture from `@react-three/drei` to make the whole thing fast and clean.
 
-## What it does
+## What we are building
 
-Pixel Trail fills a full-page canvas with a grid of square cells. As the mouse moves over the page, the cells it passes over light up. Each lit cell fades back to the background over a short decay period, leaving a ghostly trail of where the cursor has been.
+A canvas that overlays the page content and renders a grid of pixels. As the mouse moves, pixels near the cursor light up. Each pixel fades back to transparent as the trail ages. An optional gooey SVG filter can merge nearby pixels into blobs.
 
-## How it works
+## Setting up
 
-The component maps the canvas into a grid of cells at a configurable resolution. On `mousemove`, it calculates which cell the cursor occupies and marks it as active with a timestamp. Each frame in the `requestAnimationFrame` loop, cells are redrawn with opacity proportional to how much time has passed since they were activated, producing a smooth fade effect.
+```bash
+npm install three @react-three/fiber @react-three/drei
+```
 
-The canvas is positioned absolutely behind all page content so the interaction does not interfere with clicks or scrolling.
+```tsx
+import { shaderMaterial, useTrailTexture } from '@react-three/drei';
+import { Canvas, useThree } from '@react-three/fiber';
+import * as THREE from 'three';
+```
 
-## Key properties
+## Building the component
 
-- **cellSize** - Width and height of each pixel cell in screen pixels (default: 20)
-- **trailColor** - Fill color for activated cells
-- **fadeSpeed** - How quickly cells decay back to transparent (default: 0.05 per frame)
-- **glow** - Whether to apply a blur filter to lit cells for a soft glow
+The pixel material is created with `shaderMaterial` from drei, which wraps the standard Three.js shader material pattern into a cleaner API:
 
-## When to use it
+```tsx
+const DotMaterial = shaderMaterial(
+  {
+    resolution: new THREE.Vector2(),
+    mouseTrail: null,
+    gridSize: 100,
+    pixelColor: new THREE.Color('#ffffff'),
+  },
+  /* vertex */ `
+    varying vec2 vUv;
+    void main() {
+      gl_Position = vec4(position.xy, 0.0, 1.0);
+    }
+  `,
+  /* fragment */ `
+    uniform vec2 resolution;
+    uniform sampler2D mouseTrail;
+    uniform float gridSize;
+    uniform vec3 pixelColor;
 
-Pixel Trail works especially well on dark portfolio pages, creative agency sites, or anywhere you want to reward exploration. The interaction is passive, it does not require clicking, so even casual visitors trigger it just by reading.
+    vec2 coverUv(vec2 uv) {
+      vec2 s = resolution.xy / max(resolution.x, resolution.y);
+      vec2 newUv = (uv - 0.5) * s + 0.5;
+      return clamp(newUv, 0.0, 1.0);
+    }
 
-Keep cell size large enough to be clearly visible but small enough to feel like a trail rather than a map.
+    void main() {
+      vec2 screenUv = gl_FragCoord.xy / resolution;
+      vec2 uv = coverUv(screenUv);
+
+      vec2 gridUv = fract(uv * gridSize);
+      vec2 gridUvCenter = (floor(uv * gridSize) + 0.5) / gridSize;
+
+      float trail = texture2D(mouseTrail, gridUvCenter).r;
+
+      gl_FragColor = vec4(pixelColor, trail);
+    }
+  `
+);
+```
+
+The fragment shader is the key. `coverUv` adjusts the UV coordinates so the grid scales to cover without stretching on non-square canvases. Then `fract(uv * gridSize)` quantizes the UV into a grid: each pixel on screen falls into a cell, and `gridUvCenter` is the center of that cell. The trail texture is sampled at that center position, giving each cell a single brightness value rather than sub-cell variation.
+
+The alpha channel is set to `trail` directly. That means cells with high trail intensity are opaque, and cells with zero trail are fully transparent. No blending math needed.
+
+The trail texture itself comes from `useTrailTexture`, a drei hook that maintains a texture updated based on pointer movement:
+
+```tsx
+const [trail, onMove] = useTrailTexture({
+  size: 512,
+  radius: trailSize,
+  maxAge: maxAge,
+  interpolate: interpolate || 0.1,
+  ease: easingFunction || identityEase,
+}) as [THREE.Texture | null, (e: ThreeEvent<PointerEvent>) => void];
+```
+
+The texture decays automatically over `maxAge` milliseconds. The `onMove` callback is attached to the Three.js mesh's `onPointerMove` event, so the trail updates correctly even in a transformed scene.
+
+The optional gooey filter uses SVG filter effects to merge nearby lit pixels into rounded blobs:
+
+```tsx
+const GooeyFilter: React.FC<GooeyFilterProps> = ({ id = 'goo-filter', strength = 10 }) => (
+  <svg className='z-1 absolute overflow-hidden'>
+    <defs>
+      <filter id={id}>
+        <feGaussianBlur in='SourceGraphic' stdDeviation={strength} result='blur' />
+        <feColorMatrix in='blur' type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9' result='goo' />
+        <feComposite in='SourceGraphic' in2='goo' operator='atop' />
+      </filter>
+    </defs>
+  </svg>
+);
+```
+
+The `feColorMatrix` with values `0 0 0 19 -9` in the alpha channel is the classic goo trick: it amplifies the alpha channel and then hard-clips it, turning soft blurred edges into crisp organic blobs.
+
+The Canvas is positioned absolutely so it overlays content without blocking interaction:
+
+```tsx
+<Canvas
+  gl={glProps}
+  className={`absolute z-1 ${className}`}
+  style={gooeyFilter ? { filter: `url(#${gooeyFilter.id})` } : undefined}
+>
+  <Scene ... />
+</Canvas>
+```
+
+## How to use it
+
+```tsx
+<div className="relative h-screen bg-neutral-950">
+  <PixelTrail
+    gridSize={40}
+    trailSize={0.1}
+    maxAge={250}
+    color="#ffffff"
+    gooeyFilter={{ id: 'goo', strength: 8 }}
+  />
+  <div className="relative z-10">Your content</div>
+</div>
+```
+
+## Key takeaways
+
+- Sampling the trail texture at the grid cell center rather than the exact pixel UV quantizes the effect into discrete blocks without any conditional logic.
+- The SVG goo filter trick (blur plus alpha amplify plus clip) is a CSS-only way to merge discrete shapes into organic blobs.
+- Using `useTrailTexture` from drei offloads the trail decay logic entirely to a well-tested hook, so your shader just reads a texture.

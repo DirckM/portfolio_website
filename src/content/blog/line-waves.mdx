@@ -6,28 +6,126 @@ category: "Backgrounds"
 componentSlug: "line-waves"
 ---
 
-Backgrounds are where first impressions happen. A static color is fine, but a softly undulating wave of lines? That feels alive. The Line Waves component gives you exactly that without reaching for a heavy animation library.
+Static backgrounds feel static. Softly undulating lines of color feel alive. The LineWaves component draws a set of sine curves on a canvas element and animates them frame by frame, giving any page a subtle pulse without a single animation library.
 
-## What it does
+## What we are building
 
-Line Waves renders a series of horizontal sine curves that animate continuously across the canvas. The lines oscillate at slightly different frequencies, creating a layered, breathing effect. It runs entirely on a 2D canvas element positioned behind your content.
+A canvas-based background that renders multiple horizontal sine waves. Each line oscillates at a slightly different phase and amplitude, so they never perfectly overlap. The result is a layered breathing effect that runs continuously at 60fps.
 
-## How it works
+## Setting up
 
-The component mounts a canvas that fills its container, then kicks off a `requestAnimationFrame` loop. Each frame redraws a set of sine curves with an incrementing time offset, which shifts the waves horizontally. Different lines use slightly different amplitudes and frequencies, so they never perfectly overlap.
+No external dependencies. The component uses the browser's `Canvas2D` API and `requestAnimationFrame`.
 
-The canvas scales with `devicePixelRatio` for crisp rendering on high-DPI screens.
+```tsx
+import { useRef, useEffect } from 'react';
+```
 
-## Key properties
+## Building the component
 
-- **lineCount** - Number of wave lines drawn (default: 8)
-- **amplitude** - Peak height of each wave in pixels
-- **frequency** - How tightly the waves cycle across the width
-- **speed** - How fast the offset advances per frame
-- **color** - Stroke color, accepts any CSS color string
+Start with the props interface and defaults:
 
-## When to use it
+```tsx
+interface LineWavesProps {
+  lineCount?: number;
+  lineColor?: string;
+  lineWidth?: number;
+  amplitude?: number;
+  frequency?: number;
+  speed?: number;
+  className?: string;
+}
+```
 
-This works best as a full-bleed hero background or a subtle section divider. It pairs well with dark backgrounds where light, low-opacity lines feel ethereal rather than distracting.
+The canvas needs to respect the device pixel ratio so lines stay sharp on retina screens. Inside the `useEffect`, set this up before drawing anything:
 
-Keep the amplitude low (20-40px) and opacity under 0.4 for a calm, professional feel. Turn them both up and you get something more intense, which suits landing pages that want to make a statement.
+```tsx
+function resize() {
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+  canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+  ctx!.scale(window.devicePixelRatio, window.devicePixelRatio);
+}
+```
+
+The drawing function calculates evenly spaced base positions, then draws each wave with a sine offset that varies per line:
+
+```tsx
+function draw() {
+  if (!canvas || !ctx) return;
+  const w = canvas.offsetWidth;
+  const h = canvas.offsetHeight;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = lineColor;
+  ctx.lineWidth = lineWidth;
+
+  const spacing = h / (lineCount + 1);
+
+  for (let i = 1; i <= lineCount; i++) {
+    const baseY = spacing * i;
+    ctx.beginPath();
+
+    for (let x = 0; x <= w; x++) {
+      const y =
+        baseY +
+        Math.sin(x * frequency + offsetRef.current + i * 0.8) *
+          amplitude *
+          (1 - Math.abs(i - lineCount / 2) / lineCount);
+      if (x === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+
+    ctx.stroke();
+  }
+
+  offsetRef.current += speed;
+  animationRef.current = requestAnimationFrame(draw);
+}
+```
+
+The key part is `i * 0.8` added to the phase. Each line gets its own phase offset, so they oscillate out of sync. The amplitude modifier `(1 - Math.abs(i - lineCount / 2) / lineCount)` scales waves down toward the edges, making the center lines more dramatic.
+
+The `offsetRef` accumulates each frame and moves the whole wave field horizontally over time. Advance it by `speed` per frame rather than using a timestamp for simplicity.
+
+Kick off the loop and clean up:
+
+```tsx
+draw();
+
+return () => {
+  window.removeEventListener('resize', resize);
+  cancelAnimationFrame(animationRef.current);
+};
+```
+
+The full component renders a single canvas that fills its parent:
+
+```tsx
+return <canvas ref={canvasRef} className={`w-full h-full ${className}`} />;
+```
+
+## How to use it
+
+Drop it inside any positioned container and set a background color on the parent:
+
+```tsx
+<div className="relative h-screen bg-neutral-950">
+  <LineWaves
+    lineCount={8}
+    lineColor="#e5e5e5"
+    amplitude={40}
+    frequency={0.02}
+    speed={0.02}
+  />
+  <div className="relative z-10">Your content here</div>
+</div>
+```
+
+## Key takeaways
+
+- The `devicePixelRatio` scale call is essential for crisp lines on high-DPI screens. Skip it and everything looks blurry.
+- Varying the phase offset per line (`i * 0.8`) is what makes the waves look organic rather than synchronized.
+- Keeping speed low (0.01 to 0.03) keeps the motion calm and readable behind content.
