@@ -137,6 +137,34 @@ function VariableProximityPreview() {
   );
 }
 
+function VariableProximityFullDemo() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  return (
+    <div
+      ref={containerRef}
+      className='flex flex-col items-center justify-center gap-8 w-full h-full p-12'
+    >
+      <VariableProximity
+        label='Move your cursor close'
+        fromFontVariationSettings="'wght' 100, 'wdth' 85"
+        toFontVariationSettings="'wght' 900, 'wdth' 125"
+        containerRef={containerRef}
+        className='text-4xl text-black'
+        radius={150}
+      />
+      <VariableProximity
+        label='Gaussian falloff'
+        fromFontVariationSettings="'wght' 200"
+        toFontVariationSettings="'wght' 800"
+        containerRef={containerRef}
+        className='text-2xl text-[#6b6b6b]'
+        radius={100}
+        falloff='gaussian'
+      />
+    </div>
+  );
+}
+
 export const cardPreviews: Record<string, React.ReactNode> = {
   // Text animations
   'ascii-text': (
@@ -957,4 +985,112 @@ export const fullDemos: Record<string, React.ReactNode> = {
       />
     </div>
   ),
+  'split-text': (
+    <div className='flex flex-col items-center gap-8 p-12'>
+      <SplitText
+        text='Characters split apart'
+        className='text-4xl font-bold text-black font-[family-name:var(--font-instrument-serif)]'
+        splitType='chars'
+        duration={1}
+        delay={30}
+      />
+      <SplitText
+        text='Words animate in one by one'
+        className='text-2xl text-[#6b6b6b]'
+        splitType='words'
+        duration={0.8}
+        delay={80}
+      />
+    </div>
+  ),
+  'circular-text': (
+    <div className='flex items-center justify-center gap-16 p-12'>
+      <CircularText
+        text='CIRCULAR TEXT * SPINNING * '
+        spinDuration={10}
+        onHover='speedUp'
+        className='text-black'
+      />
+      <CircularText
+        text='HOVER TO PAUSE * HOVER * '
+        spinDuration={15}
+        onHover='pause'
+        className='text-black'
+      />
+    </div>
+  ),
+  shuffle: (
+    <div className='flex flex-col items-center gap-8 p-12'>
+      <Shuffle
+        text='SHUFFLE UP'
+        className='text-4xl font-bold text-black'
+        shuffleDirection='up'
+        loop={true}
+        loopDelay={2}
+      />
+      <Shuffle
+        text='SHUFFLE DOWN'
+        className='text-2xl text-[#6b6b6b]'
+        shuffleDirection='down'
+        loop={true}
+        loopDelay={3}
+      />
+      <Shuffle
+        text='LEFT TO RIGHT'
+        className='text-xl text-black'
+        shuffleDirection='right'
+        loop={true}
+        loopDelay={2.5}
+      />
+    </div>
+  ),
+  'text-pressure': (
+    <div className='flex items-center justify-center w-full h-full px-8'>
+      <div className='w-full h-48'>
+        <TextPressure text='Pressure' textColor='#000000' minFontSize={36} />
+      </div>
+    </div>
+  ),
+  'decrypted-text': (
+    <div className='flex flex-col items-center gap-8 p-12'>
+      <DecryptedText
+        text='Hover to decrypt this text'
+        className='text-4xl font-bold text-black'
+        encryptedClassName='text-4xl font-bold text-gray-300'
+        animateOn='hover'
+        speed={60}
+        sequential={true}
+      />
+      <DecryptedText
+        text='Decrypts on view'
+        className='text-2xl text-[#6b6b6b]'
+        encryptedClassName='text-2xl text-gray-300'
+        animateOn='view'
+        speed={40}
+        sequential={false}
+        revealDirection='center'
+      />
+    </div>
+  ),
+  'true-focus': (
+    <div className='flex flex-col items-center gap-12 p-12'>
+      <TrueFocus
+        sentence='Only one word is sharp'
+        blurAmount={5}
+        borderColor='black'
+        glowColor='rgba(0,0,0,0.5)'
+        animationDuration={0.4}
+        pauseBetweenAnimations={1}
+      />
+      <TrueFocus
+        sentence='Try hovering each word'
+        blurAmount={3}
+        borderColor='#5227FF'
+        glowColor='rgba(82,39,255,0.4)'
+        manualMode={true}
+        animationDuration={0.3}
+      />
+    </div>
+  ),
+  'variable-proximity': <VariableProximityFullDemo />,
 };
