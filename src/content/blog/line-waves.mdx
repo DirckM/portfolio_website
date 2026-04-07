@@ -13,9 +13,7 @@ Static backgrounds feel static. Softly undulating lines of color feel alive. Thi
 Adjust the number of lines, amplitude, and color to see how different configurations feel:
 
 <LiveStep
-  code={`<div style={{ width: '100%', height: '300px' }}>
-  <LineWaves lineCount={8} lineColor="#000" amplitude={40} frequency={0.02} speed={0.02} />
-</div>`}
+  code={'<div style={{ width: "100%", height: "300px" }}>\n  <LineWaves lineCount={8} lineColor="#000" amplitude={40} frequency={0.02} speed={0.02} />\n</div>'}
   controls={[
     { prop: 'lineCount', type: 'slider', min: 2, max: 20, step: 1, default: 8, label: 'lines' },
     { prop: 'amplitude', type: 'slider', min: 10, max: 100, step: 5, default: 40, label: 'amplitude' },
@@ -33,40 +31,16 @@ import { useRef, useEffect } from 'react';
 
 ## Step 1: Canvas setup with retina support
 
-The canvas needs to respect device pixel ratio so lines stay sharp on retina screens:
-
-```tsx
-function resize() {
-  canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-  canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-}
-```
+The canvas needs to respect device pixel ratio so lines stay sharp on retina screens.
 
 ## Step 2: The sine wave drawing loop
 
-Each line is positioned at an even vertical spacing. The sine function offsets each point, and each line gets a different phase so they oscillate out of sync:
-
-```tsx
-for (let i = 1; i <= lineCount; i++) {
-  const baseY = spacing * i;
-  for (let x = 0; x <= w; x++) {
-    const y = baseY +
-      Math.sin(x * frequency + offset + i * 0.8) *
-        amplitude *
-        (1 - Math.abs(i - lineCount / 2) / lineCount);
-  }
-}
-```
-
-The `i * 0.8` phase offset is what makes the waves look organic. The amplitude modifier scales waves down at the edges.
+Each line is positioned at an even vertical spacing. The sine function offsets each point, and each line gets a different phase so they oscillate out of sync.
 
 Try different line counts and amplitudes:
 
 <LiveStep
-  code={`<div style={{ width: '100%', height: '250px' }}>
-  <LineWaves lineCount={5} lineColor="#e5e5e5" amplitude={30} />
-</div>`}
+  code={'<div style={{ width: "100%", height: "250px" }}>\n  <LineWaves lineCount={5} lineColor="#e5e5e5" amplitude={30} />\n</div>'}
   controls={[
     { prop: 'lineCount', type: 'slider', min: 2, max: 20, step: 1, default: 5, label: 'lines' },
     { prop: 'amplitude', type: 'slider', min: 10, max: 100, step: 5, default: 30, label: 'amplitude' },
@@ -76,23 +50,14 @@ Try different line counts and amplitudes:
 
 ## Step 3: Animation loop
 
-The offset advances each frame, creating continuous horizontal motion:
-
-```tsx
-offsetRef.current += speed;
-animationRef.current = requestAnimationFrame(draw);
-```
-
-Keep speed low (0.01 to 0.03) for a calm feel behind content.
+The offset advances each frame, creating continuous horizontal motion. Keep speed low (0.01 to 0.03) for a calm feel behind content.
 
 ## Step 4: Put it together
 
 Drop it inside any positioned container:
 
 <LiveStep
-  code={`<div style={{ width: '100%', height: '300px', background: '#000' }}>
-  <LineWaves lineCount={12} lineColor="#333" amplitude={60} speed={0.02} />
-</div>`}
+  code={'<div style={{ width: "100%", height: "300px", background: "#000" }}>\n  <LineWaves lineCount={12} lineColor="#333" amplitude={60} speed={0.02} />\n</div>'}
   previewBg="bg-black"
   controls={[
     { prop: 'lineCount', type: 'slider', min: 2, max: 20, step: 1, default: 12, label: 'lines' },
@@ -103,6 +68,6 @@ Drop it inside any positioned container:
 
 ## Key takeaways
 
-- The `devicePixelRatio` scale call is essential for crisp lines on high-DPI screens.
-- Varying the phase offset per line (`i * 0.8`) makes the waves look organic.
+- The devicePixelRatio scale call is essential for crisp lines on high-DPI screens.
+- Varying the phase offset per line makes the waves look organic.
 - Keeping speed low keeps the motion calm and readable behind content.

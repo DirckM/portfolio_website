@@ -13,9 +13,7 @@ Flat cards sit on a page. Tilted cards reach out from it. The moment a card resp
 Hover over the card and move your cursor around. Adjust the tilt intensity and glare:
 
 <LiveStep
-  code={`<TiltedCard maxTilt={15} scale={1.05} perspective={1000} glareEnable={true} glareMaxOpacity={0.2} className="w-64 h-80 bg-zinc-900 rounded-2xl flex items-center justify-center">
-  <span className="text-white text-lg">Hover me</span>
-</TiltedCard>`}
+  code={'<TiltedCard maxTilt={15} scale={1.05} perspective={1000} glareEnable={true} glareMaxOpacity={0.2} className="w-64 h-80 bg-zinc-900 rounded-2xl flex items-center justify-center">\n  <span className="text-white text-lg">Hover me</span>\n</TiltedCard>'}
   controls={[
     { prop: 'maxTilt', type: 'slider', min: 5, max: 40, step: 1, default: 15, label: 'tilt' },
     { prop: 'scale', type: 'slider', min: 1, max: 1.2, step: 0.01, default: 1.05, label: 'scale' },
@@ -48,44 +46,14 @@ interface TiltedCardProps {
 
 ## Step 2: Track the cursor angle
 
-On `mousemove`, calculate where the cursor is relative to the card center, then map to rotation values. X maps to `rotateY` and vice versa:
-
-```tsx
-function handleMouseMove(e: React.MouseEvent) {
-  if (!cardRef.current) return;
-  const rect = cardRef.current.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  const halfW = rect.width / 2;
-  const halfH = rect.height / 2;
-
-  const rotateX = ((y - halfH) / halfH) * -maxTilt;
-  const rotateY = ((x - halfW) / halfW) * maxTilt;
-
-  setTransform(
-    `perspective(${perspective}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(${scale}, ${scale}, ${scale})`
-  );
-}
-```
+On mousemove, calculate where the cursor is relative to the card center, then map to rotation values. X maps to rotateY and vice versa.
 
 ## Step 3: Add the glare overlay
 
-A linear gradient rotates to follow the cursor, creating a light sweep effect:
-
-```tsx
-const angle = Math.atan2(y - halfH, x - halfW) * (180 / Math.PI) + 180;
-setGlareStyle({
-  opacity: glareMaxOpacity,
-  background: `linear-gradient(${angle}deg, rgba(255,255,255,${glareMaxOpacity}) 0%, transparent 80%)`,
-});
-```
-
-Try different tilt intensities:
+A linear gradient rotates to follow the cursor, creating a light sweep effect. Try different tilt intensities:
 
 <LiveStep
-  code={`<TiltedCard maxTilt={25} scale={1.08} glareEnable={true} glareMaxOpacity={0.3} className="w-56 h-72 bg-gradient-to-br from-purple-600 to-blue-500 rounded-2xl flex items-center justify-center">
-  <span className="text-white text-lg font-bold">Dramatic</span>
-</TiltedCard>`}
+  code={'<TiltedCard maxTilt={25} scale={1.08} glareEnable={true} glareMaxOpacity={0.3} className="w-56 h-72 bg-gradient-to-br from-purple-600 to-blue-500 rounded-2xl flex items-center justify-center">\n  <span className="text-white text-lg font-bold">Dramatic</span>\n</TiltedCard>'}
   controls={[
     { prop: 'maxTilt', type: 'slider', min: 5, max: 40, step: 1, default: 25, label: 'tilt' },
     { prop: 'glareMaxOpacity', type: 'slider', min: 0, max: 0.5, step: 0.05, default: 0.3, label: 'glare opacity' },
@@ -94,17 +62,10 @@ Try different tilt intensities:
 
 ## Step 4: Reset on mouse leave
 
-Both transform and glare reset smoothly thanks to CSS transitions:
-
-```tsx
-function handleMouseLeave() {
-  setTransform('');
-  setGlareStyle({ opacity: 0, background: '' });
-}
-```
+Both transform and glare reset smoothly thanks to CSS transitions. No spring library needed.
 
 ## Key takeaways
 
-- Putting `perspective()` inside the `transform` string means each card has its own vanishing point.
-- CSS transitions handle the return animation automatically, no spring library needed.
-- `overflow-hidden` on the wrapper keeps the glare gradient contained.
+- Putting perspective inside the transform string means each card has its own vanishing point.
+- CSS transitions handle the return animation automatically.
+- overflow-hidden on the wrapper keeps the glare gradient contained.
