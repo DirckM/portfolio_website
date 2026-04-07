@@ -1138,7 +1138,8 @@ export const fullDemos: Record<string, React.ReactNode> = {
         containerClassName='!my-0'
         textClassName='!text-3xl text-black font-[family-name:var(--font-instrument-serif)]'
       >
-        Words reveal progressively as you scroll through the page creating a reading experience
+        Words reveal progressively as you scroll through the page creating a
+        reading experience
       </ScrollReveal>
     </div>
   ),
@@ -1155,10 +1156,17 @@ export const fullDemos: Record<string, React.ReactNode> = {
   ),
   'scrambled-text': (
     <div className='flex flex-col items-center justify-center gap-8 p-12 bg-black w-full h-full'>
-      <ScrambledText className='!m-0 !text-4xl text-white font-bold' scrambleChars='.:'>
+      <ScrambledText
+        className='!m-0 !text-4xl text-white font-bold'
+        scrambleChars='.:'
+      >
         Hover to scramble
       </ScrambledText>
-      <ScrambledText className='!m-0 !text-2xl text-gray-400' scrambleChars='#*' speed={0.3}>
+      <ScrambledText
+        className='!m-0 !text-2xl text-gray-400'
+        scrambleChars='#*'
+        speed={0.3}
+      >
         Different scramble characters
       </ScrambledText>
     </div>
@@ -1204,10 +1212,21 @@ export const fullDemos: Record<string, React.ReactNode> = {
   antigravity: (
     <div className='flex items-center gap-4 w-full h-full'>
       <div className='w-1/2 h-full'>
-        <Antigravity count={200} color='#5227FF' autoAnimate={true} particleSize={2} />
+        <Antigravity
+          count={200}
+          color='#5227FF'
+          autoAnimate={true}
+          particleSize={2}
+        />
       </div>
       <div className='w-1/2 h-full'>
-        <Antigravity count={200} color='#FF9FFC' autoAnimate={true} particleSize={1.5} particleShape='sphere' />
+        <Antigravity
+          count={200}
+          color='#FF9FFC'
+          autoAnimate={true}
+          particleSize={1.5}
+          particleShape='sphere'
+        />
       </div>
     </div>
   ),
@@ -1215,11 +1234,29 @@ export const fullDemos: Record<string, React.ReactNode> = {
     <div className='flex flex-col items-center justify-center gap-12 p-12 w-full'>
       <LogoLoop
         logos={[
-          { node: <span className='text-black font-bold text-2xl'>React</span> },
-          { node: <span className='text-black font-bold text-2xl'>Next.js</span> },
-          { node: <span className='text-black font-bold text-2xl'>TypeScript</span> },
-          { node: <span className='text-black font-bold text-2xl'>Tailwind</span> },
-          { node: <span className='text-black font-bold text-2xl'>Node.js</span> },
+          {
+            node: <span className='text-black font-bold text-2xl'>React</span>,
+          },
+          {
+            node: (
+              <span className='text-black font-bold text-2xl'>Next.js</span>
+            ),
+          },
+          {
+            node: (
+              <span className='text-black font-bold text-2xl'>TypeScript</span>
+            ),
+          },
+          {
+            node: (
+              <span className='text-black font-bold text-2xl'>Tailwind</span>
+            ),
+          },
+          {
+            node: (
+              <span className='text-black font-bold text-2xl'>Node.js</span>
+            ),
+          },
         ]}
         speed={100}
         logoHeight={36}
@@ -1298,10 +1335,22 @@ export const fullDemos: Record<string, React.ReactNode> = {
   'meta-balls': (
     <div className='flex items-center gap-4 w-full h-full'>
       <div className='w-1/2 h-full'>
-        <MetaBalls color='#5227FF' ballCount={8} animationSize={20} enableMouseInteraction={true} enableTransparency={false} />
+        <MetaBalls
+          color='#5227FF'
+          ballCount={8}
+          animationSize={20}
+          enableMouseInteraction={true}
+          enableTransparency={false}
+        />
       </div>
       <div className='w-1/2 h-full'>
-        <MetaBalls color='#FF9FFC' ballCount={12} animationSize={15} enableMouseInteraction={true} enableTransparency={false} />
+        <MetaBalls
+          color='#FF9FFC'
+          ballCount={12}
+          animationSize={15}
+          enableMouseInteraction={true}
+          enableTransparency={false}
+        />
       </div>
     </div>
   ),
@@ -1309,7 +1358,14 @@ export const fullDemos: Record<string, React.ReactNode> = {
     <div className='flex items-center justify-center p-12 w-full h-full'>
       <div className='w-full max-w-md h-80'>
         <AnimatedList
-          items={['Design the interface', 'Build the components', 'Write the tests', 'Deploy to production', 'Ship it', 'Iterate and improve']}
+          items={[
+            'Design the interface',
+            'Build the components',
+            'Write the tests',
+            'Deploy to production',
+            'Ship it',
+            'Iterate and improve',
+          ]}
           showGradients={true}
           enableArrowNavigation={true}
         />
@@ -1320,31 +1376,61 @@ export const fullDemos: Record<string, React.ReactNode> = {
     <div className='w-full h-full overflow-auto'>
       <ScrollStack useWindowScroll={false}>
         <ScrollStackItem itemClassName='bg-black text-white flex items-center justify-center rounded-2xl'>
-          <span className='text-2xl font-[family-name:var(--font-instrument-serif)]'>First Card</span>
+          <span className='text-2xl font-[family-name:var(--font-instrument-serif)]'>
+            First Card
+          </span>
         </ScrollStackItem>
         <ScrollStackItem itemClassName='bg-[#5227FF] text-white flex items-center justify-center rounded-2xl'>
-          <span className='text-2xl font-[family-name:var(--font-instrument-serif)]'>Second Card</span>
+          <span className='text-2xl font-[family-name:var(--font-instrument-serif)]'>
+            Second Card
+          </span>
         </ScrollStackItem>
         <ScrollStackItem itemClassName='bg-[#FF9FFC] text-black flex items-center justify-center rounded-2xl'>
-          <span className='text-2xl font-[family-name:var(--font-instrument-serif)]'>Third Card</span>
+          <span className='text-2xl font-[family-name:var(--font-instrument-serif)]'>
+            Third Card
+          </span>
         </ScrollStackItem>
       </ScrollStack>
     </div>
   ),
   'magic-bento': (
     <div className='w-full h-full'>
-      <MagicBento enableStars={true} enableSpotlight={true} particleCount={12} />
+      <MagicBento
+        enableStars={true}
+        enableSpotlight={true}
+        particleCount={12}
+      />
     </div>
   ),
   'circular-gallery': (
     <div className='w-full h-full'>
       <CircularGallery
         items={[
-          { image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600', text: 'Mountains' },
-          { image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600', text: 'Forest' },
-          { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600', text: 'Beach' },
-          { image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600', text: 'Hiking' },
-          { image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600', text: 'Forest Path' },
+          {
+            image:
+              'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600',
+            text: 'Mountains',
+          },
+          {
+            image:
+              'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600',
+            text: 'Forest',
+          },
+          {
+            image:
+              'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600',
+            text: 'Beach',
+          },
+          {
+            image:
+              'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600',
+            text: 'Hiking',
+          },
+          {
+            image:
+              'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600',
+            text: 'Forest Path',
+          },
         ]}
         bend={2}
         textColor='#fff'
@@ -1365,10 +1451,24 @@ export const fullDemos: Record<string, React.ReactNode> = {
   ),
   'glass-surface': (
     <div className='relative flex items-center justify-center gap-8 w-full h-full bg-gradient-to-br from-blue-400 to-purple-600'>
-      <GlassSurface width={220} height={120} borderRadius={16} blur={10} opacity={0.3}>
-        <span className='text-white text-lg font-medium px-6'>Frosted Glass</span>
+      <GlassSurface
+        width={220}
+        height={120}
+        borderRadius={16}
+        blur={10}
+        opacity={0.3}
+      >
+        <span className='text-white text-lg font-medium px-6'>
+          Frosted Glass
+        </span>
       </GlassSurface>
-      <GlassSurface width={180} height={100} borderRadius={999} blur={8} opacity={0.2}>
+      <GlassSurface
+        width={180}
+        height={100}
+        borderRadius={999}
+        blur={8}
+        opacity={0.2}
+      >
         <span className='text-white text-sm font-medium px-6'>Rounded</span>
       </GlassSurface>
     </div>
@@ -1398,11 +1498,31 @@ export const fullDemos: Record<string, React.ReactNode> = {
     <div className='flex items-end justify-center w-full h-full pb-12 bg-gradient-to-b from-transparent to-gray-100'>
       <Dock
         items={[
-          { icon: <span className='text-2xl'>H</span>, label: 'Home', onClick: () => {} },
-          { icon: <span className='text-2xl'>S</span>, label: 'Search', onClick: () => {} },
-          { icon: <span className='text-2xl'>P</span>, label: 'Projects', onClick: () => {} },
-          { icon: <span className='text-2xl'>M</span>, label: 'Mail', onClick: () => {} },
-          { icon: <span className='text-2xl'>C</span>, label: 'Code', onClick: () => {} },
+          {
+            icon: <span className='text-2xl'>H</span>,
+            label: 'Home',
+            onClick: () => {},
+          },
+          {
+            icon: <span className='text-2xl'>S</span>,
+            label: 'Search',
+            onClick: () => {},
+          },
+          {
+            icon: <span className='text-2xl'>P</span>,
+            label: 'Projects',
+            onClick: () => {},
+          },
+          {
+            icon: <span className='text-2xl'>M</span>,
+            label: 'Mail',
+            onClick: () => {},
+          },
+          {
+            icon: <span className='text-2xl'>C</span>,
+            label: 'Code',
+            onClick: () => {},
+          },
         ]}
         baseItemSize={56}
         magnification={80}
@@ -1413,13 +1533,19 @@ export const fullDemos: Record<string, React.ReactNode> = {
   'pixel-card': (
     <div className='flex items-center justify-center gap-8 p-12'>
       <PixelCard variant='default' className='w-48 h-64'>
-        <span className='text-black text-lg font-medium relative z-10'>Default</span>
+        <span className='text-black text-lg font-medium relative z-10'>
+          Default
+        </span>
       </PixelCard>
       <PixelCard variant='blue' className='w-48 h-64'>
-        <span className='text-black text-lg font-medium relative z-10'>Blue</span>
+        <span className='text-black text-lg font-medium relative z-10'>
+          Blue
+        </span>
       </PixelCard>
       <PixelCard variant='pink' className='w-48 h-64'>
-        <span className='text-black text-lg font-medium relative z-10'>Pink</span>
+        <span className='text-black text-lg font-medium relative z-10'>
+          Pink
+        </span>
       </PixelCard>
     </div>
   ),
@@ -1446,10 +1572,30 @@ export const fullDemos: Record<string, React.ReactNode> = {
     <div className='w-full h-full'>
       <FlowingMenu
         items={[
-          { link: '#', text: 'Design', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600' },
-          { link: '#', text: 'Develop', image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600' },
-          { link: '#', text: 'Deploy', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600' },
-          { link: '#', text: 'Iterate', image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600' },
+          {
+            link: '#',
+            text: 'Design',
+            image:
+              'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600',
+          },
+          {
+            link: '#',
+            text: 'Develop',
+            image:
+              'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600',
+          },
+          {
+            link: '#',
+            text: 'Deploy',
+            image:
+              'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600',
+          },
+          {
+            link: '#',
+            text: 'Iterate',
+            image:
+              'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600',
+          },
         ]}
       />
     </div>
@@ -1458,12 +1604,48 @@ export const fullDemos: Record<string, React.ReactNode> = {
     <div className='w-full h-full'>
       <InfiniteMenu
         items={[
-          { image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400', link: '#', title: 'Mountains', description: 'Alpine views' },
-          { image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400', link: '#', title: 'Forest', description: 'Into the woods' },
-          { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400', link: '#', title: 'Beach', description: 'Coastal escape' },
-          { image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=400', link: '#', title: 'Hiking', description: 'Trail ahead' },
-          { image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400', link: '#', title: 'Woods', description: 'Deep forest' },
-          { image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400', link: '#', title: 'Sunset', description: 'Golden hour' },
+          {
+            image:
+              'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400',
+            link: '#',
+            title: 'Mountains',
+            description: 'Alpine views',
+          },
+          {
+            image:
+              'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400',
+            link: '#',
+            title: 'Forest',
+            description: 'Into the woods',
+          },
+          {
+            image:
+              'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400',
+            link: '#',
+            title: 'Beach',
+            description: 'Coastal escape',
+          },
+          {
+            image:
+              'https://images.unsplash.com/photo-1551632811-561732d1e306?w=400',
+            link: '#',
+            title: 'Hiking',
+            description: 'Trail ahead',
+          },
+          {
+            image:
+              'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400',
+            link: '#',
+            title: 'Woods',
+            description: 'Deep forest',
+          },
+          {
+            image:
+              'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400',
+            link: '#',
+            title: 'Sunset',
+            description: 'Golden hour',
+          },
         ]}
       />
     </div>
@@ -1495,17 +1677,32 @@ export const fullDemos: Record<string, React.ReactNode> = {
   ),
   radar: (
     <div className='w-full h-full bg-black'>
-      <Radar color='#00ff88' backgroundColor='#000000' ringCount={10} sweepSpeed={1} />
+      <Radar
+        color='#00ff88'
+        backgroundColor='#000000'
+        ringCount={10}
+        sweepSpeed={1}
+      />
     </div>
   ),
   'circling-elements': (
     <div className='flex items-center justify-center w-full h-full'>
       <CirclingElements radius={120} duration={8} pauseOnHover>
-        <div className='w-14 h-14 rounded-full bg-black flex items-center justify-center text-white font-bold'>1</div>
-        <div className='w-14 h-14 rounded-full bg-[#5227FF] flex items-center justify-center text-white font-bold'>2</div>
-        <div className='w-14 h-14 rounded-full bg-[#FF9FFC] flex items-center justify-center text-black font-bold'>3</div>
-        <div className='w-14 h-14 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold'>4</div>
-        <div className='w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold'>5</div>
+        <div className='w-14 h-14 rounded-full bg-black flex items-center justify-center text-white font-bold'>
+          1
+        </div>
+        <div className='w-14 h-14 rounded-full bg-[#5227FF] flex items-center justify-center text-white font-bold'>
+          2
+        </div>
+        <div className='w-14 h-14 rounded-full bg-[#FF9FFC] flex items-center justify-center text-black font-bold'>
+          3
+        </div>
+        <div className='w-14 h-14 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold'>
+          4
+        </div>
+        <div className='w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold'>
+          5
+        </div>
       </CirclingElements>
     </div>
   ),
@@ -1540,7 +1737,10 @@ export const fullDemos: Record<string, React.ReactNode> = {
         <FloatingElement depth={1} className='absolute top-[60%] right-[15%]'>
           <div className='w-20 h-20 bg-[#FF9FFC] rounded-lg' />
         </FloatingElement>
-        <FloatingElement depth={0.8} className='absolute bottom-[15%] left-[45%]'>
+        <FloatingElement
+          depth={0.8}
+          className='absolute bottom-[15%] left-[45%]'
+        >
           <div className='w-28 h-14 bg-gray-700 rounded-xl' />
         </FloatingElement>
       </ParallaxFloating>
@@ -1557,10 +1757,22 @@ export const fullDemos: Record<string, React.ReactNode> = {
           { lat: -33.8688, lng: 151.2093, label: 'Sydney' },
         ]}
         arcs={[
-          { from: { lat: 52.3676, lng: 4.9041 }, to: { lat: 51.5074, lng: -0.1278 } },
-          { from: { lat: 52.3676, lng: 4.9041 }, to: { lat: 40.7128, lng: -74.006 } },
-          { from: { lat: 40.7128, lng: -74.006 }, to: { lat: 35.6762, lng: 139.6503 } },
-          { from: { lat: 35.6762, lng: 139.6503 }, to: { lat: -33.8688, lng: 151.2093 } },
+          {
+            from: { lat: 52.3676, lng: 4.9041 },
+            to: { lat: 51.5074, lng: -0.1278 },
+          },
+          {
+            from: { lat: 52.3676, lng: 4.9041 },
+            to: { lat: 40.7128, lng: -74.006 },
+          },
+          {
+            from: { lat: 40.7128, lng: -74.006 },
+            to: { lat: 35.6762, lng: 139.6503 },
+          },
+          {
+            from: { lat: 35.6762, lng: 139.6503 },
+            to: { lat: -33.8688, lng: 151.2093 },
+          },
         ]}
       />
     </div>
