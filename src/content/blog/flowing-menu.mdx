@@ -1,31 +1,140 @@
 ---
 title: "Build a Flowing Menu in React"
-description: "Create an animated navigation menu where items ripple and flow as the cursor moves across them."
+description: "Create an animated navigation menu where items reveal a marquee strip from the closest edge on hover."
 date: "2026-04-07"
 category: "Components"
 componentSlug: "flowing-menu"
 ---
 
-Most navigation menus are completely static until you click something. They work fine, but they also feel lifeless. A flowing menu turns navigation into a moment worth noticing.
+Most navigation menus are completely static until you click something. They work fine, but they also feel lifeless. A flowing menu turns navigation into a moment worth noticing. Each item reveals a scrolling marquee strip that slides in from whichever edge you entered from.
 
-## What it does
+## What we are building
 
-The Flowing Menu component renders navigation items that deform and ripple when the cursor passes over them. Text curves, stretches, or flows like liquid fabric, then returns to its resting state when the cursor moves away.
+A full-height navigation menu where each item is a horizontal band. On hover, a marquee strip slides in from the nearest edge (top or bottom), revealing the menu item label and a preview image in an infinite scroll. GSAP drives the animation.
 
-## How it works
+## Setting up
 
-Each menu item uses an SVG text element or a canvas-rendered label. The cursor position relative to the item drives a displacement map or a custom path deformation calculated per frame.
+```bash
+npm install gsap
+```
 
-For the text deformation, a wave function applies varying vertical offsets to character positions based on cursor proximity and time. Framer Motion handles the smooth lerp between the current and target deformation state.
+```tsx
+import React, { useRef, useEffect, useState } from 'react';
+import { gsap } from 'gsap';
+```
 
-## Key properties
+## Building the component
 
-- **items** - Navigation links with label and href
-- **flowIntensity** - How strongly items deform on hover
-- **flowSpeed** - Speed of the ripple recovery
-- **fontSize** - Base text size
-- **color** - Text color (hover and rest states)
+**Finding the closest edge**
 
-## When to use it
+When the cursor enters a menu item, we calculate whether it entered from the top or bottom edge by comparing distances to each edge:
 
-This is an expressive choice for creative agency sites, portfolios, or any site where the navigation itself is meant to be part of the visual experience. It is less suited to dense dashboards or utility tools where users need to navigate quickly without distraction.
+```tsx
+const findClosestEdge = (
+  mouseX: number,
+  mouseY: number,
+  width: number,
+  height: number
+): 'top' | 'bottom' => {
+  const topEdgeDist = Math.pow(mouseX - width / 2, 2) + Math.pow(mouseY, 2);
+  const bottomEdgeDist =
+    Math.pow(mouseX - width / 2, 2) + Math.pow(mouseY - height, 2);
+  return topEdgeDist < bottomEdgeDist ? 'top' : 'bottom';
+};
+```
+
+This uses the squared distance formula without the square root since we only need to compare the two values.
+
+**Sliding the marquee in**
+
+The marquee div starts off-screen. On hover, both the container and its inner content animate to `y: 0%`. The inner content starts at the opposite offset to create a parallax layer:
+
+```tsx
+const handleMouseEnter = (ev: React.MouseEvent<HTMLAnchorElement>) => {
+  const rect = itemRef.current.getBoundingClientRect();
+  const edge = findClosestEdge(
+    ev.clientX - rect.left,
+    ev.clientY - rect.top,
+    rect.width,
+    rect.height
+  );
+  gsap
+    .timeline({ defaults: animationDefaults })
+    .set(marqueeRef.current, { y: edge === 'top' ? '-101%' : '101%' }, 0)
+    .set(marqueeInnerRef.current, { y: edge === 'top' ? '101%' : '-101%' }, 0)
+    .to([marqueeRef.current, marqueeInnerRef.current], { y: '0%' }, 0);
+};
+```
+
+The same edge detection runs on `mouseleave` to animate the marquee out in the correct direction:
+
+```tsx
+const handleMouseLeave = (ev: React.MouseEvent<HTMLAnchorElement>) => {
+  const rect = itemRef.current.getBoundingClientRect();
+  const edge = findClosestEdge(ev.clientX - rect.left, ev.clientY - rect.top, rect.width, rect.height);
+  gsap
+    .timeline({ defaults: animationDefaults })
+    .to(marqueeRef.current, { y: edge === 'top' ? '-101%' : '101%' }, 0)
+    .to(marqueeInnerRef.current, { y: edge === 'top' ? '101%' : '-101%' }, 0);
+};
+```
+
+**The infinite marquee scroll**
+
+The marquee content repeats enough times to fill the viewport width. We calculate repetitions based on actual content width:
+
+```tsx
+useEffect(() => {
+  const calculateRepetitions = () => {
+    const marqueeContent = marqueeInnerRef.current?.querySelector('.marquee-part') as HTMLElement;
+    const contentWidth = marqueeContent.offsetWidth;
+    const viewportWidth = window.innerWidth;
+    const needed = Math.ceil(viewportWidth / contentWidth) + 2;
+    setRepetitions(Math.max(4, needed));
+  };
+  calculateRepetitions();
+  window.addEventListener('resize', calculateRepetitions);
+  return () => window.removeEventListener('resize', calculateRepetitions);
+}, [text, image]);
+```
+
+GSAP then scrolls the inner wrapper by exactly one content width in an infinite loop:
+
+```tsx
+animationRef.current = gsap.to(marqueeInnerRef.current, {
+  x: -contentWidth,
+  duration: speed,
+  ease: 'none',
+  repeat: -1,
+});
+```
+
+## How to use it
+
+```tsx
+<FlowingMenu
+  items={[
+    { text: 'Work', link: '/work', image: '/preview-work.jpg' },
+    { text: 'About', link: '/about', image: '/preview-about.jpg' },
+    { text: 'Contact', link: '/contact', image: '/preview-contact.jpg' },
+  ]}
+  speed={15}
+  textColor="#fff"
+  bgColor="#060010"
+  marqueeBgColor="#fff"
+  marqueeTextColor="#060010"
+/>
+```
+
+| Prop | Default | Description |
+|------|---------|-------------|
+| `speed` | `15` | Seconds for one full marquee loop |
+| `textColor` | `#fff` | Color of the menu item labels |
+| `marqueeBgColor` | `#fff` | Background color of the revealed strip |
+| `marqueeTextColor` | `#060010` | Text color inside the marquee |
+
+## Key takeaways
+
+- Using `101%` instead of `100%` for the off-screen position ensures a 1px overlap that prevents a gap appearing during the slide-in on subpixel screens.
+- The `animationDefaults` object is passed to `gsap.timeline()` so the `duration` and `ease` apply to every tween in the timeline without repeating them.
+- Setting up `animationRef.current = gsap.to(...)` and calling `animationRef.current.kill()` on cleanup is the correct pattern for managing GSAP animations in React effects.

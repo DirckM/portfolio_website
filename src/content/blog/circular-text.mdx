@@ -8,26 +8,111 @@ componentSlug: "circular-text"
 
 You have seen it on vinyl record labels, magazine covers, and those retro badge stickers. Circular text is one of those design details that immediately signals craft. And it is surprisingly simple to pull off in React.
 
-## What it does
+## What we are building
 
-Circular Text places a string of characters along the path of a circle, then continuously rotates the whole arrangement. The result is a spinning text ring that works as a label, a decorative badge, or an ambient UI element.
+CircularText places each character of a string along the perimeter of a circle and continuously rotates the whole arrangement. You can control the spin speed and configure what happens on hover: slow down, speed up, pause, or go completely off the rails.
 
-## How it works
+## Setting up
 
-The component renders an SVG with a circular `<path>` element. Text is placed on that path using the SVG `<textPath>` element, which distributes characters evenly around the arc. A CSS `animation` with `rotate` handles the continuous spin.
+This component uses Motion (Framer Motion) for animation control.
 
-No physics library needed. Just SVG and a CSS keyframe.
+```tsx
+import {
+  motion,
+  useAnimation,
+  useMotionValue,
+} from 'motion/react';
+```
 
-## Key properties
+## Building the component
 
-- **text** - The string to arrange around the circle (repeats to fill the ring)
-- **radius** - Radius of the circle in pixels
-- **fontSize** - Size of the characters
-- **duration** - Time in seconds for one full rotation
-- **direction** - Clockwise or counter-clockwise rotation
+The props cover the spin behavior and the hover response.
 
-## When to use it
+```tsx
+interface CircularTextProps {
+  text: string;
+  spinDuration?: number;
+  onHover?: 'slowDown' | 'speedUp' | 'pause' | 'goBonkers';
+  className?: string;
+}
+```
 
-This fits naturally around profile avatars, call-to-action badges ("scroll down", "open to work"), or decorative section markers. It adds personality without taking up much space.
+A helper function builds the rotation transition object. It always animates from a `from` value to `from + 360`, so the rotation picks up from wherever it currently is rather than jumping back to zero.
 
-Keep the text short enough that it wraps naturally around the circle once or twice. Repeating a short phrase like "available for hire" works better than a full sentence.
+```tsx
+const getRotationTransition = (duration: number, from: number, loop = true) => ({
+  from,
+  to: from + 360,
+  ease: 'linear' as const,
+  duration,
+  type: 'tween' as const,
+  repeat: loop ? Infinity : 0,
+});
+```
+
+The position of each letter is calculated using rotation degrees spread evenly around the full 360. Each `span` uses a CSS `transform` with `rotateZ` and a small `translate3d` offset based on the character index.
+
+```tsx
+{letters.map((letter, i) => {
+  const rotationDeg = (360 / letters.length) * i;
+  const factor = Math.PI / letters.length;
+  const x = factor * i;
+  const y = factor * i;
+  const transform = `rotateZ(${rotationDeg}deg) translate3d(${x}px, ${y}px, 0)`;
+
+  return (
+    <span
+      key={i}
+      className='absolute inline-block inset-0 text-2xl'
+      style={{ transform, WebkitTransform: transform }}
+    >
+      {letter}
+    </span>
+  );
+})}
+```
+
+The outer `motion.div` holds the rotation state. On hover, we read the current rotation value and start a new animation from that exact point with a different speed, so there is no visible jump.
+
+```tsx
+const handleHoverStart = () => {
+  const start = rotation.get();
+  switch (onHover) {
+    case 'slowDown':
+      controls.start({ rotate: start + 360, scale: 1,
+        transition: getTransition(spinDuration * 2, start) });
+      break;
+    case 'speedUp':
+      controls.start({ rotate: start + 360, scale: 1,
+        transition: getTransition(spinDuration / 4, start) });
+      break;
+    case 'pause':
+      controls.start({ rotate: start, scale: 1,
+        transition: { rotate: { type: 'spring', damping: 20, stiffness: 300 } } });
+      break;
+    case 'goBonkers':
+      controls.start({ rotate: start + 360, scale: 0.8,
+        transition: getTransition(spinDuration / 20, start) });
+      break;
+  }
+};
+```
+
+## How to use it
+
+```tsx
+<CircularText
+  text="AVAILABLE FOR WORK * "
+  spinDuration={20}
+  onHover="speedUp"
+  className="text-white font-black"
+/>
+```
+
+The trailing space and asterisk in the text help it read naturally as the ring loops around.
+
+## Key takeaways
+
+- Reading the current motion value before starting a new animation prevents jarring jumps between speed states.
+- Using CSS `rotateZ` per character rather than SVG `textPath` keeps the implementation simple while still achieving the circular layout.
+- The `goBonkers` hover mode exists because sometimes the most useful prop is the one that makes people smile.

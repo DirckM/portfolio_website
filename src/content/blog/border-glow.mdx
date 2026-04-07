@@ -6,28 +6,136 @@ category: "Components"
 componentSlug: "border-glow"
 ---
 
-A static glowing border is decorative. A border glow that follows your cursor is interactive. That small distinction turns a passive element into something that responds to you.
+A static glowing border is decorative. A border glow that follows your cursor is interactive. That small distinction turns a passive element into something that responds to you. This implementation is one of the more technically interesting CSS tricks in this library.
 
-## What it does
+## What we are building
 
-The Border Glow component wraps any content in a container with a gradient border that intensifies near the cursor position. Moving along the edge creates a traveling glow that traces where you are hovering.
+A card wrapper with three layered effects: a conic gradient border that illuminates in the direction of the cursor, a mesh gradient fill that bleeds softly through the border region, and a box shadow glow that radiates outward from the cursor angle. All three are driven by the same angle value computed from mouse position.
 
-## How it works
+## Setting up
 
-The border is rendered using a CSS `conic-gradient` or `radial-gradient` that rotates or shifts based on cursor angle relative to the element center. The gradient position is updated via a CSS custom property on `mousemove`.
+```tsx
+import { useRef, useCallback, useState, useEffect } from 'react';
+```
 
-A thin overflow clip on the inner content ensures the glow stays on the border itself rather than leaking into the card interior.
+No animation libraries. The transitions use CSS `transition` properties and a custom `animateValue` utility for the optional animated sweep.
 
-## Key properties
+## Building the component
 
-- **glowColor** - Primary glow color
-- **glowSize** - Width of the glow band in pixels
-- **borderWidth** - Thickness of the border
-- **borderRadius** - Corner radius
-- **opacity** - Glow opacity range (min at rest, max at cursor)
+**Computing cursor angle**
 
-## When to use it
+The angle is calculated from the cursor position relative to the element center, in degrees starting from the top and going clockwise:
 
-This is a refined choice for interactive cards, CTA buttons, or input fields where you want to subtly acknowledge cursor presence without a full hover animation. It layers well with dark backgrounds and vibrant accent colors.
+```tsx
+const getCursorAngle = useCallback((el: HTMLElement, x: number, y: number) => {
+  const [cx, cy] = getCenterOfElement(el);
+  const dx = x - cx, dy = y - cy;
+  if (dx === 0 && dy === 0) return 0;
+  let degrees = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+  if (degrees < 0) degrees += 360;
+  return degrees;
+}, [getCenterOfElement]);
+```
 
-It reads best when the rest of the card is fairly understated so the glow stands out.
+Edge proximity (how close the cursor is to the edge vs. center) controls the glow intensity:
+
+```tsx
+const getEdgeProximity = useCallback((el: HTMLElement, x: number, y: number) => {
+  const [cx, cy] = getCenterOfElement(el);
+  const dx = x - cx, dy = y - cy;
+  let kx = Infinity, ky = Infinity;
+  if (dx !== 0) kx = cx / Math.abs(dx);
+  if (dy !== 0) ky = cy / Math.abs(dy);
+  return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
+}, [getCenterOfElement]);
+```
+
+A value of 1 means the cursor is at the edge; 0 means it is at the center.
+
+**The conic gradient border**
+
+The border uses a mask to show only a cone of the gradient around the cursor angle, so the glow appears to be a beam traveling around the border:
+
+```tsx
+<div
+  className='absolute inset-0 rounded-[inherit] -z-[1]'
+  style={{
+    border: '1px solid transparent',
+    background: [
+      `linear-gradient(${backgroundColor} 0 100%) padding-box`,
+      ...borderBg,
+    ].join(', '),
+    opacity: borderOpacity,
+    maskImage: `conic-gradient(from ${angleDeg} at center,
+      black ${coneSpread}%,
+      transparent ${coneSpread + 15}%,
+      transparent ${100 - coneSpread - 15}%,
+      black ${100 - coneSpread}%)`,
+  }}
+/>
+```
+
+**The mesh gradient fill**
+
+A second layer uses the same angle but a different mask to let color bleed softly through the border region without covering the content:
+
+```tsx
+style={{
+  maskImage: [
+    'linear-gradient(to bottom, black, black)',
+    'radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%)',
+    // ... corner ellipses
+    `conic-gradient(from ${angleDeg} at center, transparent 5%, black 15%, black 85%, transparent 95%)`,
+  ].join(', '),
+  maskComposite: 'subtract, add, add, add, add, add',
+  opacity: borderOpacity * fillOpacity,
+  mixBlendMode: 'soft-light',
+}}
+```
+
+**The outer glow**
+
+A third element extends outside the card bounds and uses `buildBoxShadow` to create layered box shadows in HSL:
+
+```tsx
+function buildBoxShadow(glowColor: string, intensity: number): string {
+  const { h, s, l } = parseHSL(glowColor);
+  const base = `${h}deg ${s}% ${l}%`;
+  const layers: [number, number, number, number, number, boolean][] = [
+    [0, 0, 0, 1, 100, true],
+    [0, 0, 1, 0, 60, true],
+    [0, 0, 3, 0, 50, true],
+    // ... more layers
+  ];
+  return layers.map(([x, y, blur, spread, alpha, inset]) => {
+    const a = Math.min(alpha * intensity, 100);
+    return `${inset ? 'inset ' : ''}${x}px ${y}px ${blur}px ${spread}px hsl(${base} / ${a}%)`;
+  }).join(', ');
+}
+```
+
+## How to use it
+
+```tsx
+<BorderGlow
+  glowColor="40 80 80"
+  colors={['#c084fc', '#f472b6', '#38bdf8']}
+  borderRadius={28}
+  glowRadius={40}
+  glowIntensity={1.0}
+  coneSpread={25}
+  animated={false}
+>
+  <div className='p-8'>
+    <h2>Card content</h2>
+  </div>
+</BorderGlow>
+```
+
+Set `animated={true}` for a one-time sweep animation that plays on mount, useful for drawing attention to the card without requiring user interaction.
+
+## Key takeaways
+
+- The three-layer approach (border cone, fill bleed, outer glow) creates depth that a single gradient border cannot. Each layer is individually controllable via the `fillOpacity`, `glowIntensity`, and `coneSpread` props.
+- `parseHSL` extracts the hue, saturation, and lightness from the `glowColor` string so the box shadow layers can all share the same color with different opacity values.
+- The mask `subtract` composite on the fill layer is what prevents the color from covering the card interior. It cuts out the center from the fill and only lets it show at the edges.

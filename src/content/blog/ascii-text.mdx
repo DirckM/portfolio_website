@@ -6,28 +6,93 @@ category: "Text Animations"
 componentSlug: "ascii-text"
 ---
 
-Before high-resolution screens, programmers rendered images and text using nothing but printable characters. ASCII art was practical necessity. Today it is pure aesthetic, and it hits differently in a world of polished UI. This component brings that texture to the browser.
+Before high-resolution screens, programmers rendered images and text using nothing but printable characters. ASCII art was practical necessity. Today it is pure aesthetic, and it hits differently in a world of polished UI. This component brings that texture to the browser, with real-time waves and mouse interaction.
 
-## What it does
+## What we are building
 
-ASCII Text converts a string into ASCII art by rendering it to a canvas, sampling pixel brightness values, and mapping each sample to a character from a density ramp. Dense characters represent dark areas, light characters represent highlights.
+ASCIIText renders a string as an ASCII art display using a Three.js scene with a custom post-processing filter. The text undulates with shader-driven waves, reacts to mouse movement, and renders with a radial color gradient applied through CSS `mix-blend-mode`.
 
-## How it works
+## Setting up
 
-The component first renders the input text to an offscreen `<canvas>` at large size using a standard font. It then reads the pixel data with `getImageData`, divides the canvas into a grid, and calculates average brightness per cell. Each brightness value maps to a character in the ramp (from dense like `@` and `#` to light like `.` and space).
+This component is the most complex in the library. It requires Three.js and loads the IBM Plex Mono font from Google Fonts.
 
-The output is a `<pre>` block of monospaced ASCII characters that recreates the shape of the original text.
+```tsx
+import * as THREE from 'three';
+```
 
-## Key properties
+## Building the component
 
-- **text** - The string to convert to ASCII art
-- **fontSize** - Size used when rendering the source text to canvas
-- **charset** - The character ramp from dense to light
-- **cellSize** - Pixel grid cell size (smaller = finer detail, larger = blockier look)
-- **color** - Text color for the output
+Three classes do the work: `CanvasTxt` renders the text to an offscreen canvas, `AsciiFilter` converts the rendered scene to ASCII characters, and `CanvAscii` orchestrates everything.
 
-## When to use it
+`CanvasTxt` draws the text string to a canvas sized exactly to fit the text.
 
-404 pages, terminal-themed UIs, developer portfolios, and retro-aesthetic projects all love this. It is a strong statement piece rather than a subtle accent. One large ASCII heading per page is usually plenty.
+```tsx
+render() {
+  if (this.context) {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.context.fillStyle = this.color;
+    this.context.font = this.font;
+    const metrics = this.context.measureText(this.txt);
+    const yPos = 10 + metrics.actualBoundingBoxAscent;
+    this.context.fillText(this.txt, 10, yPos);
+  }
+}
+```
 
-A `cellSize` of 6-10px gives good detail without becoming too computationally heavy.
+`AsciiFilter` reads pixel data from the WebGL renderer, downsamples it to a low-resolution canvas, then maps brightness values to characters from a density ramp.
+
+```tsx
+asciify(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  const imgData = ctx.getImageData(0, 0, w, h).data;
+  let str = '';
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = x * 4 + y * 4 * w;
+      const [r, g, b, a] = [imgData[i], imgData[i+1], imgData[i+2], imgData[i+3]];
+      if (a === 0) { str += ' '; continue; }
+      const gray = (0.3 * r + 0.6 * g + 0.1 * b) / 255;
+      let idx = Math.floor((1 - gray) * (this.charset.length - 1));
+      if (this.invert) idx = this.charset.length - idx - 1;
+      str += this.charset[idx];
+    }
+    str += '\n';
+  }
+  this.pre.innerHTML = str;
+}
+```
+
+The shader material adds wave distortion to the text mesh. The vertex shader displaces vertices using `sin` and `cos` functions of time and position, creating a subtle wobble.
+
+```glsl
+transformed.x += sin(time + position.y) * 0.5 * waveFactor;
+transformed.y += cos(time + position.z) * 0.15 * waveFactor;
+transformed.z += sin(time + position.x) * waveFactor;
+```
+
+The fragment shader splits the RGB channels slightly based on position and time, creating a chromatic aberration effect.
+
+```glsl
+float r = texture2D(uTexture, pos + cos(time * 2. - time + pos.x) * .01).r;
+float g = texture2D(uTexture, pos + tan(time * .5 + pos.x - time) * .01).g;
+float b = texture2D(uTexture, pos - cos(time * 2. + time + pos.y) * .01).b;
+```
+
+## How to use it
+
+```tsx
+<ASCIIText
+  text="HELLO"
+  asciiFontSize={8}
+  textFontSize={200}
+  textColor="#fdf9f3"
+  enableWaves={true}
+/>
+```
+
+The component needs a container with an explicit height. Set `planeBaseHeight` to adjust how large the text mesh appears in the scene.
+
+## Key takeaways
+
+- The ASCII effect works by reading pixel brightness from a WebGL render and mapping it to a character density ramp. Denser characters represent darker areas.
+- Using `mix-blend-mode: difference` on the `<pre>` element creates the gradient color effect without needing to color each character individually.
+- Waiting for `document.fonts.ready` before initializing prevents the font from loading mid-render, which would cause the character width measurements to be wrong.

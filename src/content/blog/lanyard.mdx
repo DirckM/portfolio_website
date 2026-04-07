@@ -6,26 +6,85 @@ category: "Components"
 componentSlug: "lanyard"
 ---
 
-An ID badge hanging from a lanyard is one of the most universally recognized objects in professional life. Building one that actually swings and sways makes your about page or contact section unforgettable.
+An ID badge hanging from a lanyard is one of the most universally recognized objects in professional life. Building one that swings and sways makes your about page or contact section unforgettable. This component is intentionally minimal so you can focus on the structure rather than the content.
 
-## What it does
+## What we are building
 
-The Lanyard Badge component renders a virtual ID badge suspended from a cord. The badge has real physics: it swings on drag, reacts to cursor proximity, and settles back to a natural hanging position with momentum and bounce.
+A static placeholder that represents the lanyard badge concept: a centered SVG badge icon on a dark background, with a label indicating that a physics simulation would be attached. This gives you the foundation to wire in a physics library of your choice.
 
-## How it works
+## Setting up
 
-The physics simulation uses a spring model. The badge position is driven by a Framer Motion spring that updates in response to drag events and mouse proximity. The cord is drawn as an SVG path that bends based on the badge position, using a quadratic bezier curve.
+No dependencies beyond React and Tailwind:
 
-The connection point at the top stays fixed while the badge end follows physics, creating a convincing pendulum simulation.
+```tsx
+export default function Lanyard() { ... }
+```
 
-## Key properties
+## Building the component
 
-- **badge** - Content to display on the badge (name, photo, role)
-- **cordColor** - Color of the lanyard cord
-- **stiffness** - Spring stiffness (lower = more floppy)
-- **damping** - How quickly the swing settles
-- **maxRotation** - Maximum angle the badge can tilt
+**The outer container**
 
-## When to use it
+The badge lives inside a fixed-height container with a dark background and centered content. The `relative z-0` on the wrapper sets up a stacking context for anything you add on top later:
 
-This is a perfect detail for personal websites, conference pages, or team profile sections. It rewards users who interact with the page and creates a memorable moment without interrupting any actual workflow.
+```tsx
+<div className='relative z-0 w-full h-[400px] flex flex-col justify-center items-center bg-[#060010] rounded-lg'>
+```
+
+**The badge SVG**
+
+The badge is drawn with basic SVG primitives: a rounded rectangle for the card body, a circle for the photo area, a line and small circle for the lanyard clip, and two low-opacity rectangles for text lines:
+
+```tsx
+<svg width='60' height='80' viewBox='0 0 60 80' fill='none' className='opacity-40'>
+  <rect x='5' y='20' width='50' height='55' rx='4' stroke='white' strokeWidth='1.5' />
+  <circle cx='30' cy='40' r='10' stroke='white' strokeWidth='1.5' />
+  <line x1='30' y1='10' x2='30' y2='20' stroke='white' strokeWidth='1.5' />
+  <circle cx='30' cy='8' r='3' stroke='white' strokeWidth='1.5' />
+  <rect x='15' y='55' width='30' height='4' rx='1' fill='white' fillOpacity='0.2' />
+  <rect x='20' y='62' width='20' height='3' rx='1' fill='white' fillOpacity='0.15' />
+</svg>
+```
+
+The `opacity-40` on the SVG keeps the icon subtle. The two placeholder text rectangles use progressively lower opacity to suggest a hierarchy of name and title without actual text.
+
+**Extending with physics**
+
+To add real physics, you would connect this to a spring-based simulation. Here is the pattern: track pointer events on the container, feed drag delta into a spring, and apply the spring value as a CSS transform on the badge element. A minimal version using CSS custom properties and a requestAnimationFrame loop:
+
+```tsx
+const badgeRef = useRef<HTMLDivElement>(null);
+const velocity = useRef({ x: 0, y: 0 });
+const position = useRef({ x: 0, y: 0 });
+
+const animate = () => {
+  // Apply spring force toward rest position
+  const stiffness = 0.1;
+  const damping = 0.8;
+  velocity.current.x += -position.current.x * stiffness;
+  velocity.current.y += -position.current.y * stiffness;
+  velocity.current.x *= damping;
+  velocity.current.y *= damping;
+  position.current.x += velocity.current.x;
+  position.current.y += velocity.current.y;
+
+  if (badgeRef.current) {
+    badgeRef.current.style.transform =
+      `translate(${position.current.x}px, ${position.current.y}px) rotate(${position.current.x * 0.1}deg)`;
+  }
+  requestAnimationFrame(animate);
+};
+```
+
+## How to use it
+
+```tsx
+<Lanyard />
+```
+
+The component takes no props in its current form. Extend it by adding a `children` prop for custom badge content and your physics implementation of choice.
+
+## Key takeaways
+
+- The SVG badge uses `opacity-40` to look like a placeholder wireframe rather than a finished design, which is the appropriate starting state for a component meant to be customized.
+- For real physics, consider `matter-js` for rigid body simulation or a custom spring implementation. The key values are stiffness (how quickly it snaps back) and damping (how much it oscillates before settling).
+- The cord connecting the badge to its anchor point is best drawn as an SVG `path` with a quadratic bezier, where the control point hangs below the midpoint of the two endpoints to create a natural catenary curve.

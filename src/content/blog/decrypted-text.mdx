@@ -6,28 +6,110 @@ category: "Text Animations"
 componentSlug: "decrypted-text"
 ---
 
-There is something cinematic about watching encrypted text decode itself in real time. Think spy films, hacker interfaces, classified document reveals. The Decrypted Text component brings that energy to your React app with a few lines of code.
+There is something cinematic about watching encrypted text decode itself in real time. Think spy films, hacker interfaces, classified document reveals. The Decrypted Text component brings that energy to your React app.
 
-## What it does
+## What we are building
 
-Decrypted Text scrambles each character of a string through random symbols, then resolves them in sequence from left to right until the full intended text is visible. Each character "cracks" at a slightly different time, creating a cascading decode effect.
+DecryptedText scrambles each character through random symbols, then resolves them in sequence until the full intended text is visible. It supports hover, click, and scroll-into-view triggers, sequential or simultaneous reveals, and even a reverse mode that re-encrypts on mouse leave.
 
-## How it works
+## Setting up
 
-The component holds a display string in state, where each position starts as a random character from a defined character pool. An interval cycles each unresolved character through new random values. After a character has cycled enough times (or after its stagger delay), it locks to the final correct value.
+This uses Motion for the container and an `IntersectionObserver` for scroll triggering. The core scramble logic is plain React state.
 
-A `useEffect` triggers on mount or when the parent signals a replay, resetting the scrambled state and running the decode again.
+```tsx
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { motion } from 'motion/react';
+```
 
-## Key properties
+## Building the component
 
-- **text** - The final revealed string
-- **speed** - How fast characters cycle through randoms (ms per frame)
-- **characters** - Pool of characters to scramble through
-- **revealDelay** - Per-character stagger for the reveal
-- **sequential** - Whether characters resolve left-to-right or all at once
+The key state variables track what is currently displayed, which indices have been revealed, and whether we are animating forward or in reverse.
 
-## When to use it
+```tsx
+const [displayText, setDisplayText] = useState<string>(text);
+const [isAnimating, setIsAnimating] = useState<boolean>(false);
+const [revealedIndices, setRevealedIndices] = useState<Set<number>>(new Set());
+const [direction, setDirection] = useState<Direction>('forward');
+```
 
-Perfect for sci-fi or tech aesthetics, terminal-style UIs, or dramatic data reveal moments. Pair it with a monospace font to reinforce the "raw data" feel. Works best on short strings of 3-15 characters.
+The `shuffleText` function builds the display string. Revealed positions show the real character, unrevealed positions show a random one from the character pool.
 
-A speed of 30-50ms keeps things fast enough to feel energetic without becoming illegible noise.
+```tsx
+const shuffleText = useCallback((originalText: string, currentRevealed: Set<number>) => {
+  return originalText.split('').map((char, i) => {
+    if (char === ' ') return ' ';
+    if (currentRevealed.has(i)) return originalText[i];
+    return availableChars[Math.floor(Math.random() * availableChars.length)];
+  }).join('');
+}, [availableChars]);
+```
+
+The `computeOrder` function determines the reveal sequence. `start` goes left to right, `end` goes right to left, and `center` works outward from the middle.
+
+```tsx
+const computeOrder = useCallback((len: number): number[] => {
+  if (revealDirection === 'start') {
+    return Array.from({ length: len }, (_, i) => i);
+  }
+  if (revealDirection === 'end') {
+    return Array.from({ length: len }, (_, i) => len - 1 - i);
+  }
+  // center: alternate left and right from the middle
+  const middle = Math.floor(len / 2);
+  let offset = 0;
+  const order: number[] = [];
+  while (order.length < len) {
+    const idx = offset % 2 === 0 ? middle + offset / 2 : middle - Math.ceil(offset / 2);
+    if (idx >= 0 && idx < len) order.push(idx);
+    offset++;
+  }
+  return order;
+}, [revealDirection]);
+```
+
+The animation loop runs on a `setInterval` with the configured `speed`. In sequential mode, one new index is revealed per tick. In non-sequential mode, the whole display string gets reshuffled each tick until the max iterations are reached.
+
+```tsx
+const interval = setInterval(() => {
+  setRevealedIndices(prevRevealed => {
+    if (sequential && direction === 'forward') {
+      if (prevRevealed.size < text.length) {
+        const nextIndex = getNextIndex(prevRevealed);
+        const newRevealed = new Set(prevRevealed);
+        newRevealed.add(nextIndex);
+        setDisplayText(shuffleText(text, newRevealed));
+        return newRevealed;
+      } else {
+        clearInterval(interval);
+        setIsAnimating(false);
+        setIsDecrypted(true);
+        return prevRevealed;
+      }
+    }
+    // non-sequential: reshuffle everything, stop after maxIterations
+  });
+}, speed);
+```
+
+## How to use it
+
+```tsx
+<DecryptedText
+  text="CLASSIFIED"
+  animateOn="view"
+  sequential={true}
+  revealDirection="start"
+  speed={50}
+  characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()"
+  className="text-green-400 font-mono"
+  encryptedClassName="text-green-800 font-mono"
+/>
+```
+
+Set `animateOn="hover"` with `clickMode="toggle"` to re-encrypt on mouse leave.
+
+## Key takeaways
+
+- Using a `Set` for `revealedIndices` makes it cheap to check whether a position has been revealed and to add new ones each tick.
+- Rendering two `span` layers, one visible and one screen-reader-only with the real text, ensures accessibility even while the display is scrambled.
+- The `encryptedClassName` prop lets you style scrambled characters differently from revealed ones, which amplifies the decode-in-progress visual.

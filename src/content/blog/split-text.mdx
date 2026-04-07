@@ -8,26 +8,123 @@ componentSlug: "split-text"
 
 There is something satisfying about watching text arrive letter by letter. It draws the eye, holds attention for just a moment longer, and makes a heading feel earned rather than static.
 
-## What it does
+## What we are building
 
-Split Text breaks a string into individual characters and animates each one in sequence. Letters slide in from below (or above) with a staggered delay, creating a flowing cascade effect across the full word or sentence.
+Split Text breaks a string into individual characters and animates each one in sequence. Letters slide up from below with a staggered delay, creating a flowing cascade across the full word or sentence. The animation fires once when the element scrolls into view.
 
-## How it works
+## Setting up
 
-The component splits the input string into an array of characters, wrapping each in a `motion.span`. Framer Motion handles the stagger through the `staggerChildren` property on the parent's `transition` config, so you get the cascade without writing manual delays.
+This component uses GSAP with the `SplitText` plugin (a GSAP Club plugin), plus `ScrollTrigger` and `useGSAP` from the React adapter.
 
-The animation is triggered either on mount or when the element scrolls into view using `useInView`. Each character transitions from `y: 20` and `opacity: 0` to its resting position.
+```tsx
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText as GSAPSplitText } from 'gsap/SplitText';
+import { useGSAP } from '@gsap/react';
 
-## Key properties
+gsap.registerPlugin(ScrollTrigger, GSAPSplitText, useGSAP);
+```
 
-- **text** - The string to split and animate
-- **delay** - Stagger delay between characters (default: 0.03s)
-- **duration** - Duration of each character's animation
-- **animationFrom** - Starting transform values (y, opacity, etc.)
-- **onLetterAnimationComplete** - Callback fired when all characters finish
+## Building the component
 
-## When to use it
+Start with the props interface. The key ones are `text`, `splitType`, and the `from`/`to` objects that define the animation values.
 
-Use this for hero headings, page titles, or short labels where you want the text itself to feel like an event. It works especially well for single words or short phrases. Avoid it on long paragraphs since character-level animation gets visually noisy at scale.
+```tsx
+export interface SplitTextProps {
+  text: string;
+  delay?: number;
+  duration?: number;
+  ease?: string | ((t: number) => number);
+  splitType?: 'chars' | 'words' | 'lines' | 'words, chars';
+  from?: gsap.TweenVars;
+  to?: gsap.TweenVars;
+  threshold?: number;
+  rootMargin?: string;
+  tag?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span';
+  onLetterAnimationComplete?: () => void;
+}
+```
 
-A stagger of 0.02-0.04s keeps things snappy. Anything slower starts to feel sluggish for impatient readers.
+We wait for fonts to load before running the animation. Without this, GSAP measures character widths before the custom font renders, and the splits come out wrong.
+
+```tsx
+useEffect(() => {
+  if (document.fonts.status === 'loaded') {
+    setFontsLoaded(true);
+  } else {
+    document.fonts.ready.then(() => setFontsLoaded(true));
+  }
+}, []);
+```
+
+The core animation lives inside `useGSAP`. We create a `GSAPSplitText` instance on the element, which wraps each character in a `<span>`. We then animate those spans from the `from` state to the `to` state using `ScrollTrigger`.
+
+```tsx
+useGSAP(() => {
+  if (!ref.current || !text || !fontsLoaded) return;
+
+  const splitInstance = new GSAPSplitText(el, {
+    type: splitType,
+    smartWrap: true,
+    charsClass: 'split-char',
+    onSplit: (self) => {
+      assignTargets(self);
+      return gsap.fromTo(targets, { ...from }, {
+        ...to,
+        duration,
+        ease,
+        stagger: delay / 1000,
+        scrollTrigger: {
+          trigger: el,
+          start,
+          once: true,
+          fastScrollEnd: true,
+        },
+        onComplete: () => {
+          animationCompletedRef.current = true;
+          onCompleteRef.current?.();
+        },
+      });
+    },
+  });
+}, { dependencies: [text, delay, duration, ease, splitType, fontsLoaded] });
+```
+
+The `assignTargets` function picks the right array of elements depending on `splitType`. Characters take priority, then words, then lines.
+
+Finally, the component renders a dynamic HTML tag so you can use it as a heading or paragraph without a wrapper element adding extra DOM nodes.
+
+```tsx
+const renderTag = () => {
+  const style: React.CSSProperties = {
+    textAlign,
+    wordWrap: 'break-word',
+    willChange: 'transform, opacity',
+  };
+  const classes = `split-parent overflow-hidden inline-block whitespace-normal ${className}`;
+
+  return React.createElement(tag || 'p', { ref, style, className: classes }, text);
+};
+```
+
+## How to use it
+
+```tsx
+<SplitText
+  text="Hello world"
+  tag="h1"
+  splitType="chars"
+  from={{ opacity: 0, y: 40 }}
+  to={{ opacity: 1, y: 0 }}
+  duration={1.25}
+  delay={50}
+/>
+```
+
+Pass a custom `from` object to change the entry direction. Use `splitType="words"` for a less frenetic effect on longer strings.
+
+## Key takeaways
+
+- Waiting for `document.fonts.ready` before splitting is critical when using custom fonts, or character measurements will be off.
+- GSAP's `SplitText` does the heavy lifting of wrapping characters. Your job is to animate the resulting elements.
+- Passing `once: true` to `ScrollTrigger` prevents the animation from replaying when the user scrolls back up, which usually feels cleaner.

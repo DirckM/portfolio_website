@@ -8,25 +8,109 @@ componentSlug: "shiny-text"
 
 Some UI elements just need to gleam. A premium label, a "new" badge, a call to action you want people to notice. The shiny text effect does exactly one thing, and it does it well: it drags a highlight across your text like light catching a metallic surface.
 
-## What it does
+## What we are building
 
-Shiny Text applies a moving gradient highlight across a string of text. The shimmer sweeps from left to right on a loop, creating a polished, premium feel without any user interaction required.
+ShinyText applies a moving gradient highlight across a string of text using Motion's `useAnimationFrame` and `useMotionValue`. The shimmer sweeps from one side to the other on a continuous loop, with options for yoyo, pause on hover, and direction control.
 
-## How it works
+## Setting up
 
-This one is pure CSS. The component renders the text with a `background-image` set to a linear gradient that includes a bright highlight band. A CSS keyframe animation shifts the `background-position` continuously, making the highlight appear to travel across the text.
+This component uses Motion (the library formerly known as Framer Motion).
 
-The `background-clip: text` property combined with `color: transparent` is what makes the gradient show through the actual letterforms instead of behind them.
+```tsx
+import {
+  motion,
+  useMotionValue,
+  useAnimationFrame,
+  useTransform,
+} from 'motion/react';
+```
 
-## Key properties
+## Building the component
 
-- **text** - The string to render with the shimmer
-- **speed** - Duration of one shimmer cycle (default: 3s)
-- **className** - For overriding base text styles (size, weight, color scheme)
-- **disabled** - Turns off the animation and renders plain text
+The key props are `speed`, `color`, `shineColor`, `spread`, and `direction`.
 
-## When to use it
+```tsx
+interface ShinyTextProps {
+  text: string;
+  disabled?: boolean;
+  speed?: number;
+  color?: string;
+  shineColor?: string;
+  spread?: number;
+  yoyo?: boolean;
+  pauseOnHover?: boolean;
+  direction?: 'left' | 'right';
+  delay?: number;
+}
+```
 
-Use this on labels like "Premium", "New", "Beta", or "Coming Soon". It also works great on a single word in a hero heading that you want to pull focus. Do not overuse it. One shiny element per view is compelling; three is cluttered.
+The gradient is defined as a CSS background image with the shine color sandwiched between the base color. `background-clip: text` combined with transparent text fill is what makes it show through the letterforms.
 
-Pair it with a slightly metallic base color like silver or gold for maximum effect.
+```tsx
+const gradientStyle: React.CSSProperties = {
+  backgroundImage: `linear-gradient(${spread}deg, ${color} 0%, ${color} 35%, ${shineColor} 50%, ${color} 65%, ${color} 100%)`,
+  backgroundSize: '200% auto',
+  WebkitBackgroundClip: 'text',
+  backgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+};
+```
+
+The animation is driven by `useAnimationFrame`, which runs every frame and updates a `progress` motion value. We track elapsed time manually to calculate where in the cycle we are.
+
+```tsx
+useAnimationFrame(time => {
+  if (disabled || isPaused) {
+    lastTimeRef.current = null;
+    return;
+  }
+  if (lastTimeRef.current === null) {
+    lastTimeRef.current = time;
+    return;
+  }
+  const deltaTime = time - lastTimeRef.current;
+  lastTimeRef.current = time;
+  elapsedRef.current += deltaTime;
+
+  const cycleDuration = animationDuration + delayDuration;
+  const cycleTime = elapsedRef.current % cycleDuration;
+
+  if (cycleTime < animationDuration) {
+    const p = (cycleTime / animationDuration) * 100;
+    progress.set(directionRef.current === 1 ? p : 100 - p);
+  } else {
+    progress.set(directionRef.current === 1 ? 100 : 0);
+  }
+});
+```
+
+The `progress` value maps to a `backgroundPosition` using `useTransform`. Shifting the background position from 150% to -50% moves the shine band from right to left across the text.
+
+```tsx
+const backgroundPosition = useTransform(
+  progress,
+  p => `${150 - p * 2}% center`
+);
+```
+
+## How to use it
+
+```tsx
+<ShinyText
+  text="Premium"
+  color="#b5b5b5"
+  shineColor="#ffffff"
+  speed={2}
+  spread={120}
+  direction="left"
+  pauseOnHover={true}
+/>
+```
+
+Set `yoyo` to `true` if you want the shine to sweep back and forth rather than looping in one direction.
+
+## Key takeaways
+
+- The `background-clip: text` trick is the entire foundation of this effect. Without it, the gradient sits behind the text instead of through it.
+- Using `useAnimationFrame` instead of a CSS animation gives you programmatic control over playback, pause, and direction without CSS class juggling.
+- The `spread` prop controls the angle of the gradient, which lets you make the shine feel more like a direct light source or more like a diffuse sheen.

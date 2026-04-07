@@ -6,28 +6,122 @@ category: "Components"
 componentSlug: "folder"
 ---
 
-Everyone knows what a folder does. That shared mental model is precisely what makes a skeuomorphic folder component so effective. No instructions needed.
+Everyone knows what a folder does. That shared mental model is exactly what makes a skeuomorphic folder component so effective. No instructions needed. You click it and the papers come out.
 
-## What it does
+## What we are building
 
-The Folder component renders a stylized folder icon that opens when clicked. Papers or thumbnails fan out from inside the folder, giving users a preview of the contents before they commit to navigating into them.
+A clickable folder shape built entirely with CSS. On click, the folder flap opens and up to three paper cards fan out at different angles. The papers respond to mouse hover with a subtle magnetic pull effect while open.
 
-## How it works
+## Setting up
 
-The closed state shows a folder shape built with CSS. On click, a Framer Motion animation triggers that lifts the folder flap and fans the contained items outward using staggered `rotate` and `translate` animations.
+```tsx
+import React, { useState } from 'react';
+```
 
-Each item inside the folder is a child element, so the component is composable and works with any content type.
+No dependencies. The folder shape, colors, and animations are pure CSS applied through Tailwind classes and inline styles.
 
-## Key properties
+## Building the component
 
-- **label** - Folder name shown below the icon
-- **color** - Folder body color
-- **open** - Controlled open/closed state (optional)
-- **onToggle** - Callback when folder is clicked
-- **items** - Content items to fan out on open
+**Color computation**
 
-## When to use it
+The folder back needs to be slightly darker than the front to read as a shadow. We do this in JavaScript rather than CSS:
 
-This is a great fit for file browsers, project dashboards, or any UI where you are grouping related items and want the grouping to feel physical. It is particularly effective when the contents are image thumbnails that make the fan visually interesting.
+```tsx
+const darkenColor = (hex: string, percent: number): string => {
+  let color = hex.startsWith('#') ? hex.slice(1) : hex;
+  if (color.length === 3)
+    color = color.split('').map(c => c + c).join('');
+  const num = parseInt(color, 16);
+  let r = (num >> 16) & 0xff;
+  let g = (num >> 8) & 0xff;
+  let b = num & 0xff;
+  r = Math.max(0, Math.min(255, Math.floor(r * (1 - percent))));
+  g = Math.max(0, Math.min(255, Math.floor(g * (1 - percent))));
+  b = Math.max(0, Math.min(255, Math.floor(b * (1 - percent))));
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+};
+```
 
-Limit the visible fan items to three or four. More than that gets crowded and the metaphor starts to break down.
+This gets called with `darkenColor(color, 0.08)` to produce `folderBackColor`.
+
+**The folder shape**
+
+The folder is built from a base rectangle (the back), a small tab protruding from the top-left, and two overlapping front flaps that skew in opposite directions. The skew is what makes it look like a flap opening:
+
+```tsx
+<div className={`absolute z-30 w-full h-full origin-bottom transition-all duration-300 ease-in-out ${!open ? 'group-hover:[transform:skew(15deg)_scaleY(0.6)]' : ''}`}
+  style={{
+    backgroundColor: color,
+    borderRadius: '5px 10px 10px 10px',
+    ...(open && { transform: 'skew(15deg) scaleY(0.6)' }),
+  }}
+/>
+<div className={`absolute z-30 w-full h-full origin-bottom transition-all duration-300 ease-in-out ${!open ? 'group-hover:[transform:skew(-15deg)_scaleY(0.6)]' : ''}`}
+  style={{
+    backgroundColor: color,
+    borderRadius: '5px 10px 10px 10px',
+    ...(open && { transform: 'skew(-15deg) scaleY(0.6)' }),
+  }}
+/>
+```
+
+The two flaps skew in opposite directions (`15deg` and `-15deg`), creating a split that reads as an opening flap.
+
+**Paper fanning**
+
+Each paper gets a preset transform when open. The offsets are hardcoded for three items:
+
+```tsx
+const getOpenTransform = (index: number) => {
+  if (index === 0) return 'translate(-120%, -70%) rotate(-15deg)';
+  if (index === 1) return 'translate(10%, -70%) rotate(15deg)';
+  if (index === 2) return 'translate(-50%, -100%) rotate(5deg)';
+  return '';
+};
+```
+
+**Mouse magnetism on open papers**
+
+When the folder is open, hovering over a paper makes it drift slightly toward the cursor. We track mouse offset from the paper center and multiply by 0.15 to keep the movement subtle:
+
+```tsx
+const handlePaperMouseMove = (e: React.MouseEvent<HTMLDivElement>, index: number) => {
+  if (!open) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const offsetX = (e.clientX - centerX) * 0.15;
+  const offsetY = (e.clientY - centerY) * 0.15;
+  setPaperOffsets(prev => {
+    const n = [...prev];
+    n[index] = { x: offsetX, y: offsetY };
+    return n;
+  });
+};
+```
+
+## How to use it
+
+```tsx
+<Folder
+  color="#5227FF"
+  size={1}
+  items={[
+    <img src="/thumb1.jpg" className="w-full h-full object-cover rounded-[10px]" />,
+    <img src="/thumb2.jpg" className="w-full h-full object-cover rounded-[10px]" />,
+    <img src="/thumb3.jpg" className="w-full h-full object-cover rounded-[10px]" />,
+  ]}
+/>
+```
+
+| Prop | Default | Description |
+|------|---------|-------------|
+| `color` | `#5227FF` | Folder accent color |
+| `size` | `1` | Scale multiplier for the entire component |
+| `items` | `[]` | Up to 3 React nodes to show as papers |
+
+## Key takeaways
+
+- The folder flap effect uses two overlapping `div` elements that skew in opposite directions. This is simpler than trying to animate a single element and reads clearly at any size.
+- `origin-bottom` on the flap divs makes the skew animate from the bottom edge, which is exactly where a real folder hinge would be.
+- The paper magnetism resets to zero on `mouseleave`, so papers always return to their fanned position rather than staying off-center.

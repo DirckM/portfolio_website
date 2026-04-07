@@ -8,26 +8,100 @@ componentSlug: "scrambled-text"
 
 Hover over a heading and watch it lose its mind for a second before snapping back. That micro-moment of chaos is what makes Scrambled Text memorable. It is interactive, slightly unpredictable, and makes even simple text feel like it has personality.
 
-## What it does
+## What we are building
 
-Scrambled Text replaces characters with random symbols on hover (or another trigger), then restores the original string. The scramble and restore can happen character by character in sequence or all at once for a more explosive feel.
+ScrambledText listens for pointer movement over the text. Characters within a configurable radius of the cursor scramble through random characters using GSAP's `ScrambleTextPlugin`, with intensity based on distance from the cursor.
 
-## How it works
+## Setting up
 
-Mouse enter and mouse leave events drive the animation. On hover, each character is replaced with a random value from a character pool on a fast interval. A secondary timer restores characters back to the original string one by one. The component holds the display string in state and mutates individual character positions.
+This component requires GSAP with two plugins: `SplitText` and `ScrambleTextPlugin`. Both are GSAP Club plugins.
 
-The sequence can run left-to-right, right-to-left, or randomized for different feels.
+```tsx
+import { gsap } from 'gsap';
+import { SplitText } from 'gsap/SplitText';
+import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 
-## Key properties
+gsap.registerPlugin(SplitText, ScrambleTextPlugin);
+```
 
-- **text** - The string to scramble and restore
-- **trigger** - hover, click, or mount
-- **speed** - Interval speed during scramble phase (ms)
-- **restoreDelay** - How long to scramble before restoring
-- **characters** - Character pool for the random phase
+## Building the component
 
-## When to use it
+The props are kept intentionally minimal.
 
-Navigation links, skill labels, and project titles all feel more alive with this treatment. It rewards users who explore your interface by hovering over things. Keep it on short strings, typically under 20 characters, where the scramble is legible.
+```tsx
+interface ScrambledTextProps {
+  radius?: number;
+  duration?: number;
+  speed?: number;
+  scrambleChars?: string;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}
+```
 
-A restore delay of 500-800ms is the sweet spot. Long enough to feel intentional, short enough not to frustrate.
+In `useEffect`, we split the paragraph into characters and store each character's original content in a `data-content` attribute. This gives us a stable reference to restore the text to after scrambling.
+
+```tsx
+const split = SplitText.create(rootRef.current.querySelector('p'), {
+  type: 'chars',
+  charsClass: 'inline-block will-change-transform',
+});
+
+split.chars.forEach(el => {
+  const c = el as HTMLElement;
+  gsap.set(c, { attr: { 'data-content': c.innerHTML } });
+});
+```
+
+The pointer move handler calculates the distance from the cursor to each character's center. Characters within the `radius` get a `scrambleText` tween applied. The `duration` of the tween scales with proximity: closer characters scramble for longer.
+
+```tsx
+const handleMove = (e: PointerEvent) => {
+  split.chars.forEach(el => {
+    const c = el as HTMLElement;
+    const { left, top, width, height } = c.getBoundingClientRect();
+    const dx = e.clientX - (left + width / 2);
+    const dy = e.clientY - (top + height / 2);
+    const dist = Math.hypot(dx, dy);
+
+    if (dist < radius) {
+      gsap.to(c, {
+        overwrite: true,
+        duration: duration * (1 - dist / radius),
+        scrambleText: {
+          text: c.dataset.content || '',
+          chars: scrambleChars,
+          speed,
+        },
+        ease: 'none',
+      });
+    }
+  });
+};
+
+el.addEventListener('pointermove', handleMove);
+```
+
+Using `overwrite: true` on the tween prevents multiple tweens from stacking up on the same element as the cursor moves, which would cause erratic behavior.
+
+## How to use it
+
+```tsx
+<ScrambledText
+  radius={100}
+  duration={1.2}
+  speed={0.5}
+  scrambleChars=".:"
+>
+  Move your cursor across this text to see it scramble.
+</ScrambledText>
+```
+
+The `scrambleChars` prop controls which characters are used during scrambling. `".:"` gives a subtle dot-and-colon noise. Use alphanumeric characters for a more dramatic effect.
+
+## Key takeaways
+
+- Scaling the tween duration by `1 - dist / radius` means characters directly under the cursor scramble the longest, while those at the edge of the radius scramble briefly. This creates a natural falloff.
+- Using `Math.hypot` is a clean way to calculate Euclidean distance from two deltas without manual squaring and square-rooting.
+- The `SplitText.create` API from GSAP 3.12+ is the preferred way to instantiate splits, and its cleanup via `split.revert()` in the effect cleanup prevents memory leaks.

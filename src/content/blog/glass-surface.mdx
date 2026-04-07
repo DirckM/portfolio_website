@@ -6,28 +6,113 @@ category: "Components"
 componentSlug: "glass-surface"
 ---
 
-Frosted glass is one of those effects that looks effortless when done right and terrible when done halfway. Getting it right is mostly about controlling the context it appears in.
+Frosted glass is one of those effects that looks effortless when done right and terrible when done halfway. The tricky part is not the blur, it is the chromatic aberration. This component handles both.
 
-## What it does
+## What we are building
 
-The Glass Surface component provides a frosted glass panel as a reusable primitive. It handles backdrop blur, a subtle tint, and a thin edge border that catches light, so you get consistent glass material across your UI without re-implementing it everywhere.
+A `GlassSurface` component that uses SVG displacement maps to split the backdrop into red, green, and blue channels with slight offsets between them. On browsers that support it, this creates genuine chromatic aberration through the glass. On others, it falls back to standard `backdrop-filter: blur()`.
 
-## How it works
+## Setting up
 
-The component combines `backdrop-filter: blur()` with a semi-transparent background color. A 1px border with a translucent white or light color on the top and left edges creates the illusion of a polished surface catching light from above.
+```tsx
+import React, { useEffect, useRef, useState, useId } from 'react';
+```
 
-The implementation is intentionally simple because the effect is purely CSS. The component mainly provides consistent prop-driven control over blur intensity and tint.
+The component generates unique filter IDs using `useId()` so multiple instances on the same page do not conflict.
 
-## Key properties
+## Building the component
 
-- **blur** - Blur radius in pixels
-- **tint** - Background color with opacity (e.g., rgba(255,255,255,0.1))
-- **border** - Show edge highlight border (default: true)
-- **borderRadius** - Corner radius
-- **padding** - Internal padding for content
+**Generating the displacement map**
 
-## When to use it
+The key to this effect is an SVG displacement map generated as a data URI. It uses two linear gradients and a blurred rectangle to describe how the glass distorts light:
 
-Use this as the base for cards, modals, tooltips, or navigation bars that float over a rich background. It works best over images, videos, or colorful gradients where the blur reveals something worth blurring.
+```tsx
+const generateDisplacementMap = () => {
+  const rect = containerRef.current?.getBoundingClientRect();
+  const actualWidth = rect?.width || 400;
+  const actualHeight = rect?.height || 200;
+  const edgeSize = Math.min(actualWidth, actualHeight) * (borderWidth * 0.5);
 
-On dark backgrounds, use a white tint. On light backgrounds, use a near-black tint. The contrast is what makes glass legible.
+  const svgContent = `
+    <svg viewBox="0 0 ${actualWidth} ${actualHeight}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="${redGradId}" x1="100%" y1="0%" x2="0%" y2="0%">
+          <stop offset="0%" stop-color="#0000"/>
+          <stop offset="100%" stop-color="red"/>
+        </linearGradient>
+        <linearGradient id="${blueGradId}" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#0000"/>
+          <stop offset="100%" stop-color="blue"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" fill="black"/>
+      <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" rx="${borderRadius}" fill="url(#${redGradId})" />
+      <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" rx="${borderRadius}" fill="url(#${blueGradId})" style="mix-blend-mode: ${mixBlendMode}" />
+      <rect x="${edgeSize}" y="${edgeSize}" width="${actualWidth - edgeSize * 2}" height="${actualHeight - edgeSize * 2}" rx="${borderRadius}" fill="hsl(0 0% ${brightness}% / ${opacity})" style="filter:blur(${blur}px)" />
+    </svg>
+  `;
+  return `data:image/svg+xml,${encodeURIComponent(svgContent)}`;
+};
+```
+
+**The SVG filter with three displacement maps**
+
+The actual filter in the DOM has three `feDisplacementMap` elements, each extracting one color channel and displacing it independently. The slight offsets between the `redOffset`, `greenOffset`, and `blueOffset` props create the chromatic fringing:
+
+```tsx
+<filter id={filterId} colorInterpolationFilters='sRGB'>
+  <feImage ref={feImageRef} preserveAspectRatio='none' result='map' />
+  <feDisplacementMap ref={redChannelRef} in='SourceGraphic' in2='map' result='dispRed' />
+  <feColorMatrix in='dispRed' type='matrix'
+    values='1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0' result='red' />
+  <feDisplacementMap ref={greenChannelRef} in='SourceGraphic' in2='map' result='dispGreen' />
+  <feColorMatrix in='dispGreen' type='matrix'
+    values='0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0' result='green' />
+  <feDisplacementMap ref={blueChannelRef} in='SourceGraphic' in2='map' result='dispBlue' />
+  <feColorMatrix in='dispBlue' type='matrix'
+    values='0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0' result='blue' />
+  <feBlend in='red' in2='green' mode='screen' result='rg' />
+  <feBlend in='rg' in2='blue' mode='screen' result='output' />
+  <feGaussianBlur ref={gaussianBlurRef} in='output' stdDeviation='0.7' />
+</filter>
+```
+
+**Browser capability detection**
+
+SVG filters via `backdrop-filter: url()` are only supported in Chromium-based browsers. We detect support and fall back gracefully:
+
+```tsx
+const supportsSVGFilters = () => {
+  const isWebkit = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+  const isFirefox = /Firefox/.test(navigator.userAgent);
+  if (isWebkit || isFirefox) return false;
+  const div = document.createElement('div');
+  div.style.backdropFilter = `url(#${filterId})`;
+  return div.style.backdropFilter !== '';
+};
+```
+
+On Firefox and Safari, the component falls back to `backdrop-filter: blur(12px) saturate(1.8)` with appropriate box shadows.
+
+## How to use it
+
+```tsx
+<GlassSurface
+  width={300}
+  height={120}
+  borderRadius={20}
+  blur={11}
+  distortionScale={-180}
+  redOffset={0}
+  greenOffset={10}
+  blueOffset={20}
+>
+  <p>Your content here</p>
+</GlassSurface>
+```
+
+## Key takeaways
+
+- The SVG displacement map is regenerated whenever the container resizes via a `ResizeObserver`, so the glass always fits its container perfectly.
+- The dark mode detection reads from `prefers-color-scheme` and adjusts the container background and box shadows accordingly.
+- The SVG filter element lives inside the component and has `opacity-0 -z-10` applied. It exists in the DOM so Chrome can reference it, but it is visually invisible.

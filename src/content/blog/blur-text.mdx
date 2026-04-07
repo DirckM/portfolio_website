@@ -6,25 +6,96 @@ category: "Text Animations"
 componentSlug: "blur-text"
 ---
 
-## What it does
+A plain fade-in is fine. A blur-to-sharp reveal is something else entirely. It gives the impression that the text is materializing out of thin air, snapping into focus like a camera lens settling on a subject.
 
-The Blur Text component animates text by transitioning each word or character from a blurred, transparent state to sharp and fully visible. The animation triggers when the element scrolls into view.
+## What we are building
 
-## How it works
+BlurText splits a string into words or individual characters and animates each segment from a blurred, transparent state to sharp and fully visible. The animation fires once when the element scrolls into view, with a stagger so each segment follows the last.
 
-The component splits the input text into segments (words or characters) and wraps each in a motion.span from Framer Motion. Each segment starts with filter blur 12px and opacity 0, then animates to filter blur 0px and opacity 1 with a staggered delay.
+## Setting up
 
-The useInView hook from Framer Motion detects when the component enters the viewport, triggering the animation only once.
+This one is lightweight. You only need Framer Motion.
 
-## Key properties
+```tsx
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+```
 
-- **text** - The string to animate
-- **animateBy** - Split by words or characters
-- **delay** - Stagger delay between each segment (default: 0.05s)
-- **direction** - Animate from top or bottom
+## Building the component
 
-## When to use it
+The props are minimal on purpose. The key decision is whether you split by words or characters.
 
-This works well for hero headings, section titles, or any text that should feel like it is materializing on screen. The blur effect adds a sense of depth that a simple fade-in lacks.
+```tsx
+interface BlurTextProps {
+  text: string;
+  delay?: number;
+  className?: string;
+  animateBy?: 'words' | 'characters';
+  direction?: 'top' | 'bottom';
+}
+```
 
-Keep the delay subtle (0.03-0.08s) for natural reading flow. Going too slow makes users wait; too fast and you lose the effect.
+Split the text string based on `animateBy`, then calculate the vertical offset based on direction.
+
+```tsx
+const segments = animateBy === 'words' ? text.split(' ') : text.split('');
+const yOffset = direction === 'top' ? -20 : 20;
+```
+
+The `useInView` hook from Framer Motion watches the container and flips to `true` when it crosses the viewport threshold. We use `once: true` so the animation does not replay on scroll-back.
+
+```tsx
+const ref = useRef<HTMLDivElement>(null);
+const isInView = useInView(ref, { once: true, margin: '-50px' });
+```
+
+Each segment gets its own `motion.span`. The `animate` prop switches between the hidden and visible states based on `isInView`. The stagger comes from multiplying the segment index by the `delay` value.
+
+```tsx
+return (
+  <div ref={ref} className={`flex flex-wrap ${className}`}>
+    {segments.map((segment, i) => (
+      <motion.span
+        key={i}
+        initial={{ opacity: 0, filter: 'blur(12px)', y: yOffset }}
+        animate={
+          isInView
+            ? { opacity: 1, filter: 'blur(0px)', y: 0 }
+            : { opacity: 0, filter: 'blur(12px)', y: yOffset }
+        }
+        transition={{
+          duration: 0.5,
+          delay: i * delay,
+          ease: [0.25, 0.1, 0.25, 1],
+        }}
+        className='inline-block'
+      >
+        {segment}
+        {animateBy === 'words' && i < segments.length - 1 && <span>&nbsp;</span>}
+      </motion.span>
+    ))}
+  </div>
+);
+```
+
+Note the `&nbsp;` insertion after each word. When splitting by words, the spaces between them need to be explicit, otherwise the flex layout collapses them.
+
+## How to use it
+
+```tsx
+<BlurText
+  text="Crafted with care"
+  animateBy="words"
+  delay={0.05}
+  direction="bottom"
+  className="text-4xl font-bold"
+/>
+```
+
+Switch `animateBy` to `"characters"` for a finer-grained effect on short words or labels.
+
+## Key takeaways
+
+- Animating `filter: blur()` along with `opacity` and `y` creates a much richer reveal than opacity alone.
+- Framer Motion's `useInView` hook keeps the trigger logic outside your component, making the animation state simple and declarative.
+- Word-level splitting works better for longer phrases; character-level splitting works better for short headings where you want maximum drama.

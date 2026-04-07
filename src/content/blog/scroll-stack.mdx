@@ -6,27 +6,121 @@ category: "Components"
 componentSlug: "scroll-stack"
 ---
 
-Scrolling through a flat list of cards feels like flipping through a folder. Stacking them on scroll feels like building something. That difference matters more than you think.
+Scrolling through a flat list of cards feels like flipping through a folder. Stacking them on scroll feels like building something. That difference matters more than you might expect.
 
-## What it does
+## What we are building
 
-The Scroll Stack component layers cards visually as the user scrolls. Each card slides under the previous one and pins to the top, creating a growing stack that communicates progress through the content.
+A scrollable container where cards pin to the top and stack on top of each other as you scroll through them. Each card scales down slightly when it gets pushed behind a new one, and you can optionally add rotation and blur to deepen the effect.
 
-## How it works
+## Setting up
 
-Each card gets a `position: sticky` with an incremental `top` offset. As the user scrolls, earlier cards stay pinned while new ones arrive underneath. Framer Motion handles the scale and opacity transitions so the stacking feels physical rather than mechanical.
+This component uses Lenis for smooth scrolling:
 
-The scroll position is tracked with a `useScroll` hook, and each card's transform is driven by a `useTransform` mapping from scroll range to visual properties.
+```bash
+npm install lenis
+```
 
-## Key properties
+We also export a companion component for individual cards:
 
-- **cards** - Array of card content to stack
-- **topOffset** - Vertical offset between stacked cards
-- **scaleStep** - How much each card shrinks when stacked (default: 0.05)
-- **opacityStep** - Fade amount per card level
+```tsx
+import Lenis from 'lenis';
+import { useLayoutEffect, useRef, useCallback } from 'react';
+```
 
-## When to use it
+## Building the component
 
-Use this for feature showcases, step-by-step walkthroughs, or portfolio pieces where you want the user to feel like they are moving through layers of content. It works especially well on landing pages where you have a few big ideas to present sequentially.
+**The ScrollStackItem**
 
-Avoid using it for long lists. Three to six cards is the sweet spot.
+Each card gets a class name `scroll-stack-card` which the parent uses to query DOM elements directly. The `origin-top` class is critical: all scale transforms shrink from the top edge so cards appear to pin in place.
+
+```tsx
+export const ScrollStackItem: React.FC<ScrollStackItemProps> = ({
+  children,
+  itemClassName = '',
+}) => (
+  <div
+    className={`scroll-stack-card relative w-full h-80 my-8 p-12 rounded-[40px] shadow-[0_0_30px_rgba(0,0,0,0.1)] box-border origin-top will-change-transform ${itemClassName}`.trim()}
+    style={{
+      backfaceVisibility: 'hidden',
+      transformStyle: 'preserve-3d',
+    }}
+  >
+    {children}
+  </div>
+);
+```
+
+**Calculating card position**
+
+The core of the effect is in `updateCardTransforms`. For each card, we calculate progress through a scroll range and derive a translateY and scale value:
+
+```tsx
+const scaleProgress = calculateProgress(scrollTop, triggerStart, triggerEnd);
+const targetScale = baseScale + i * itemScale;
+const scale = 1 - scaleProgress * (1 - targetScale);
+
+let translateY = 0;
+const isPinned = scrollTop >= pinStart && scrollTop <= pinEnd;
+
+if (isPinned) {
+  translateY =
+    scrollTop - cardTop + stackPositionPx + itemStackDistance * i;
+} else if (scrollTop > pinEnd) {
+  translateY = pinEnd - cardTop + stackPositionPx + itemStackDistance * i;
+}
+```
+
+We skip DOM writes when values have not changed enough to matter, which keeps the animation loop cheap:
+
+```tsx
+const hasChanged =
+  !lastTransform ||
+  Math.abs(lastTransform.translateY - newTransform.translateY) > 0.1 ||
+  Math.abs(lastTransform.scale - newTransform.scale) > 0.001;
+```
+
+**Lenis integration**
+
+Lenis gives you buttery scroll and fires a `scroll` event we hook into. For contained scroll (not window scroll), we pass the wrapper and inner elements:
+
+```tsx
+const lenis = new Lenis({
+  wrapper: scroller,
+  content: scroller.querySelector('.scroll-stack-inner') as HTMLElement,
+  duration: 1.2,
+  easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  smoothWheel: true,
+});
+lenis.on('scroll', handleScroll);
+```
+
+## How to use it
+
+```tsx
+<ScrollStack itemDistance={100} baseScale={0.85} blurAmount={0}>
+  <ScrollStackItem itemClassName='bg-blue-900'>
+    <h2>Card One</h2>
+  </ScrollStackItem>
+  <ScrollStackItem itemClassName='bg-purple-900'>
+    <h2>Card Two</h2>
+  </ScrollStackItem>
+  <ScrollStackItem itemClassName='bg-indigo-900'>
+    <h2>Card Three</h2>
+  </ScrollStackItem>
+</ScrollStack>
+```
+
+| Prop | Default | Description |
+|------|---------|-------------|
+| `itemDistance` | `100` | Scroll distance before next card starts stacking |
+| `itemScale` | `0.03` | Scale reduction per stacked card |
+| `baseScale` | `0.85` | Minimum scale for cards deep in the stack |
+| `rotationAmount` | `0` | Slight tilt per card for a fanned look |
+| `blurAmount` | `0` | Blur applied to cards beneath the top |
+| `useWindowScroll` | `false` | Attach to window scroll instead of contained scroll |
+
+## Key takeaways
+
+- Writing transforms directly to `element.style` is intentional: React state updates would be too slow for per-frame animation.
+- The `isUpdatingRef` guard prevents overlapping animation frames from interfering with each other.
+- Setting `will-change: transform` and `backface-visibility: hidden` on cards before the animation starts eliminates paint flicker on most browsers.

@@ -6,27 +6,104 @@ category: "Components"
 componentSlug: "fluid-glass"
 ---
 
-Glassmorphism went through a trend phase and came out the other side as a legitimate design tool. The difference is in how it moves. Static glass is decoration. Fluid glass is atmosphere.
+Glassmorphism went through a trend phase and came out the other side as a legitimate design tool. The difference between dated and polished is in how the glass behaves. Static glass is decoration. Glass that breathes is atmosphere.
 
-## What it does
+## What we are building
 
-The Fluid Glass component renders a translucent panel that blurs and distorts content behind it. The effect shifts dynamically as the cursor moves, creating a subtle refraction that makes the panel feel like real frosted glass rather than a CSS trick.
+A container with a frosted glass panel floating above animated background orbs. The orbs drift slowly using CSS keyframe animations, and the glass panel uses `backdrop-blur` to create the refraction effect. The result reads as a surface floating in soft light.
 
-## How it works
+## Setting up
 
-A `backdrop-filter: blur()` handles the core frost effect. On top of that, a SVG turbulence filter creates a gentle distortion that shifts based on cursor position. The distortion is updated via a CSS custom property tied to a `mousemove` listener on the container.
+No dependencies beyond React and Tailwind. This is pure CSS with a touch of inline styles.
 
-The combination of blur and distortion is what separates this from standard glassmorphism.
+```tsx
+export default function FluidGlass() { ... }
+```
 
-## Key properties
+## Building the component
 
-- **blur** - Backdrop blur radius in pixels (default: 12)
-- **distortion** - Intensity of the SVG turbulence effect
-- **tint** - Background color and opacity of the panel
-- **border** - Whether to show a subtle edge highlight
+**The background layer**
 
-## When to use it
+Two radial gradient orbs sit in the background. They animate independently with different durations and one runs in reverse, so they never perfectly sync:
 
-Use this for modals, sidebars, or floating panels where the content behind the glass is interesting enough to be partially visible. It works especially well over gradient or image backgrounds where the blur adds genuine depth.
+```tsx
+<div className='absolute inset-0'>
+  <div
+    className='absolute w-48 h-48 rounded-full blur-3xl opacity-30'
+    style={{
+      background: 'radial-gradient(circle, rgba(100,150,255,0.6), transparent)',
+      top: '20%',
+      left: '30%',
+      animation: 'glassFloat 6s ease-in-out infinite',
+    }}
+  />
+  <div
+    className='absolute w-32 h-32 rounded-full blur-3xl opacity-20'
+    style={{
+      background: 'radial-gradient(circle, rgba(200,100,255,0.6), transparent)',
+      top: '50%',
+      left: '55%',
+      animation: 'glassFloat 8s ease-in-out infinite reverse',
+    }}
+  />
+</div>
+```
 
-Avoid using it over plain white or black backgrounds where there is nothing to blur.
+**The glass panel**
+
+The panel uses three Tailwind utilities to achieve the frosted look:
+
+- `backdrop-blur-md` applies a 12px blur to whatever is behind the element
+- `bg-white/5` gives a very faint white tint so the glass reads as a surface rather than just a blurred hole
+- `border border-white/10` creates a hairline edge that catches the light from behind
+
+```tsx
+<div className='relative z-10 backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl px-10 py-6'>
+  <p className='text-white/60 text-sm'>Fluid Glass Surface</p>
+</div>
+```
+
+**The float animation**
+
+The keyframes live in an inline `<style>` tag. They move the orbs diagonally, which creates a more natural drifting motion than pure vertical or horizontal:
+
+```tsx
+<style>{`
+  @keyframes glassFloat {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(20px, -20px); }
+  }
+`}</style>
+```
+
+**The outer container**
+
+The component wraps everything in a dark gradient container so the glass effect is readable in isolation:
+
+```tsx
+<div className='relative w-full h-[400px] flex flex-col justify-center items-center bg-gradient-to-b from-[#0a0a1a] to-[#1a1a2e] rounded-lg overflow-hidden'>
+```
+
+The `overflow-hidden` is important: without it the blurred orbs bleed outside the rounded corners.
+
+## How to use it
+
+Drop `FluidGlass` anywhere you need a frosted panel. To put your own content inside, extend the component with a `children` prop:
+
+```tsx
+function FluidGlassPanel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className='relative backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6'>
+      {children}
+    </div>
+  );
+}
+```
+
+For the animated background to read properly, place the panel over something colorful or textured. Plain white or black backgrounds have nothing for the blur to show.
+
+## Key takeaways
+
+- `blur-3xl` on the background orbs creates soft, feathered gradients. Without it, the orbs would look like hard shapes and the glass panel would have obvious edges to blur against.
+- Two orbs moving at different speeds with one reversed creates enough visual entropy that the animation never feels repetitive.
+- `bg-white/5` is the minimum tint needed to see the glass panel boundary against a dark background. Going higher than `bg-white/15` starts to look opaque.

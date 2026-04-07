@@ -8,25 +8,118 @@ componentSlug: "dome-gallery"
 
 Grids are predictable. Domes are not. When your gallery wraps images across a curved 3D surface, it tells visitors they are somewhere worth exploring, not just somewhere worth scrolling.
 
-## What it does
+## What we are building
 
-The Dome Gallery places images across the interior surface of a virtual dome. From the viewer's perspective, images curve away in all directions. Dragging or scrolling rotates the dome to reveal more of the collection.
+A full CSS 3D sphere of images that you can drag to spin. Clicking an image expands it with a smooth zoom animation. The sphere rotates with inertia on release, decelerating gradually based on how fast you dragged. Everything is CSS transforms with no WebGL.
 
-## How it works
+## Setting up
 
-Each image is positioned using 3D spherical coordinate math, converting latitude and longitude values into CSS `translate3d` and `rotateX`/`rotateY` transforms. The entire collection sits inside a perspective container.
+```tsx
+import { useEffect, useMemo, useRef, useCallback } from 'react';
+```
 
-Pointer drag events update a rotation offset applied to the whole dome, and a momentum animation lets it coast to a stop naturally after a fast drag.
+No external animation library. The rotation and inertia are implemented with `requestAnimationFrame` and manual math.
 
-## Key properties
+## Building the component
 
-- **images** - Array of image sources
-- **radius** - Size of the dome sphere
-- **rows** - How many horizontal rings to distribute images across
-- **fov** - Field of view in degrees for the perspective effect
+**Building the item grid**
 
-## When to use it
+Items are placed on a cylindrical grid with alternating row offsets. The `buildItems` function creates a list of positions in degrees:
 
-This is a statement piece for creative portfolios or art showcases where the presentation itself is part of the message. It works best when you have 12 or more images so the dome looks full.
+```tsx
+function buildItems(pool: ImageItem[], seg: number): ItemDef[] {
+  const xCols = Array.from({ length: seg }, (_, i) => -37 + i * 2);
+  const evenYs = [-4, -2, 0, 2, 4];
+  const oddYs = [-3, -1, 1, 3, 5];
+  const coords = xCols.flatMap((x, c) => {
+    const ys = c % 2 === 0 ? evenYs : oddYs;
+    return ys.map(y => ({ x, y, sizeX: 2, sizeY: 2 }));
+  });
+  // ... image assignment with shuffle to avoid consecutive duplicates
+}
+```
 
-Performance matters here. Keep images optimized and lazy-loaded since many are rendered simultaneously.
+**Positioning items with CSS custom properties**
+
+Each sphere item gets its rotation as CSS variables. The CSS then computes the actual `rotateY` and `rotateX` from those values combined with the global rotation:
+
+```css
+.sphere-item {
+  transform:
+    rotateY(calc(var(--rot-y) * (var(--offset-x) + (var(--item-size-x) - 1) / 2) + var(--rot-y-delta, 0deg)))
+    rotateX(calc(var(--rot-x) * (var(--offset-y) - (var(--item-size-y) - 1) / 2) + var(--rot-x-delta, 0deg)))
+    translateZ(var(--radius));
+}
+```
+
+Updating the sphere rotation is a single `style.transform` write on the sphere container:
+
+```tsx
+const applyTransform = (xDeg: number, yDeg: number) => {
+  const el = sphereRef.current;
+  if (el)
+    el.style.transform = `translateZ(calc(var(--radius) * -1)) rotateX(${xDeg}deg) rotateY(${yDeg}deg)`;
+};
+```
+
+**Inertia after drag**
+
+Velocity is captured during the drag. On release, an animation loop applies friction until the velocity drops below a threshold:
+
+```tsx
+const startInertia = useCallback((vx: number, vy: number) => {
+  let vX = clamp(vx, -MAX_V, MAX_V) * 80;
+  let vY = clamp(vy, -MAX_V, MAX_V) * 80;
+  const frictionMul = 0.94 + 0.055 * d;
+  const step = () => {
+    vX *= frictionMul;
+    vY *= frictionMul;
+    if (Math.abs(vX) < stopThreshold && Math.abs(vY) < stopThreshold) return;
+    const nextX = clamp(rotationRef.current.x - vY / 200, -maxVerticalRotationDeg, maxVerticalRotationDeg);
+    const nextY = wrapAngleSigned(rotationRef.current.y + vX / 200);
+    rotationRef.current = { x: nextX, y: nextY };
+    applyTransform(nextX, nextY);
+    inertiaRAF.current = requestAnimationFrame(step);
+  };
+  inertiaRAF.current = requestAnimationFrame(step);
+}, [dragDampening, maxVerticalRotationDeg, stopInertia]);
+```
+
+**Image expand animation**
+
+Clicking a tile captures its screen position, creates an overlay element starting from that position, and animates it to fill the frame:
+
+```tsx
+const tx0 = tileR.left - frameR.left;
+const ty0 = tileR.top - frameR.top;
+const sx0 = tileR.width / frameR.width;
+const sy0 = tileR.height / frameR.height;
+overlay.style.transform = `translate(${tx0}px, ${ty0}px) scale(${sx0}, ${sy0})`;
+
+setTimeout(() => {
+  overlay.style.opacity = '1';
+  overlay.style.transform = 'translate(0px, 0px) scale(1, 1)';
+}, 16);
+```
+
+## How to use it
+
+```tsx
+<DomeGallery
+  images={[
+    { src: '/photo1.jpg', alt: 'Mountain' },
+    { src: '/photo2.jpg', alt: 'Ocean' },
+  ]}
+  segments={35}
+  fit={0.5}
+  dragSensitivity={20}
+  grayscale={true}
+  overlayBlurColor="#060010"
+/>
+```
+
+## Key takeaways
+
+- The sphere radius is computed from the container size via a `ResizeObserver`, so the dome always fills its container regardless of screen size.
+- Vertical rotation is clamped to a small range (`maxVerticalRotationDeg`) to prevent the sphere from flipping upside down.
+- The `dg-scroll-lock` class added to `document.body` during drag prevents the page from scrolling while the user is interacting with the dome.

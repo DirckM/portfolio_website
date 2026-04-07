@@ -6,27 +6,144 @@ category: "Components"
 componentSlug: "magic-bento"
 ---
 
-Bento grids became popular because they make information feel organized and intentional. The magic version takes that further by making the grid feel alive.
+Bento grids became popular because they make information feel organized and intentional. The magic version takes that further by making the grid feel alive. Cursor proximity drives particles, a spotlight, tilt, and a glowing border all at once.
 
-## What it does
+## What we are building
 
-The Magic Bento component renders a grid of tiles where each tile reacts to the cursor. Moving your mouse over a tile shifts a radial gradient highlight, creating the impression of a light source tracking your pointer across the surface.
+A responsive grid of cards where each card supports: animated floating particles on hover, a tilt effect driven by mouse position, a click ripple, a shared spotlight following the cursor across all cards, and a glow that appears near card borders.
 
-## How it works
+## Setting up
 
-Each tile listens for `mousemove` events and calculates the cursor position relative to the tile's bounding box. That position drives a CSS custom property that controls a `radial-gradient` overlay.
+```bash
+npm install gsap
+```
 
-The effect is pure CSS once the variable is set, which keeps the rendering performant even with many tiles on screen simultaneously.
+```tsx
+import { useRef, useEffect, useState, useCallback } from 'react';
+import { gsap } from 'gsap';
+```
 
-## Key properties
+## Building the component
 
-- **tiles** - Array of tile content and span configurations
-- **glowColor** - The color of the cursor-following highlight
-- **glowSize** - Radius of the glow effect in pixels
-- **gap** - Grid gap between tiles
+**Particle system**
 
-## When to use it
+Particles are DOM elements created once and reused via cloning. On hover, they appear with a `back.out` spring effect and float randomly:
 
-This shines on about pages, feature grids, or dashboard overviews where you want to reward exploration. It turns a static layout into something users actually hover over just to see what happens.
+```tsx
+const animateParticles = useCallback(() => {
+  memoizedParticles.current.forEach((particle, index) => {
+    const timeoutId = setTimeout(() => {
+      if (!isHoveredRef.current || !cardRef.current) return;
+      const clone = particle.cloneNode(true) as HTMLDivElement;
+      cardRef.current.appendChild(clone);
+      particlesRef.current.push(clone);
 
-Keep the glow subtle. A soft, low-opacity highlight adds polish without feeling like a flashlight pointed at the screen.
+      gsap.fromTo(clone,
+        { scale: 0, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.3, ease: 'back.out(1.7)' }
+      );
+      gsap.to(clone, {
+        x: (Math.random() - 0.5) * 100,
+        y: (Math.random() - 0.5) * 100,
+        rotation: Math.random() * 360,
+        duration: 2 + Math.random() * 2,
+        ease: 'none',
+        repeat: -1,
+        yoyo: true,
+      });
+    }, index * 100);
+    timeoutsRef.current.push(timeoutId);
+  });
+}, [initializeParticles]);
+```
+
+**Tilt on mouse move**
+
+Mouse position relative to the card center drives `rotateX` and `rotateY` via GSAP:
+
+```tsx
+const handleMouseMove = (e: MouseEvent) => {
+  const rect = element.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+
+  if (enableTilt) {
+    gsap.to(element, {
+      rotateX: ((y - centerY) / centerY) * -10,
+      rotateY: ((x - centerX) / centerX) * 10,
+      duration: 0.1,
+      ease: 'power2.out',
+      transformPerspective: 1000,
+    });
+  }
+};
+```
+
+**Global spotlight**
+
+A single `div` appended to `document.body` follows the mouse and illuminates all cards simultaneously. Each card gets CSS custom properties for glow position:
+
+```tsx
+const updateCardGlowProperties = (
+  card: HTMLElement,
+  mouseX: number,
+  mouseY: number,
+  glow: number,
+  radius: number
+) => {
+  const rect = card.getBoundingClientRect();
+  const relativeX = ((mouseX - rect.left) / rect.width) * 100;
+  const relativeY = ((mouseY - rect.top) / rect.height) * 100;
+  card.style.setProperty('--glow-x', `${relativeX}%`);
+  card.style.setProperty('--glow-y', `${relativeY}%`);
+  card.style.setProperty('--glow-intensity', glow.toString());
+};
+```
+
+The glow intensity fades from 1 to 0 as the cursor moves farther from each card's center, within the configured `spotlightRadius`.
+
+**Border glow via CSS**
+
+The `card--border-glow` class uses a pseudo-element with a radial gradient driven by those same custom properties:
+
+```css
+.card--border-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 6px;
+  background: radial-gradient(
+    var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+    rgba(132, 0, 255, calc(var(--glow-intensity) * 0.8)) 0%,
+    transparent 60%
+  );
+  border-radius: inherit;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+```
+
+## How to use it
+
+```tsx
+<MagicBento
+  enableStars={true}
+  enableSpotlight={true}
+  enableBorderGlow={true}
+  enableTilt={false}
+  enableMagnetism={true}
+  clickEffect={true}
+  glowColor="132, 0, 255"
+  particleCount={12}
+  spotlightRadius={300}
+/>
+```
+
+## Key takeaways
+
+- The spotlight is a single DOM element on `body` rather than one per card, which keeps the DOM lean regardless of how many cards are visible.
+- Mobile detection disables all animations automatically since the hover-based effects have no equivalent on touch screens.
+- CSS custom properties bridge the JavaScript mouse tracking to the CSS-driven glow without any React re-renders in the hot path.

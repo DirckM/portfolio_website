@@ -8,26 +8,88 @@ componentSlug: "glitch-text"
 
 Glitch effects tap into something visceral. They look like a system failing, a reality breaking, a signal corrupting. That visual tension is exactly why they work so well in design: controlled chaos is compelling in a way that perfect polish cannot always match.
 
-## What it does
+## What we are building
 
-Glitch Text renders text with multiple stacked copies, each clipped to a different horizontal band. The copies are offset in opposite horizontal directions and shift colors (typically red and cyan), then the clipping bands shift rapidly through a CSS keyframe to simulate a scan-line glitch.
+GlitchText renders text with two pseudo-element layers that show different horizontal slices of the text, offset in opposite directions and colored red and blue. CSS keyframe animations shift the clip boundaries rapidly, creating the scan-line glitch effect.
 
-## How it works
+## Setting up
 
-Three copies of the text are layered using absolute positioning. Each uses `clip-path: inset()` to show only a slice of the full text. CSS `@keyframes` animate the clip boundaries and `translate` values on a loop, shifting at irregular intervals to feel unpredictable rather than mechanical.
+No animation library. This is pure CSS injected at runtime.
 
-Everything is CSS. No JavaScript, no Framer Motion. This means near-zero runtime overhead.
+```tsx
+import { useEffect, useRef } from 'react';
+```
 
-## Key properties
+## Building the component
 
-- **text** - The string to glitch
-- **intensity** - How far the offset layers shift (px)
-- **speed** - Animation duration (lower = more frantic)
-- **colors** - The two color channels for the offset layers (default: red and cyan)
-- **continuous** - Whether it glitches constantly or only on hover
+The component creates a unique ID per instance so multiple GlitchText components on the same page do not share styles and interfere with each other.
 
-## When to use it
+```tsx
+const style = document.createElement('style');
+const id = `glitch-${Math.random().toString(36).slice(2, 8)}`;
+container.setAttribute('data-glitch-id', id);
+```
 
-Error pages, cyberpunk or dark-themed UIs, loading screens, and any design that intentionally leans into a broken or distorted aesthetic. Use it sparingly. One glitching headline is powerful. Three on the same page is noise.
+The CSS uses `::before` and `::after` pseudo-elements on the container. Both are positioned absolutely over the text and use `content: attr(data-text)` to duplicate the text content. The `data-text` attribute is set directly on the container div.
 
-A continuous glitch on hover with a calm resting state is often the best balance between effect and usability.
+```tsx
+return (
+  <div ref={containerRef} data-text={text} className={className}>
+    {text}
+  </div>
+);
+```
+
+The injected styles set up the animation. The `::before` layer shows the upper portion of the text (via `clip-path: inset(0 0 60% 0)`) in red, shifted slightly left. The `::after` layer shows the lower portion in blue, shifted right.
+
+```tsx
+style.textContent = `
+  [data-glitch-id="${id}"]::before {
+    color: #ff0000;
+    animation: glitch-before-${id} ${speed}ms infinite linear alternate-reverse;
+    clip-path: inset(0 0 60% 0);
+    ${enableShadow ? 'text-shadow: -2px 0 #ff0000;' : ''}
+  }
+
+  [data-glitch-id="${id}"]::after {
+    color: #0000ff;
+    animation: glitch-after-${id} ${speed}ms infinite linear alternate-reverse;
+    clip-path: inset(40% 0 0 0);
+    ${enableShadow ? 'text-shadow: 2px 0 #0000ff;' : ''}
+  }
+`;
+```
+
+The keyframes shift the clip boundaries and the `transform: translate` offset at multiple points across the animation, creating an irregular flickering rather than a smooth oscillation.
+
+```tsx
+@keyframes glitch-before-${id} {
+  0%   { clip-path: inset(0 0 80% 0); transform: translate(-2px, -1px); }
+  20%  { clip-path: inset(20% 0 60% 0); transform: translate(2px, 1px); }
+  40%  { clip-path: inset(40% 0 40% 0); transform: translate(-1px, 2px); }
+  60%  { clip-path: inset(60% 0 20% 0); transform: translate(1px, -2px); }
+  80%  { clip-path: inset(10% 0 70% 0); transform: translate(-2px, 1px); }
+  100% { clip-path: inset(30% 0 50% 0); transform: translate(2px, -1px); }
+}
+```
+
+The style element is appended to `document.head` and cleaned up in the effect's return function, so there is no style leak when the component unmounts.
+
+## How to use it
+
+```tsx
+<GlitchText
+  text="SYSTEM ERROR"
+  speed={500}
+  enableShadow={true}
+  className="text-6xl font-black text-white"
+/>
+```
+
+Lower `speed` values mean faster, more frantic glitching. A speed of 200ms or less looks genuinely broken; 500-800ms is a bit more controlled.
+
+## Key takeaways
+
+- Generating a unique ID per component instance and using attribute selectors to scope the CSS prevents style collisions between multiple glitch elements on the page.
+- `content: attr(data-text)` on pseudo-elements is the standard trick for duplicating text content without JavaScript. The parent element must have the `data-text` attribute set to the same string.
+- Cleaning up the injected `<style>` element on unmount is important. Without it, stale keyframe definitions accumulate in the document head over time.

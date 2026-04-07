@@ -8,26 +8,103 @@ componentSlug: "shuffle"
 
 Imagine text that does not know what it wants to say yet. It cycles through random characters, flickers, then locks into place. It looks like something decoding, something arriving from a signal. That energy is exactly what this component delivers.
 
-## What it does
+## What we are building
 
-The Shuffle component animates each character of a string through a rapid series of random characters before settling on the correct one. The final text resolves character by character, left to right, giving the impression of decryption or live rendering.
+Shuffle uses GSAP's `SplitText` plugin to break text into individual characters, then wraps each one in a strip that scrolls through to the final character. It supports hover re-triggering, color transitions, even-odd stagger patterns, and scroll-triggered start.
 
-## How it works
+## Setting up
 
-Each character slot runs its own interval using `setInterval`, pulling from a pool of random alphanumeric characters. After a set number of cycles, the slot locks to the correct character and the interval clears. A stagger offset means slots resolve in order rather than all at once.
+This component is GSAP-heavy. You need the full stack.
 
-The randomness pool can be customized to change the aesthetic from alphanumeric to symbols or even emoji-free characters.
+```tsx
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText as GSAPSplitText } from 'gsap/SplitText';
+import { useGSAP } from '@gsap/react';
 
-## Key properties
+gsap.registerPlugin(ScrollTrigger, GSAPSplitText);
+```
 
-- **text** - The final string to resolve to
-- **speed** - How fast characters cycle (lower is faster)
-- **revealDelay** - Stagger delay between each character resolving
-- **characters** - Pool of random characters to cycle through
-- **trigger** - What starts the animation: mount, hover, or scroll into view
+## Building the component
 
-## When to use it
+The props give you control over direction, timing, mode, and looping.
 
-This works brilliantly for tech-forward brands, data-heavy dashboards, or anything that wants a "loading from a server" vibe. Use it on short labels or headings, not paragraphs. The effect loses its impact at length.
+```tsx
+interface ShuffleProps {
+  text: string;
+  shuffleDirection?: 'left' | 'right' | 'up' | 'down';
+  duration?: number;
+  stagger?: number;
+  animationMode?: 'random' | 'evenodd';
+  loop?: boolean;
+  scrambleCharset?: string;
+  colorFrom?: string;
+  colorTo?: string;
+  triggerOnHover?: boolean;
+}
+```
 
-Keep the cycle speed fast (10-30ms) and the stagger tight (30-50ms) so the whole animation completes in under a second.
+The `build` function does the structural work. It splits the text, then for each character it creates a strip element containing multiple copies: the original character, some scramble characters, and the final target character. The strip's position is set to the start value, then animated to the end value.
+
+```tsx
+const build = () => {
+  teardown();
+  splitRef.current = new GSAPSplitText(el, { type: 'chars', charsClass: 'shuffle-char' });
+  const chars = splitRef.current.chars as HTMLElement[];
+
+  chars.forEach(ch => {
+    const w = ch.getBoundingClientRect().width;
+    const wrap = document.createElement('span');
+    wrap.className = 'inline-block overflow-hidden text-left';
+
+    const inner = document.createElement('span');
+    inner.className = 'inline-block will-change-transform origin-left transform-gpu';
+
+    // Build the strip with scramble copies plus the real character
+    for (let k = 0; k < rolls; k++) {
+      const c = ch.cloneNode(true) as HTMLElement;
+      if (scrambleCharset) c.textContent = rand(scrambleCharset);
+      inner.appendChild(c);
+    }
+    inner.appendChild(ch);
+    wrap.appendChild(inner);
+    parent.insertBefore(wrap, ch);
+  });
+};
+```
+
+The `play` function builds the GSAP timeline. In `evenodd` mode, odd-indexed characters animate first, then even ones start before the odd animation finishes, creating an overlapping stagger effect.
+
+```tsx
+if (animationMode === 'evenodd') {
+  const odd = strips.filter((_, i) => i % 2 === 1);
+  const even = strips.filter((_, i) => i % 2 === 0);
+  const oddTotal = duration + Math.max(0, odd.length - 1) * stagger;
+  const evenStart = odd.length ? oddTotal * 0.7 : 0;
+  if (odd.length) addTween(odd, 0);
+  if (even.length) addTween(even, evenStart);
+}
+```
+
+After the animation completes, `armHover` attaches a `mouseenter` listener so the shuffle replays when the user hovers again.
+
+## How to use it
+
+```tsx
+<Shuffle
+  text="HELLO"
+  shuffleDirection="up"
+  animationMode="evenodd"
+  duration={0.35}
+  stagger={0.03}
+  triggerOnHover={true}
+/>
+```
+
+Pass a `scrambleCharset` like `"!@#$%"` to control which characters appear during the shuffle phase.
+
+## Key takeaways
+
+- Building the strip of characters in the DOM before animating gives GSAP a concrete layout to measure and translate, which is more reliable than animating content changes.
+- The `evenodd` mode creates a more organic feel than a simple left-to-right stagger by interleaving two groups at different starting times.
+- Respecting `prefers-reduced-motion` is built in. Users who prefer reduced motion get the final state immediately.

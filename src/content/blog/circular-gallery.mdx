@@ -6,27 +6,128 @@ category: "Components"
 componentSlug: "circular-gallery"
 ---
 
-A flat image grid is functional. A circular gallery is a statement. It signals that you thought carefully about how your work is presented, not just what work you are presenting.
+A flat image grid is functional. A circular gallery is a statement. It signals that you thought carefully about how your work is presented, not just what you are presenting. The implementation is more interesting than you might expect.
 
-## What it does
+## What we are building
 
-The Circular Gallery positions images evenly around a circle in 3D space. Users can drag to spin the ring or scroll to rotate through the items. Each image faces the viewer as it moves to the front of the rotation.
+An infinite-scrolling, drag-enabled gallery rendered on a WebGL canvas using the OGL library. Images curve along the edge of a virtual cylinder. Dragging or scrolling spins the ring. Each image has a text label rendered as a WebGL texture.
 
-## How it works
+## Setting up
 
-Images are positioned using CSS `rotateY` transforms distributed at equal angles (360 divided by the number of items). The entire ring is wrapped in a 3D perspective container.
+```bash
+npm install ogl
+```
 
-Drag input updates a rotation state value, and Framer Motion applies a smooth spring animation so the gallery decelerates naturally when released rather than stopping abruptly.
+```tsx
+import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl';
+import { useEffect, useRef } from 'react';
+```
 
-## Key properties
+## Building the component
 
-- **images** - Array of image sources and alt text
-- **radius** - Distance from the center to each image
-- **autoplay** - Enable automatic slow rotation
-- **autoplaySpeed** - Rotation speed when autoplay is on
+**The renderer**
 
-## When to use it
+We create an OGL renderer with alpha and antialiasing, then attach its canvas to our container:
 
-This is a strong choice for portfolios, product showcases, or team pages where you want images to feel curated rather than catalogued. The 3D depth makes even a small set of images feel substantial.
+```tsx
+createRenderer() {
+  this.renderer = new Renderer({
+    alpha: true,
+    antialias: true,
+    dpr: Math.min(window.devicePixelRatio || 1, 2),
+  });
+  this.gl = this.renderer.gl;
+  this.gl.clearColor(0, 0, 0, 0);
+  this.container.appendChild(this.renderer.gl.canvas as HTMLCanvasElement);
+}
+```
 
-Odd numbers of images (5, 7, 9) tend to look better than even numbers because there is never a perfectly symmetrical pair visible at once.
+**The vertex shader creates the bend**
+
+Each image plane has a vertex shader that displaces Z position as a sine wave based on position and time. The `uSpeed` uniform controls how strong the warp is during fast scrolling:
+
+```glsl
+void main() {
+  vUv = uv;
+  vec3 p = position;
+  p.z = (sin(p.x * 4.0 + uTime) * 1.5 + cos(p.y * 2.0 + uTime) * 1.5)
+        * (0.1 + uSpeed * 0.5);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+}
+```
+
+**Geometry with enough vertices**
+
+The plane needs enough segments for the vertex shader wave to look smooth:
+
+```tsx
+createGeometry() {
+  this.planeGeometry = new Plane(this.gl, {
+    heightSegments: 50,
+    widthSegments: 100,
+  });
+}
+```
+
+**Circular wrapping**
+
+Each `Media` object tracks its own `extra` offset for infinite looping. When it scrolls off one side, we shift it to the other:
+
+```tsx
+if (direction === 'right' && this.isBefore) {
+  this.extra -= this.widthTotal;
+  this.isBefore = this.isAfter = false;
+}
+if (direction === 'left' && this.isAfter) {
+  this.extra += this.widthTotal;
+  this.isBefore = this.isAfter = false;
+}
+```
+
+**Scroll lerp**
+
+The scroll target is updated immediately on input, but the current position eases toward it:
+
+```tsx
+update() {
+  this.scroll.current = lerp(
+    this.scroll.current,
+    this.scroll.target,
+    this.scroll.ease
+  );
+  const direction = this.scroll.current > this.scroll.last ? 'right' : 'left';
+  this.medias.forEach(media => media.update(this.scroll, direction));
+  this.renderer.render({ scene: this.scene, camera: this.camera });
+  this.scroll.last = this.scroll.current;
+  this.raf = window.requestAnimationFrame(this.update.bind(this));
+}
+```
+
+## How to use it
+
+```tsx
+<CircularGallery
+  items={[
+    { image: '/photos/one.jpg', text: 'Bridge' },
+    { image: '/photos/two.jpg', text: 'Rooftop' },
+  ]}
+  bend={3}
+  textColor="#ffffff"
+  borderRadius={0.05}
+  scrollSpeed={2}
+  scrollEase={0.05}
+/>
+```
+
+| Prop | Default | Description |
+|------|---------|-------------|
+| `bend` | `3` | Curvature of the gallery arc |
+| `textColor` | `#ffffff` | Label color below each image |
+| `scrollSpeed` | `2` | How fast mouse drag spins the gallery |
+| `scrollEase` | `0.05` | Lerp factor for smooth deceleration |
+
+## Key takeaways
+
+- The text labels are rendered as WebGL textures using an offscreen 2D canvas, which means they are part of the scene geometry rather than HTML overlays.
+- Using a shared `Plane` geometry for all images is a significant performance win: OGL creates the vertex buffer once and all `Media` instances share it.
+- The `onCheck` debounce snaps the gallery to the nearest image after scrolling stops, so you never land between two images.

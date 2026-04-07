@@ -8,26 +8,93 @@ componentSlug: "text-pressure"
 
 What if text felt physical? Like it had weight, and you could press on it. The text pressure effect turns cursor position into a force that distorts letterforms, making your UI feel tactile in a way that flat design rarely achieves.
 
-## What it does
+## What we are building
 
-Text Pressure tracks mouse position relative to each character and adjusts the variable font weight and scale based on proximity. Characters closest to the cursor appear heavier and slightly larger, simulating pressure or magnetism.
+TextPressure tracks mouse position relative to each character and adjusts variable font axes (weight, width, italic) based on proximity. Characters closest to the cursor become heavier and wider; move away and they snap back to their resting state.
 
-## How it works
+## Setting up
 
-Each character is wrapped in its own `span`. A `mousemove` listener on the parent calculates the distance between the cursor and each character's center using the bounding rect. That distance maps to a font-weight value on the variable font axis, interpolated between a min and max weight.
+No animation library is needed here. This is all React state, `requestAnimationFrame`, and the browser's variable font API.
 
-Variable fonts are key here. Without them, you can only scale characters, not adjust their weight continuously.
+```tsx
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+```
 
-## Key properties
+The component also injects a `@font-face` rule so the variable font loads automatically.
 
-- **text** - The string to render
-- **fontFamily** - Must be a variable font that supports the `wght` axis
-- **minWeight** - Base font weight (e.g., 100)
-- **maxWeight** - Maximum weight when cursor is directly over a character (e.g., 900)
-- **radius** - Distance in pixels at which characters start to react
+## Building the component
 
-## When to use it
+Two utility functions do the math. `dist` calculates Euclidean distance between two points, and `getAttr` maps a distance value to a range using a linear falloff.
 
-This shines on large display headings in interactive portfolios or experimental landing pages. It rewards curiosity, inviting users to hover and play. Avoid it on body text where the distortion would hurt readability.
+```tsx
+const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  return Math.sqrt(dx * dx + dy * dy);
+};
 
-Use a radius of 80-150px for a smooth, wide influence. A tight radius (under 50px) feels too sudden.
+const getAttr = (distance: number, maxDist: number, minVal: number, maxVal: number) => {
+  const val = maxVal - Math.abs((maxVal * distance) / maxDist);
+  return Math.max(minVal, val + minVal);
+};
+```
+
+We track two separate cursor positions: the actual position (`cursorRef`) and a smoothed position (`mouseRef`) that lerps toward the cursor each frame. This creates a subtle lag that makes the effect feel physical.
+
+```tsx
+useEffect(() => {
+  let rafId: number;
+  const animate = () => {
+    mouseRef.current.x += (cursorRef.current.x - mouseRef.current.x) / 15;
+    mouseRef.current.y += (cursorRef.current.y - mouseRef.current.y) / 15;
+
+    spansRef.current.forEach(span => {
+      if (!span) return;
+      const rect = span.getBoundingClientRect();
+      const charCenter = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+      const d = dist(mouseRef.current, charCenter);
+      const maxDist = titleRef.current!.getBoundingClientRect().width / 2;
+
+      const wdth = width ? Math.floor(getAttr(d, maxDist, 5, 200)) : 100;
+      const wght = weight ? Math.floor(getAttr(d, maxDist, 100, 900)) : 400;
+      const italVal = italic ? getAttr(d, maxDist, 0, 1).toFixed(2) : '0';
+
+      span.style.fontVariationSettings = `'wght' ${wght}, 'wdth' ${wdth}, 'ital' ${italVal}`;
+    });
+
+    rafId = requestAnimationFrame(animate);
+  };
+  animate();
+  return () => cancelAnimationFrame(rafId);
+}, [width, weight, italic, alpha]);
+```
+
+The font size is calculated to fill the container width, and rescales on window resize using a debounced handler.
+
+```tsx
+let newFontSize = containerW / (chars.length / 2);
+newFontSize = Math.max(newFontSize, minFontSize);
+```
+
+Each character gets its own `span` with a `ref` stored in an array, so the animation loop can read each character's bounding rect every frame.
+
+## How to use it
+
+```tsx
+<TextPressure
+  text="COMPRESS"
+  fontUrl="https://res.cloudinary.com/dr6lvwubh/raw/upload/v1529908256/CompressaPRO-GX.woff2"
+  fontFamily="Compressa VF"
+  width={true}
+  weight={true}
+  italic={true}
+/>
+```
+
+This component requires a variable font that supports the `wdth` and `wght` axes. The default uses Compressa, but any variable font with those axes will work.
+
+## Key takeaways
+
+- The lerped mouse position is what separates this from a basic hover effect. That smooth lag is the "pressure" feeling.
+- `fontVariationSettings` is only updated when the value actually changes, preventing unnecessary style recalculations every frame.
+- Running the animation in a `requestAnimationFrame` loop rather than a `mousemove` event handler keeps updates consistent and avoids firing more often than the screen refreshes.

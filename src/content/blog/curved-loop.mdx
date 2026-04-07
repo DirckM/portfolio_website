@@ -8,26 +8,102 @@ componentSlug: "curved-loop"
 
 Straight-line marquees are everywhere. A curved one stops people. Text that flows along a wave or arc has an almost hypnotic quality, like watching water move. It is unexpected, and unexpected is memorable.
 
-## What it does
+## What we are building
 
-Curved Loop animates text along a smooth SVG bezier curve in a continuous loop. The text flows from one end of the path to the other, then seamlessly repeats, creating an infinite scrolling effect along a curved trajectory.
+CurvedLoop places text on an SVG quadratic bezier path and scrolls it in a continuous loop. You can drag it with a pointer, control direction, and adjust how pronounced the curve is.
 
-## How it works
+## Setting up
 
-The component uses an SVG `<path>` with a cubic bezier curve as the text's track. A `<textPath>` element places the string on that path, and a CSS animation shifts the `startOffset` attribute continuously from 0% to 100%. When the text reaches the end it wraps back to the start seamlessly because the string is duplicated to fill the path.
+No animation library required. This is SVG, refs, and `requestAnimationFrame`.
 
-The curve shape is defined by control points, which you can adjust to make it gentler or more dramatic.
+```tsx
+import { useRef, useEffect, useState, useMemo, useId, FC, PointerEvent } from 'react';
+```
 
-## Key properties
+## Building the component
 
-- **text** - The string to flow along the curve
-- **speed** - Animation duration in seconds (lower is faster)
-- **curveHeight** - How pronounced the curve peak is
-- **width** - Width of the SVG container
-- **direction** - Left-to-right or right-to-left flow
+The path shape is a quadratic bezier curve. The `curveAmount` prop controls how far the midpoint dips, which determines the depth of the wave.
 
-## When to use it
+```tsx
+const pathD = `M-100,40 Q500,${40 + curveAmount} 1540,40`;
+```
 
-Footer sections, decorative dividers between content blocks, and "available for work" banners all benefit from this treatment. It works best with short repeating phrases rather than long sentences.
+Before rendering visible text, we measure the length of one text repetition using a hidden `<text>` element. This length becomes the unit of wrapping for the seamless loop.
 
-Set the curve height to around 40-80px for something that reads as a wave without feeling exaggerated. Anything beyond 120px starts to distort the letterforms.
+```tsx
+const measureRef = useRef<SVGTextElement | null>(null);
+const [spacing, setSpacing] = useState(0);
+
+useEffect(() => {
+  if (measureRef.current)
+    setSpacing(measureRef.current.getComputedTextLength());
+}, [text, className]);
+```
+
+Once we know the spacing, we fill the viewport width with enough copies of the text.
+
+```tsx
+const totalText = textLength
+  ? Array(Math.ceil(1800 / textLength) + 2).fill(text).join('')
+  : text;
+```
+
+The animation loop runs in `requestAnimationFrame`. Each frame, it increments the `startOffset` attribute on the `<textPath>` element. When the offset wraps past the loop boundary, it resets seamlessly.
+
+```tsx
+useEffect(() => {
+  if (!spacing || !ready) return;
+  let frame = 0;
+  const step = () => {
+    if (!dragRef.current && textPathRef.current) {
+      const delta = dirRef.current === 'right' ? speed : -speed;
+      const currentOffset = parseFloat(textPathRef.current.getAttribute('startOffset') || '0');
+      let newOffset = currentOffset + delta;
+      if (newOffset <= -spacing) newOffset += spacing;
+      if (newOffset > 0) newOffset -= spacing;
+      textPathRef.current.setAttribute('startOffset', newOffset + 'px');
+    }
+    frame = requestAnimationFrame(step);
+  };
+  frame = requestAnimationFrame(step);
+  return () => cancelAnimationFrame(frame);
+}, [spacing, speed, ready]);
+```
+
+Pointer events let users drag the text. We track velocity on pointer move so the text continues in the dragged direction after release.
+
+```tsx
+const onPointerMove = (e: PointerEvent) => {
+  if (!interactive || !dragRef.current || !textPathRef.current) return;
+  const dx = e.clientX - lastXRef.current;
+  lastXRef.current = e.clientX;
+  velRef.current = dx;
+  // update startOffset by dx
+};
+
+const endDrag = () => {
+  if (!interactive) return;
+  dragRef.current = false;
+  dirRef.current = velRef.current > 0 ? 'right' : 'left';
+};
+```
+
+## How to use it
+
+```tsx
+<CurvedLoop
+  marqueeText="DESIGN BUILD SHIP "
+  speed={2}
+  curveAmount={400}
+  direction="left"
+  interactive={true}
+/>
+```
+
+A trailing space in `marqueeText` keeps words from running together when the text loops.
+
+## Key takeaways
+
+- Measuring text length with `getComputedTextLength()` before starting the animation ensures the loop wraps correctly regardless of font size or family.
+- Mutating the SVG attribute directly in the animation loop (rather than through React state) keeps rendering fast and avoids reconciliation overhead.
+- The velocity-based direction change after a drag makes the interaction feel physically grounded rather than snapping back to a fixed state.

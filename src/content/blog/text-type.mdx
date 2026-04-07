@@ -8,26 +8,119 @@ componentSlug: "text-type"
 
 The typewriter effect never really goes out of style. It communicates something being composed in real time, which makes it feel alive in a way that static text just does not. It is one of the oldest web animations and still one of the most effective.
 
-## What it does
+## What we are building
 
-Text Type animates a string by revealing one character at a time, simulating typing. It supports looping through multiple strings, a configurable typing speed, a backspace (delete) animation, and a blinking cursor at the end.
+TextType types out a string character by character, pauses, deletes it, and moves to the next one. It supports looping through multiple strings, variable typing speed, a blinking cursor, and optional scroll-triggered start.
 
-## How it works
+## Setting up
 
-A `useEffect` hook drives the animation with `setTimeout`. The component tracks the current character index and whether it is typing forward or deleting. When it finishes one string, it waits briefly then starts deleting before moving to the next.
+The cursor blink is handled with GSAP. Everything else is vanilla React state.
 
-The cursor is a simple `span` element with a CSS blink animation applied via a keyframe.
+```tsx
+import { useEffect, useRef, useState, useMemo, useCallback, createElement } from 'react';
+import { gsap } from 'gsap';
+```
 
-## Key properties
+## Building the component
 
-- **words** - Array of strings to type through
-- **speed** - Milliseconds between each character (default: 100ms)
-- **deleteSpeed** - Milliseconds per character when deleting (default: 50ms)
-- **pauseTime** - How long to pause after completing a word (default: 1500ms)
-- **loop** - Whether to repeat after all words are shown
+The component accepts either a single string or an array of strings via the `text` prop.
 
-## When to use it
+```tsx
+interface TextTypeProps {
+  text: string | string[];
+  typingSpeed?: number;
+  deletingSpeed?: number;
+  pauseDuration?: number;
+  loop?: boolean;
+  showCursor?: boolean;
+  cursorCharacter?: string | React.ReactNode;
+  variableSpeed?: { min: number; max: number };
+  startOnVisible?: boolean;
+  reverseMode?: boolean;
+}
+```
 
-Hero sections with rotating taglines are the classic use case. "I build websites." becomes much more interesting when it types out, deletes, and cycles through a few variations. It is also great for terminal-style UIs or loading states.
+Normalize the input to an array immediately.
 
-Keep typing speed around 80-120ms per character. Faster feels robotic; slower starts to frustrate users who can already read ahead.
+```tsx
+const textArray = useMemo(
+  () => (Array.isArray(text) ? text : [text]),
+  [text]
+);
+```
+
+The core animation runs in a `useEffect` with `setTimeout`. The component tracks `currentCharIndex`, `isDeleting`, and `currentTextIndex` in state. Each render decides what to do next based on those values.
+
+```tsx
+const executeTypingAnimation = () => {
+  if (isDeleting) {
+    if (displayedText === '') {
+      setIsDeleting(false);
+      setCurrentTextIndex(prev => (prev + 1) % textArray.length);
+      setCurrentCharIndex(0);
+    } else {
+      timeout = setTimeout(() => {
+        setDisplayedText(prev => prev.slice(0, -1));
+      }, deletingSpeed);
+    }
+  } else {
+    if (currentCharIndex < processedText.length) {
+      timeout = setTimeout(() => {
+        setDisplayedText(prev => prev + processedText[currentCharIndex]);
+        setCurrentCharIndex(prev => prev + 1);
+      }, variableSpeed ? getRandomSpeed() : typingSpeed);
+    } else if (!loop && currentTextIndex === textArray.length - 1) {
+      return;
+    } else {
+      timeout = setTimeout(() => setIsDeleting(true), pauseDuration);
+    }
+  }
+};
+```
+
+The `variableSpeed` option randomizes typing speed per character. This makes the effect feel human rather than mechanical.
+
+```tsx
+const getRandomSpeed = useCallback(() => {
+  if (!variableSpeed) return typingSpeed;
+  const { min, max } = variableSpeed;
+  return Math.random() * (max - min) + min;
+}, [variableSpeed, typingSpeed]);
+```
+
+The cursor is a `span` element animated with GSAP's yoyo repeat to create the blink.
+
+```tsx
+useEffect(() => {
+  if (showCursor && cursorRef.current) {
+    gsap.to(cursorRef.current, {
+      opacity: 0,
+      duration: cursorBlinkDuration,
+      repeat: -1,
+      yoyo: true,
+      ease: 'power2.inOut',
+    });
+  }
+}, [showCursor, cursorBlinkDuration]);
+```
+
+## How to use it
+
+```tsx
+<TextType
+  text={['I build interfaces.', 'I write clean code.', 'I ship things.']}
+  typingSpeed={60}
+  deletingSpeed={30}
+  pauseDuration={2000}
+  loop={true}
+  showCursor={true}
+/>
+```
+
+Set `startOnVisible` to `true` if you want the animation to wait until the element scrolls into view rather than starting immediately.
+
+## Key takeaways
+
+- Driving the animation with `setTimeout` inside `useEffect` gives you precise control over timing without a heavy animation library.
+- Cleaning up the timeout on every render (`return () => clearTimeout(timeout)`) prevents stale callbacks from firing after the component unmounts.
+- The `variableSpeed` option is a small detail that makes a big difference in how natural the effect feels.

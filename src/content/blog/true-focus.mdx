@@ -6,28 +6,113 @@ category: "Text Animations"
 componentSlug: "true-focus"
 ---
 
-Reading comprehension tools have known for a while that isolating words helps with focus. True Focus borrows that idea and turns it into a UI animation. Every word is blurred out except the one in the spotlight. It is striking, and oddly meditative.
+Reading comprehension tools have known for a while that isolating words helps focus. True Focus borrows that idea and turns it into a UI animation. Every word is blurred out except the one in the spotlight. It is striking, and oddly meditative.
 
-## What it does
+## What we are building
 
-True Focus splits a sentence into words and blurs all of them except the currently active word. The focus steps through each word on a timer, or responds to hover, creating a spotlight that travels across the text.
+TrueFocus splits a sentence into words and blurs all of them except the currently active word. A focus box with glowing corner brackets tracks the active word with a smooth animation. In auto mode it advances on a timer; in manual mode it follows the cursor.
 
-## How it works
+## Setting up
 
-The component splits the string by spaces and renders each word as a `motion.span`. Non-focused words have a CSS `filter: blur(4px)` and reduced `opacity`. The focused word is sharp and fully opaque. Framer Motion handles the transition between states smoothly.
+This component uses Motion for the animated focus box.
 
-An internal timer or scroll/hover trigger advances the focus index through the array. The transition is fast enough to feel responsive but slow enough to be readable.
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
+```
 
-## Key properties
+## Building the component
 
-- **text** - The sentence to display
-- **mode** - Auto-advance timer, hover, or click to move focus
-- **interval** - Time between word transitions in auto mode (ms)
-- **blurAmount** - Strength of blur on unfocused words (px)
-- **animationDuration** - Speed of the focus transition
+The state tracks the current word index and a rect object that describes where the focus box should sit.
 
-## When to use it
+```tsx
+const [currentIndex, setCurrentIndex] = useState<number>(0);
+const [focusRect, setFocusRect] = useState<FocusRect>({ x: 0, y: 0, width: 0, height: 0 });
+```
 
-Use this for taglines, manifesto statements, or any short declaration you want people to actually read word by word. It is also a surprisingly effective way to animate a list of skills or values without a standard carousel.
+In auto mode, a `setInterval` advances the index through the words at a pace determined by `animationDuration` plus `pauseBetweenAnimations`.
 
-Keep blur around 4-6px. Heavier blur makes it hard to perceive the surrounding words at all, which kills the context.
+```tsx
+useEffect(() => {
+  if (!manualMode) {
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % words.length);
+    }, (animationDuration + pauseBetweenAnimations) * 1000);
+    return () => clearInterval(interval);
+  }
+}, [manualMode, animationDuration, pauseBetweenAnimations, words.length]);
+```
+
+When the index changes, we read the bounding rect of the active word span, relative to the container, and store it in state.
+
+```tsx
+useEffect(() => {
+  if (!wordRefs.current[currentIndex] || !containerRef.current) return;
+  const parentRect = containerRef.current.getBoundingClientRect();
+  const activeRect = wordRefs.current[currentIndex]!.getBoundingClientRect();
+
+  setFocusRect({
+    x: activeRect.left - parentRect.left,
+    y: activeRect.top - parentRect.top,
+    width: activeRect.width,
+    height: activeRect.height,
+  });
+}, [currentIndex, words.length]);
+```
+
+Each word gets a CSS `filter: blur()` based on whether it is active. The transition is animated with a CSS `transition` property.
+
+```tsx
+{words.map((word, index) => {
+  const isActive = index === currentIndex;
+  return (
+    <span
+      key={index}
+      ref={el => { wordRefs.current[index] = el; }}
+      style={{
+        filter: isActive ? 'blur(0px)' : `blur(${blurAmount}px)`,
+        transition: `filter ${animationDuration}s ease`,
+      }}
+    >
+      {word}
+    </span>
+  );
+})}
+```
+
+The focus box is a `motion.div` that animates its `x`, `y`, `width`, and `height` based on the stored rect. Four corner bracket `span` elements inside it create the glowing corners.
+
+```tsx
+<motion.div
+  className='absolute top-0 left-0 pointer-events-none'
+  animate={{ x: focusRect.x, y: focusRect.y, width: focusRect.width, height: focusRect.height }}
+  transition={{ duration: animationDuration }}
+>
+  <span className='absolute w-4 h-4 border-[3px] rounded-[3px] top-[-10px] left-[-10px] border-r-0 border-b-0'
+    style={{ borderColor: borderColor, filter: 'drop-shadow(0 0 4px var(--border-color))' }}
+  />
+  {/* ... three more corners */}
+</motion.div>
+```
+
+## How to use it
+
+```tsx
+<TrueFocus
+  sentence="Focus on what matters"
+  manualMode={false}
+  blurAmount={5}
+  borderColor="green"
+  glowColor="rgba(0, 255, 0, 0.6)"
+  animationDuration={0.5}
+  pauseBetweenAnimations={1}
+/>
+```
+
+Set `manualMode={true}` to let users hover over words to control focus themselves.
+
+## Key takeaways
+
+- Reading bounding rects relative to the container (not the viewport) keeps the focus box positioned correctly even when the component is not at the top of the page.
+- Using a single animated `motion.div` that moves to the active word's position is far simpler than animating a border on each word individually.
+- The corner bracket design is purely CSS absolute positioning with selective border sides hidden, no SVG needed.

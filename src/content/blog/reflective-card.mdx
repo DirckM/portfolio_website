@@ -6,27 +6,110 @@ category: "Components"
 componentSlug: "reflective-card"
 ---
 
-Physical objects catch light. Digital cards usually do not. That gap is exactly why a well-implemented reflection effect feels so satisfying when you first encounter it.
+Physical objects catch light. Digital cards usually do not. That gap is exactly why a well-implemented reflection effect feels so satisfying when you first encounter it. This one achieves it with SVG filters and CSS gradients, no WebGL required.
 
-## What it does
+## What we are building
 
-The Reflective Card component simulates a moving specular highlight on a card surface. As you move the cursor across the card, a bright sheen tracks your pointer angle, making the card feel like it has a physical finish.
+A card that tracks the cursor position and uses it to drive a radial gradient background, an SVG turbulence displacement filter for surface texture, a noise texture overlay for grain, and a glossy edge highlight. The result looks like polished metal or glass.
 
-## How it works
+## Setting up
 
-The component tracks mouse position relative to the card and calculates an angle from the center. That angle maps to the position of a semi-transparent linear gradient overlay layered above the card content.
+```bash
+npm install lucide-react
+```
 
-The gradient transitions smoothly using CSS transitions on the background-position, so the light always feels like it is gliding rather than jumping.
+```tsx
+import React, { useRef, useState } from 'react';
+```
 
-## Key properties
+No animation libraries needed. This is pure CSS and SVG filters.
 
-- **children** - Card content
-- **reflectionColor** - Color of the light sheen (default: white)
-- **reflectionOpacity** - Maximum opacity of the overlay (default: 0.15)
-- **borderRadius** - Corner radius of the card
+## Building the component
 
-## When to use it
+**Tracking mouse position**
 
-This works beautifully on product cards, profile cards, or any card where you want to reinforce a premium feel. The effect is most readable on cards with a solid, mid-tone background rather than a busy image.
+We store normalized coordinates (0 to 1) relative to the card bounds:
 
-Less is more. A subtle reflection at 10-20% opacity looks polished. Going higher starts to look like a UI bug.
+```tsx
+function handleMouseMove(e: React.MouseEvent) {
+  if (!cardRef.current) return;
+  const rect = cardRef.current.getBoundingClientRect();
+  setMousePos({
+    x: (e.clientX - rect.left) / rect.width,
+    y: (e.clientY - rect.top) / rect.height,
+  });
+}
+```
+
+**The background reacts to cursor position**
+
+The radial gradient origin follows the cursor, creating the impression of a light source moving over the surface:
+
+```tsx
+<div
+  className='absolute inset-0 z-0'
+  style={{
+    background: `radial-gradient(circle at ${mousePos.x * 100}% ${mousePos.y * 100}%,
+      #2a1a4e 0%, #0d0d2b 40%, #1a0a2e 70%, #0a0a1a 100%)`,
+    filter: `blur(${blurStrength}px) url(#metallic-displacement)`,
+    transition: 'background 0.3s ease',
+    transform: 'scale(1.2)',
+  }}
+/>
+```
+
+The `scale(1.2)` prevents the blurred edges from showing through the card boundary after the filter expands the rendering area.
+
+**SVG turbulence creates the metal texture**
+
+An SVG filter with `feTurbulence`, `feDisplacementMap`, and `feSpecularLighting` simulates a brushed metal surface:
+
+```tsx
+<filter id='metallic-displacement' x='-20%' y='-20%' width='140%' height='140%'>
+  <feTurbulence type='turbulence' baseFrequency={baseFrequency} numOctaves='2' result='noise' />
+  <feColorMatrix in='noise' type='luminanceToAlpha' result='noiseAlpha' />
+  <feDisplacementMap in='SourceGraphic' in2='noise' scale={displacementStrength}
+    xChannelSelector='R' yChannelSelector='G' result='rippled' />
+  <feSpecularLighting in='noiseAlpha' surfaceScale={displacementStrength}
+    specularConstant={specularConstant} specularExponent='20'
+    lightingColor='#ffffff' result='light'>
+    <fePointLight x='0' y='0' z='300' />
+  </feSpecularLighting>
+  <feComposite in='light' in2='rippled' operator='in' result='light-effect' />
+  <feBlend in='light-effect' in2='rippled' mode='screen' result='metallic-result' />
+</filter>
+```
+
+The `baseFrequency` is calculated from the `noiseScale` prop: `0.03 / Math.max(0.1, noiseScale)`.
+
+**Layered overlays**
+
+Three additional layers sit on top:
+
+1. A noise texture encoded as an SVG data URI adds grain via `mix-blend-mode: overlay`
+2. A diagonal gradient at 135 degrees creates the primary sheen
+3. A 1px border using a gradient mask creates the polished edge highlight
+
+```tsx
+<div className='absolute inset-0 rounded-[20px] p-[1px] bg-[linear-gradient(135deg,rgba(255,255,255,0.8)_0%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.6)_100%)] [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] [mask-composite:exclude] z-20 pointer-events-none' />
+```
+
+## How to use it
+
+```tsx
+<ReflectiveCard
+  blurStrength={12}
+  metalness={1}
+  roughness={0.4}
+  displacementStrength={20}
+  noiseScale={1}
+  specularConstant={1.2}
+  overlayColor="rgba(255, 255, 255, 0.1)"
+/>
+```
+
+## Key takeaways
+
+- The SVG filter is invisible in the DOM (`opacity-0`, `w-0 h-0`) but referenced by `url(#metallic-displacement)` in the inline style, which is how you apply SVG filters to HTML elements.
+- All the visual parameters are exposed as props with sensible defaults, so you can tune the surface from matte to mirror without touching the implementation.
+- The noise texture is inlined as a data URI, which means zero extra network requests.

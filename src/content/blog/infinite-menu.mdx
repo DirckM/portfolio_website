@@ -1,33 +1,145 @@
 ---
 title: "Build an Infinite Menu in React"
-description: "Create a circular scrolling menu that loops endlessly, wrapping items around a virtual wheel."
+description: "Create a circular scrolling menu that loops endlessly, wrapping items around a virtual sphere."
 date: "2026-04-07"
 category: "Components"
 componentSlug: "infinite-menu"
 ---
 
-Linear menus have a beginning and an end. An infinite menu loops back on itself, which feels surprisingly natural once you use it. It is the same satisfaction as a carousel that never runs out.
+Linear menus have a beginning and an end. An infinite menu loops back on itself, which feels surprisingly natural once you use it. This one goes further than most: it renders items on a 3D sphere using WebGL with custom shaders, drag inertia, and chromatic aberration on movement.
 
-## What it does
+## What we are building
 
-The Infinite Menu renders a list of items arranged on a virtual wheel. Scrolling or dragging rotates the wheel and the items cycle through a focused center position continuously, with no first or last item to bump into.
+A WebGL-rendered sphere covered in image tiles. The sphere responds to drag and pointer input, rotating with inertia. Items are rendered using instance buffers and a texture atlas. This is one of the most technically complex components in this collection.
 
-## How it works
+## Setting up
 
-Items are positioned using `rotateX` transforms around a fixed radius. As the wheel rotation value increases, items that scroll past the top wrap to the bottom by adjusting their index offset, keeping the total count constant.
+```bash
+npm install gl-matrix
+```
 
-The rotation state is unbounded, meaning it increments infinitely in either direction. Each item's visual position is then derived from `(rotation + index * step) % 360`, which handles the circular mapping automatically.
+```tsx
+import { FC, useRef, useState, useEffect, MutableRefObject } from 'react';
+import { mat4, quat, vec2, vec3 } from 'gl-matrix';
+```
 
-## Key properties
+The component manages its own WebGL context directly, without a library like Three.js or OGL.
 
-- **items** - Array of menu items (label, value, onClick)
-- **visibleCount** - How many items are visible at once
-- **radius** - Distance from the wheel center to items
-- **perspective** - CSS perspective depth for 3D effect
-- **autoplay** - Slowly rotate the wheel automatically
+## Building the component
 
-## When to use it
+**The vertex shader with stretch deformation**
 
-This is a compelling choice for option selectors, date pickers, or any picker UI where the user is choosing from a continuous range. It also works well as a decorative navigation element on landing pages where you want to show off a larger collection without pagination.
+When the sphere rotates quickly, each vertex stretches along the rotation axis direction, creating a motion blur effect. The stretch is proportional to velocity:
 
-Keep labels short so they read clearly at angle in the 3D rotation.
+```glsl
+void main() {
+    vec4 worldPosition = uWorldMatrix * aInstanceMatrix * vec4(aModelPosition, 1.);
+    vec3 centerPos = (uWorldMatrix * aInstanceMatrix * vec4(0., 0., 0., 1.)).xyz;
+    float radius = length(centerPos.xyz);
+
+    if (gl_VertexID > 0) {
+        vec3 rotationAxis = uRotationAxisVelocity.xyz;
+        float rotationVelocity = min(.15, uRotationAxisVelocity.w * 15.);
+        vec3 stretchDir = normalize(cross(centerPos, rotationAxis));
+        vec3 relativeVertexPos = normalize(worldPosition.xyz - centerPos);
+        float strength = dot(stretchDir, relativeVertexPos);
+        float invAbsStrength = min(0., abs(strength) - 1.);
+        strength = rotationVelocity * sign(strength) * abs(invAbsStrength * invAbsStrength * invAbsStrength + 1.);
+        worldPosition.xyz += stretchDir * strength;
+    }
+
+    worldPosition.xyz = radius * normalize(worldPosition.xyz);
+    gl_Position = uProjectionMatrix * uViewMatrix * worldPosition;
+
+    vAlpha = smoothstep(0.5, 1., normalize(worldPosition.xyz).z) * .9 + .1;
+}
+```
+
+The `vAlpha` fade makes items on the back of the sphere invisible, creating a natural depth cue.
+
+**The fragment shader samples from a texture atlas**
+
+All images are packed into a single texture. The fragment shader computes which cell in the atlas belongs to the current instance:
+
+```glsl
+void main() {
+    int itemIndex = vInstanceId % uItemCount;
+    int cellsPerRow = uAtlasSize;
+    int cellX = itemIndex % cellsPerRow;
+    int cellY = itemIndex / cellsPerRow;
+    vec2 cellSize = vec2(1.0) / vec2(float(cellsPerRow));
+    vec2 cellOffset = vec2(float(cellX), float(cellY)) * cellSize;
+    // ... UV adjustment for aspect ratio
+    st = st * cellSize + cellOffset;
+    outColor = texture(uTex, st);
+    outColor.a *= vAlpha;
+}
+```
+
+**Geometry: icosahedron subdivision**
+
+The sphere geometry starts as an icosahedron and is subdivided recursively. This gives a more uniform vertex distribution than a UV sphere:
+
+```tsx
+class Geometry {
+  public subdivide(divisions = 1): this {
+    const midPointCache: Record<string, number> = {};
+    let f = this.faces;
+    for (let div = 0; div < divisions; ++div) {
+      const newFaces = new Array<Face>(f.length * 4);
+      f.forEach((face, ndx) => {
+        const mAB = this.getMidPoint(face.a, face.b, midPointCache);
+        const mBC = this.getMidPoint(face.b, face.c, midPointCache);
+        const mCA = this.getMidPoint(face.c, face.a, midPointCache);
+        const i = ndx * 4;
+        newFaces[i + 0] = new Face(face.a, mAB, mCA);
+        newFaces[i + 1] = new Face(face.b, mBC, mAB);
+        newFaces[i + 2] = new Face(face.c, mCA, mBC);
+        newFaces[i + 3] = new Face(mAB, mBC, mCA);
+      });
+      f = newFaces;
+    }
+    this.faces = f;
+    return this;
+  }
+
+  public spherize(radius = 1): this {
+    this.vertices.forEach(vertex => {
+      vec3.normalize(vertex.normal, vertex.position);
+      vec3.scale(vertex.position, vertex.normal, radius);
+    });
+    return this;
+  }
+}
+```
+
+**Drag and rotation**
+
+Pointer events are captured on the canvas. The quaternion representing sphere orientation is updated during drag and accumulated velocity is applied as inertia on release:
+
+```tsx
+const onPointerMove = (e: PointerEvent) => {
+  if (!dragging) return;
+  const dx = (e.clientX - lastX) / canvas.clientWidth;
+  const dy = (e.clientY - lastY) / canvas.clientHeight;
+  // Update quaternion based on drag delta
+  // Track velocity for inertia
+};
+```
+
+## How to use it
+
+```tsx
+<InfiniteMenu
+  items={[
+    { image: '/work/project-1.jpg', title: 'Project One', description: 'A brief description', link: '/work/project-1' },
+    { image: '/work/project-2.jpg', title: 'Project Two', description: 'Another description', link: '/work/project-2' },
+  ]}
+/>
+```
+
+## Key takeaways
+
+- Using a texture atlas instead of individual textures means a single WebGL draw call renders all instances. This is the primary performance optimization in this component.
+- Icosahedron subdivision produces a more uniform sphere than a UV sphere. Each subdivision multiplies face count by 4, so start low (1-2 divisions for light usage, 3-4 for high detail).
+- The stretch deformation in the vertex shader runs entirely on the GPU. It adds visual polish at essentially zero CPU cost.

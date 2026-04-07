@@ -6,28 +6,120 @@ category: "Components"
 componentSlug: "tilted-card"
 ---
 
-Flat cards sit on a page. Tilted cards reach out from it. The moment a card responds to your cursor in three dimensions, it stops feeling like a UI element and starts feeling like an object.
+Flat cards sit on a page. Tilted cards reach out from it. The moment a card responds to your cursor in three dimensions, it stops feeling like a UI element and starts feeling like an object you are holding.
 
-## What it does
+## What we are building
 
-The Tilted Card component rotates a card along the X and Y axes as the cursor moves over it. Moving the cursor toward a corner tilts the card away from you on that side, creating a realistic parallax depth effect.
+A wrapper component that applies 3D rotation transforms to its children based on cursor position. It also adds an optional glare highlight that sweeps across the surface as the angle changes. No external animation library needed.
 
-## How it works
+## Setting up
 
-The component tracks `mousemove` events and calculates normalized cursor position (-1 to 1) relative to the card center. Those values drive `rotateX` and `rotateY` transforms applied via Framer Motion's spring animations.
+This component uses only React built-ins:
 
-A perspective wrapper provides the 3D context so rotations look correct rather than skewed.
+```tsx
+import { useRef, useState } from 'react';
+```
 
-## Key properties
+The transforms are applied via inline styles, which means React handles the updates without any library overhead.
 
-- **rotationRange** - Maximum rotation in degrees (default: 15)
-- **springStiffness** - How snappy the tilt returns to flat
-- **springDamping** - Controls bounce on return
-- **glare** - Enable a cursor-following specular highlight
-- **scale** - Slight scale-up on hover (default: 1.05)
+## Building the component
 
-## When to use it
+**Tracking the angle**
 
-This is excellent for portfolio project cards, product showcases, or any card that you want users to interact with rather than just read. The 3D tilt signals interactivity before any click or tap happens.
+On `mousemove`, we calculate where the cursor is relative to the card center, then map that to rotation values. The X axis of the cursor maps to `rotateY` and vice versa:
 
-Keep the rotation range between 10 and 20 degrees. Below that the effect is imperceptible. Above it and cards start to look like they are falling over.
+```tsx
+function handleMouseMove(e: React.MouseEvent) {
+  if (!cardRef.current) return;
+  const rect = cardRef.current.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const halfW = rect.width / 2;
+  const halfH = rect.height / 2;
+
+  const rotateX = ((y - halfH) / halfH) * -maxTilt;
+  const rotateY = ((x - halfW) / halfW) * maxTilt;
+
+  setTransform(
+    `perspective(${perspective}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(${scale}, ${scale}, ${scale})`
+  );
+}
+```
+
+The `perspective()` goes inside the transform string rather than on a parent element. This is the CSS "local perspective" technique: each card has its own vanishing point, which looks better for standalone cards than a shared parent perspective.
+
+**The glare overlay**
+
+When the cursor moves, we compute an angle using `Math.atan2` and use it to position a linear gradient. The gradient direction rotates to always point away from the cursor:
+
+```tsx
+if (glareEnable) {
+  const angle = Math.atan2(y - halfH, x - halfW) * (180 / Math.PI) + 180;
+  setGlareStyle({
+    opacity: glareMaxOpacity,
+    background: `linear-gradient(${angle}deg, rgba(255,255,255,${glareMaxOpacity}) 0%, transparent 80%)`,
+  });
+}
+```
+
+The `+ 180` offset flips the angle so the bright end of the gradient faces toward the cursor, not away from it.
+
+**Reset on mouse leave**
+
+Both transform and glare reset when the cursor leaves:
+
+```tsx
+function handleMouseLeave() {
+  setTransform('');
+  setGlareStyle({ opacity: 0, background: '' });
+}
+```
+
+The empty string for `transform` lets the CSS `transition` on the element smoothly return to flat.
+
+**The wrapper JSX**
+
+The wrapper uses `transition-transform duration-200 ease-out` so the return to flat is smooth. The glare overlay uses `pointer-events-none` so it never interferes with clicks on the card content:
+
+```tsx
+<div
+  ref={cardRef}
+  onMouseMove={handleMouseMove}
+  onMouseLeave={handleMouseLeave}
+  className={`relative overflow-hidden transition-transform duration-200 ease-out ${className}`}
+  style={{ transform: transform || undefined }}
+>
+  {children}
+  {glareEnable && (
+    <div
+      className='absolute inset-0 pointer-events-none transition-opacity duration-200'
+      style={{ opacity: glareStyle.opacity, background: glareStyle.background }}
+    />
+  )}
+</div>
+```
+
+## How to use it
+
+```tsx
+<TiltedCard maxTilt={15} scale={1.05} perspective={1000} glareEnable={true} glareMaxOpacity={0.2}>
+  <div className='p-6 bg-gray-900 rounded-xl'>
+    <h2>Your Content</h2>
+    <p>Any children work here.</p>
+  </div>
+</TiltedCard>
+```
+
+| Prop | Default | Description |
+|------|---------|-------------|
+| `maxTilt` | `15` | Maximum rotation in degrees at the card edge |
+| `scale` | `1.05` | Scale-up amount on hover |
+| `perspective` | `1000` | CSS perspective distance in pixels |
+| `glareEnable` | `true` | Show the sweeping highlight |
+| `glareMaxOpacity` | `0.2` | Peak opacity of the glare overlay |
+
+## Key takeaways
+
+- Putting `perspective()` inside the `transform` string instead of on a parent element means cards work correctly anywhere in the DOM without needing a 3D context above them.
+- CSS transitions handle the return animation automatically. You do not need a spring or animation library for the reset.
+- The `overflow-hidden` on the wrapper is what keeps the glare gradient from spilling outside the card boundaries.

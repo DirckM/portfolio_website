@@ -8,27 +8,123 @@ componentSlug: "variable-proximity"
 
 Variable fonts unlocked something that was never really possible before: continuous, smooth changes to type weight in the browser. Variable Proximity turns that capability into an interaction. Your cursor becomes the force that shapes the letterforms. Move close and they grow heavy; step back and they thin out.
 
-## What it does
+## What we are building
 
-Variable Proximity maps each character's font weight to the distance between the cursor and that character's center. Characters under or near the cursor get maximum weight, while distant ones stay light. The effect ripples across the text as the cursor moves.
+VariableProximity maps each character's font variation settings to the cursor's proximity. You define a `from` and `to` font variation state, and the component interpolates between them based on distance. It supports linear, exponential, and gaussian falloff curves.
 
-## How it works
+## Setting up
 
-Each character is split into its own `span` with an inline style for `font-variation-settings`. A `mousemove` listener on the document updates cursor position in state. A `useLayoutEffect` reads each span's bounding rect and calculates the Euclidean distance to the cursor. That distance is clamped and mapped to a font weight value between the configured min and max.
+This component uses Motion for the letter spans and a custom animation frame loop for the cursor tracking.
 
-This only works with a variable font that exposes the `wght` axis.
+```tsx
+import { forwardRef, useMemo, useRef, useEffect } from 'react';
+import { motion } from 'motion/react';
+```
 
-## Key properties
+## Building the component
 
-- **text** - The string to render
-- **fontFamily** - A variable font with `wght` axis support
-- **minWeight** - Resting font weight (e.g., 100 or 300)
-- **maxWeight** - Maximum weight at cursor position (e.g., 700 or 900)
-- **falloff** - How quickly weight drops off with distance
-- **radius** - Maximum distance at which the effect applies
+Two helper hooks do the cursor tracking work. `useMousePositionRef` stores the cursor position relative to the container in a ref (not state, to avoid re-renders on every mouse move).
 
-## When to use it
+```tsx
+function useMousePositionRef(containerRef: MutableRefObject<HTMLElement | null>) {
+  const positionRef = useRef({ x: 0, y: 0 });
 
-This is a showpiece interaction for portfolios and experimental UI work. It makes typography itself feel interactive, which is rare. Use it on large display text where the weight variation is visually obvious. Small body text will not show the effect clearly enough.
+  useEffect(() => {
+    const updatePosition = (x: number, y: number) => {
+      if (containerRef?.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        positionRef.current = { x: x - rect.left, y: y - rect.top };
+      }
+    };
+    const handleMouseMove = (ev: MouseEvent) => updatePosition(ev.clientX, ev.clientY);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [containerRef]);
 
-Pick a font like Inter, Roboto Flex, or Archivo that has a wide weight range (100-900) for the most dramatic result.
+  return positionRef;
+}
+```
+
+`useAnimationFrame` runs a callback every frame, which reads the current mouse position and updates each letter's `fontVariationSettings`.
+
+The parsed settings are computed once from the `from` and `to` strings and stored in a `useMemo`. This avoids re-parsing on every animation frame.
+
+```tsx
+const parsedSettings = useMemo(() => {
+  const parseSettings = (settingsStr: string) =>
+    new Map(
+      settingsStr.split(',').map(s => s.trim()).map(s => {
+        const [name, value] = s.split(' ');
+        return [name.replace(/['"]/g, ''), parseFloat(value)];
+      })
+    );
+  const fromSettings = parseSettings(fromFontVariationSettings);
+  const toSettings = parseSettings(toFontVariationSettings);
+  return Array.from(fromSettings.entries()).map(([axis, fromValue]) => ({
+    axis, fromValue, toValue: toSettings.get(axis) ?? fromValue,
+  }));
+}, [fromFontVariationSettings, toFontVariationSettings]);
+```
+
+The falloff function converts a distance to a 0-1 interpolation factor. Gaussian falloff feels the most natural, while linear is the most predictable.
+
+```tsx
+const calculateFalloff = (distance: number) => {
+  const norm = Math.min(Math.max(1 - distance / radius, 0), 1);
+  switch (falloff) {
+    case 'exponential': return norm ** 2;
+    case 'gaussian': return Math.exp(-((distance / (radius / 2)) ** 2) / 2);
+    default: return norm;
+  }
+};
+```
+
+Each animation frame, we check whether the cursor has actually moved. If not, we skip the update entirely to avoid unnecessary style recalculations.
+
+```tsx
+useAnimationFrame(() => {
+  const { x, y } = mousePositionRef.current;
+  if (lastPositionRef.current.x === x && lastPositionRef.current.y === y) return;
+  lastPositionRef.current = { x, y };
+
+  letterRefs.current.forEach((letterRef, index) => {
+    if (!letterRef) return;
+    const rect = letterRef.getBoundingClientRect();
+    const letterCenterX = rect.left + rect.width / 2 - containerRect.left;
+    const letterCenterY = rect.top + rect.height / 2 - containerRect.top;
+    const distance = calculateDistance(x, y, letterCenterX, letterCenterY);
+
+    if (distance >= radius) {
+      letterRef.style.fontVariationSettings = fromFontVariationSettings;
+      return;
+    }
+    const falloffValue = calculateFalloff(distance);
+    const newSettings = parsedSettings.map(({ axis, fromValue, toValue }) => {
+      const interpolatedValue = fromValue + (toValue - fromValue) * falloffValue;
+      return `'${axis}' ${interpolatedValue}`;
+    }).join(', ');
+    letterRef.style.fontVariationSettings = newSettings;
+  });
+});
+```
+
+## How to use it
+
+```tsx
+<VariableProximity
+  label="Hover over me"
+  fromFontVariationSettings="'wght' 100, 'wdth' 75"
+  toFontVariationSettings="'wght' 900, 'wdth' 125"
+  containerRef={containerRef}
+  radius={150}
+  falloff="gaussian"
+/>
+```
+
+The `containerRef` must point to the scrollable container or viewport element, so mouse coordinates are calculated correctly.
+
+## Key takeaways
+
+- Storing cursor position in a ref instead of state means zero re-renders on mouse move. All the work happens in the animation frame callback, directly mutating DOM styles.
+- Skipping the update when position has not changed is a simple optimization that prevents redundant style recalculations on every frame even when the cursor is still.
+- The `from` and `to` font variation settings accept any valid CSS `font-variation-settings` string, so this component works with any variable font axis, not just weight.

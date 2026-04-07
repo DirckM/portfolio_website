@@ -6,28 +6,144 @@ category: "Components"
 componentSlug: "dock"
 ---
 
-The macOS Dock magnification effect has been around since 2001 and it still feels great every single time. There is something deeply satisfying about icons growing toward your cursor like plants toward light.
+The macOS Dock magnification effect has been around since 2001 and it still feels great every single time. There is something deeply satisfying about icons growing toward your cursor like plants toward light. Here is how to build it with Framer Motion in about 200 lines.
 
-## What it does
+## What we are building
 
-The Dock component renders a row of icons that magnify as the cursor approaches them. Icons closest to the pointer grow the largest, and the effect falls off smoothly on either side, creating a wave-like bulge that follows the cursor along the dock.
+A horizontal row of icons that magnify as the cursor approaches. The icon closest to the pointer grows largest. Neighboring icons scale up progressively less. The dock panel height grows to accommodate the magnified icons. Tooltips appear on hover.
 
-## How it works
+## Setting up
 
-Each icon's scale is a function of the cursor's horizontal distance from that icon's center. A Gaussian falloff curve determines how the magnification spreads to neighboring icons.
+```bash
+npm install motion
+```
 
-Framer Motion spring animations drive the scale changes so they feel elastic rather than linear. The entire calculation runs on `mousemove` and resets on `mouseleave`.
+```tsx
+import {
+  motion, MotionValue, useMotionValue, useSpring,
+  useTransform, AnimatePresence,
+} from 'motion/react';
+```
 
-## Key properties
+## Building the component
 
-- **items** - Array of icon content and click handlers
-- **magnification** - Maximum scale factor at cursor (default: 2)
-- **distance** - How far the magnification effect spreads
-- **springConfig** - Framer Motion spring options for the scale animation
-- **size** - Base icon size in pixels
+**Tracking cursor position**
 
-## When to use it
+The parent `Dock` component tracks the horizontal mouse position as a `MotionValue`. This value flows down to each `DockItem` without triggering React re-renders:
 
-This works as a navigation bar, a toolbar, or an application launcher in any React UI. It is also a genuinely impressive portfolio piece because most developers have wanted to build this at some point.
+```tsx
+const mouseX = useMotionValue(Infinity);
 
-The effect looks best when there are five to ten items. Too few and there is no wave. Too many and the magnification feels cramped.
+// On the dock panel:
+onMouseMove={({ pageX }) => {
+  isHovered.set(1);
+  mouseX.set(pageX);
+}}
+onMouseLeave={() => {
+  isHovered.set(0);
+  mouseX.set(Infinity);
+}}
+```
+
+Setting `Infinity` on leave effectively puts the cursor infinitely far from all icons, collapsing them back to base size.
+
+**Per-icon size calculation**
+
+Each `DockItem` computes its distance from the cursor using `useTransform`. The transform maps distance to a target size using three breakpoints:
+
+```tsx
+const mouseDistance = useTransform(mouseX, val => {
+  const rect = ref.current?.getBoundingClientRect() ?? { x: 0, width: baseItemSize };
+  return val - rect.x - baseItemSize / 2;
+});
+
+const targetSize = useTransform(
+  mouseDistance,
+  [-distance, 0, distance],
+  [baseItemSize, magnification, baseItemSize]
+);
+const size = useSpring(targetSize, spring);
+```
+
+At distance 0 (cursor directly over the icon) the size is `magnification`. At `distance` pixels away it returns to `baseItemSize`. The spring smooths the transition so the size change feels elastic.
+
+**Dynamic dock height**
+
+The dock container height is also a spring value. When the cursor enters, it grows to accommodate the tallest magnified icon:
+
+```tsx
+const maxHeight = useMemo(
+  () => Math.max(dockHeight, magnification + magnification / 2 + 4),
+  [magnification, dockHeight]
+);
+const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
+const height = useSpring(heightRow, spring);
+
+// Applied to the outer wrapper:
+<motion.div style={{ height, scrollbarWidth: 'none' }} className='flex items-center'>
+```
+
+**Tooltip with AnimatePresence**
+
+The tooltip uses a `MotionValue` subscription rather than a React state to detect hover, keeping renders minimal:
+
+```tsx
+function DockLabel({ children, isHovered }: DockLabelProps) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (!isHovered) return;
+    const unsubscribe = isHovered.on('change', latest => {
+      setIsVisible(latest === 1);
+    });
+    return () => unsubscribe();
+  }, [isHovered]);
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0, y: 0 }}
+          animate={{ opacity: 1, y: -10 }}
+          exit={{ opacity: 0, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className='absolute -top-6 left-1/2 whitespace-pre rounded-md border border-neutral-700 bg-[#060010] px-2 py-0.5 text-xs text-white'
+          style={{ x: '-50%' }}
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+```
+
+## How to use it
+
+```tsx
+<Dock
+  items={[
+    { icon: <HomeIcon />, label: 'Home', onClick: () => navigate('/') },
+    { icon: <WorkIcon />, label: 'Work', onClick: () => navigate('/work') },
+    { icon: <MailIcon />, label: 'Contact', onClick: () => navigate('/contact') },
+  ]}
+  magnification={70}
+  distance={200}
+  baseItemSize={50}
+  spring={{ mass: 0.1, stiffness: 150, damping: 12 }}
+/>
+```
+
+| Prop | Default | Description |
+|------|---------|-------------|
+| `magnification` | `70` | Maximum size of the icon at cursor |
+| `distance` | `200` | Pixel radius of the magnification falloff |
+| `baseItemSize` | `50` | Default icon size |
+| `panelHeight` | `64` | Height of the dock bar at rest |
+| `spring` | `{ mass: 0.1, stiffness: 150, damping: 12 }` | Spring config for size animation |
+
+## Key takeaways
+
+- Using `MotionValue` for cursor position means the magnification effect runs entirely outside the React render cycle. There are zero re-renders while the cursor moves across the dock.
+- The `useTransform` with three breakpoints `[-distance, 0, distance]` gives you a natural bell-curve magnification. Icons farther than `distance` pixels away stay at base size.
+- The `isHovered` MotionValue being passed to child components via `cloneElement` is a clean pattern for parent-to-child MotionValue communication without prop drilling.

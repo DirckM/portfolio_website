@@ -8,26 +8,96 @@ componentSlug: "scroll-float"
 
 Scroll-linked animations feel modern and considered. When text appears to float up as you scroll down the page, it creates a sense of depth, like content is emerging from beneath the surface. It is subtle, but users notice.
 
-## What it does
+## What we are building
 
-Scroll Float ties text opacity and vertical position to the scroll progress of the viewport. As the element enters the visible area, it rises into place and becomes fully opaque. The result is a smooth float-in triggered by scrolling.
+ScrollFloat splits text into individual characters, then animates each one into place as the element enters the viewport. The animation is scrubbed by scroll position, meaning it pauses if you stop scrolling and reverses if you scroll back up.
 
-## How it works
+## Setting up
 
-Framer Motion's `useScroll` and `useTransform` hooks make this clean. The component creates a scroll progress value scoped to the element's position in the document, then maps that value to `y` and `opacity` ranges. No event listeners, no manual scroll handlers.
+This component uses GSAP with `ScrollTrigger`. The `scrub: true` option is what ties the animation to scroll position rather than running it on a timer.
 
-Each line or word can have a slightly different range, creating a subtle parallax within a single text block.
+```tsx
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-## Key properties
+gsap.registerPlugin(ScrollTrigger);
+```
 
-- **text** - The string or lines to animate
-- **startY** - Starting vertical offset (e.g., 40px below final position)
-- **threshold** - Scroll percentage at which animation completes
-- **stagger** - Delay between lines or words if animating multiple segments
-- **easing** - Framer Motion easing function for the transform
+## Building the component
 
-## When to use it
+The component accepts children rather than a text prop directly, so it can be composed naturally inside JSX. We extract the string from children and split it into character spans.
 
-This is ideal for long-form pages where content needs to feel alive as users scroll. About sections, feature descriptions, and testimonial text all benefit from a gentle float-in. It rewards careful scrollers.
+```tsx
+const splitText = useMemo(() => {
+  const text = typeof children === 'string' ? children : '';
+  return text.split('').map((char, index) => (
+    <span className='inline-block word' key={index}>
+      {char === ' ' ? '\u00A0' : char}
+    </span>
+  ));
+}, [children]);
+```
 
-Keep the vertical travel short, 20-50px is enough. Larger offsets can feel jumpy on fast scrolls.
+Note the `\u00A0` (non-breaking space) for space characters. Regular spaces inside `inline-block` spans collapse, so we use a non-breaking space to preserve them.
+
+The animation runs in `useEffect` after mount. We query all the `.inline-block` spans and animate them from a heavily distorted state to their natural position.
+
+```tsx
+gsap.fromTo(
+  charElements,
+  {
+    willChange: 'opacity, transform',
+    opacity: 0,
+    yPercent: 120,
+    scaleY: 2.3,
+    scaleX: 0.7,
+    transformOrigin: '50% 0%',
+  },
+  {
+    duration: animationDuration,
+    ease: ease,
+    opacity: 1,
+    yPercent: 0,
+    scaleY: 1,
+    scaleX: 1,
+    stagger: stagger,
+    scrollTrigger: {
+      trigger: el,
+      scroller,
+      start: scrollStart,
+      end: scrollEnd,
+      scrub: true,
+    },
+  }
+);
+```
+
+The starting `scaleY: 2.3` and `scaleX: 0.7` combined with `yPercent: 120` creates a squashed, tall character that appears to spring upward as it snaps to normal proportions. It looks much more dynamic than a simple fade-up.
+
+The `scrollContainerRef` prop lets you use a custom scroll container instead of the window, which is useful inside modals or scrollable panels.
+
+```tsx
+const scroller = scrollContainerRef?.current ?? window;
+```
+
+## How to use it
+
+```tsx
+<ScrollFloat
+  scrollStart="center bottom+=50%"
+  scrollEnd="bottom bottom-=40%"
+  stagger={0.03}
+  animationDuration={1}
+  ease="back.inOut(2)"
+>
+  Scroll to reveal this text
+</ScrollFloat>
+```
+
+Adjust `scrollStart` and `scrollEnd` to control over what scroll range the animation plays out.
+
+## Key takeaways
+
+- `scrub: true` on the ScrollTrigger is the key detail. It ties animation progress to scroll position rather than playing the animation on a timer.
+- The squash-and-stretch start values (`scaleY: 2.3, scaleX: 0.7`) are what give each character that satisfying snap into place.
+- Replacing spaces with non-breaking spaces before wrapping in `inline-block` spans prevents layout collapse that would otherwise mess up word spacing.

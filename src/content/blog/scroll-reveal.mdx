@@ -8,26 +8,110 @@ componentSlug: "scroll-reveal"
 
 The best content feels like it is being unveiled, not just displayed. Scroll Reveal gives you that by tying the text's appearance directly to the user's reading progress. Scroll down, and the words appear. Stop scrolling, and they pause. It makes content feel responsive to the reader.
 
-## What it does
+## What we are building
 
-Scroll Reveal animates words or lines into view as they enter the viewport, staggered so each segment appears slightly after the last. Unlike a one-shot animation, this can be tied to scroll progress so text reveals at the pace the user scrolls.
+ScrollReveal splits text into words, then scrubs their opacity and blur from faded to fully visible as the section enters the viewport. The whole block also starts slightly rotated and corrects to zero, adding a subtle tilt-to-flat effect.
 
-## How it works
+## Setting up
 
-The component uses Framer Motion's `useInView` or `useScroll` depending on the mode. In viewport mode, a `motion.div` wrapper detects when each word crosses the viewport threshold and transitions from hidden to visible. In scroll-progress mode, `useTransform` maps scroll position to opacity.
+This uses GSAP with `ScrollTrigger`. Like ScrollFloat, the `scrub: true` option ties animation to scroll position.
 
-Words are split from the input string and each wrapped in a `motion.span` with its own animation state.
+```tsx
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-## Key properties
+gsap.registerPlugin(ScrollTrigger);
+```
 
-- **text** - The paragraph or heading to reveal
-- **animateBy** - Words or lines
-- **threshold** - How far into the viewport before triggering (0-1)
-- **stagger** - Delay between each word appearing
-- **once** - Whether the animation replays when scrolling back up
+## Building the component
 
-## When to use it
+The split happens in a `useMemo`. We split on whitespace but preserve the whitespace tokens so spacing is maintained in the rendered output.
 
-Long-form landing pages, storytelling sections, and editorial layouts are where this thrives. It is particularly effective for mission statements or "about" copy that you want users to absorb rather than skim.
+```tsx
+const splitText = useMemo(() => {
+  const text = typeof children === 'string' ? children : '';
+  return text.split(/(\s+)/).map((word, index) => {
+    if (word.match(/^\s+$/)) return word;
+    return (
+      <span className='inline-block word' key={index}>
+        {word}
+      </span>
+    );
+  });
+}, [children]);
+```
 
-Set `once: true` for clean forward-scroll reveals. Allowing it to replay on scroll-back can feel jittery on fast scrollers.
+In `useEffect` we set up three separate GSAP animations on the container element.
+
+The first rotates the whole block from a base angle to zero as you scroll.
+
+```tsx
+gsap.fromTo(
+  el,
+  { transformOrigin: '0% 50%', rotate: baseRotation },
+  {
+    ease: 'none',
+    rotate: 0,
+    scrollTrigger: { trigger: el, scroller, start: 'top bottom', end: rotationEnd, scrub: true },
+  }
+);
+```
+
+The second fades individual words from a low base opacity to fully opaque, staggered so they appear left to right.
+
+```tsx
+gsap.fromTo(
+  wordElements,
+  { opacity: baseOpacity, willChange: 'opacity' },
+  {
+    ease: 'none',
+    opacity: 1,
+    stagger: 0.05,
+    scrollTrigger: {
+      trigger: el,
+      scroller,
+      start: 'top bottom-=20%',
+      end: wordAnimationEnd,
+      scrub: true,
+    },
+  }
+);
+```
+
+The third removes blur from each word, if `enableBlur` is true.
+
+```tsx
+if (enableBlur) {
+  gsap.fromTo(
+    wordElements,
+    { filter: `blur(${blurStrength}px)` },
+    {
+      ease: 'none',
+      filter: 'blur(0px)',
+      stagger: 0.05,
+      scrollTrigger: { trigger: el, scroller, start: 'top bottom-=20%', end: wordAnimationEnd, scrub: true },
+    }
+  );
+}
+```
+
+Running these three animations separately lets you tune them independently. You might want the rotation to finish before the words are fully opaque, or the blur to linger longer than the opacity.
+
+## How to use it
+
+```tsx
+<ScrollReveal
+  enableBlur={true}
+  baseOpacity={0.1}
+  baseRotation={3}
+  blurStrength={4}
+>
+  Building great interfaces takes patience, craft, and a willingness to keep refining.
+</ScrollReveal>
+```
+
+## Key takeaways
+
+- Splitting text with a regex that captures whitespace (`/(\s+)/`) preserves the original spacing without needing to manually reinsert spaces between words.
+- Three separate scrubbed animations on the same trigger creates a layered effect that feels more sophisticated than a single transform.
+- Starting words at `opacity: 0.1` rather than `0` keeps them barely visible, which gives the reader a sense of what is coming and makes the reveal feel like it is enhancing something rather than hiding it.

@@ -6,26 +6,159 @@ category: "Components"
 componentSlug: "elastic-slider"
 ---
 
-Standard sliders stop at the end of their track. An elastic slider lets you pull past the limit and then snaps back. That small bit of physical feedback makes the whole control feel more real.
+Standard sliders stop at the end of their track. An elastic slider lets you pull past the limit and then snaps back. That small bit of physical feedback makes the whole control feel more real. This is the kind of detail that gets noticed even when users cannot explain why your UI feels good.
 
-## What it does
+## What we are building
 
-The Elastic Slider behaves like a standard range input until you drag past either end. At the boundary, the thumb continues to move but decelerates, stretching the track visually. Release it and it springs back to the nearest valid value with momentum.
+A custom slider built with Framer Motion that tracks pointer position, allows overflow beyond the track bounds with rubber-band resistance, and snaps back with a spring animation on release. The track stretches to follow the overflow.
 
-## How it works
+## Setting up
 
-Drag position is tracked without constraints during the drag gesture. When the thumb reaches either end of the track, an elastic resistance formula reduces movement speed, simulating a rubber-band effect.
+```bash
+npm install motion
+```
 
-On pointer release, a Framer Motion spring animates the thumb from its over-dragged position back to the clamped value. The track deforms using a CSS `scaleX` transform on a highlighted segment.
+```tsx
+import {
+  animate, motion, useMotionValue,
+  useMotionValueEvent, useTransform,
+} from 'motion/react';
+```
 
-## Key properties
+## Building the component
 
-- **value** - Current slider value
-- **onChange** - Value change callback
-- **min** / **max** - Value range
-- **elasticity** - Resistance beyond bounds (0 = rigid, 1 = very stretchy)
-- **springConfig** - Framer Motion spring settings for snap-back
+**Motion values for the core state**
 
-## When to use it
+Three `MotionValue` instances drive the animation without triggering React re-renders:
 
-Use this wherever you have a standard slider and want to make the interaction feel noticeably better. Volume controls, brightness adjusters, and filter range inputs all benefit from the tactile snap-back. It is one of those details users notice without being able to explain why the UI feels good.
+```tsx
+const clientX = useMotionValue(0);
+const overflow = useMotionValue(0);
+const scale = useMotionValue(1);
+```
+
+`clientX` tracks raw cursor position. `overflow` tracks how far past the track boundary the cursor has gone. `scale` animates the track height on hover.
+
+**Computing overflow with decay**
+
+When the cursor goes past the track edge, the `overflow` is not the raw distance. It goes through a sigmoid decay function that makes the resistance feel natural:
+
+```tsx
+function decay(value: number, max: number): number {
+  if (max === 0) return 0;
+  const entry = value / max;
+  const sigmoid = 2 * (1 / (1 + Math.exp(-entry)) - 0.5);
+  return sigmoid * max;
+}
+```
+
+This gives you maximum resistance at the boundaries: the further past the end you drag, the slower the thumb moves relative to your cursor.
+
+The overflow is computed inside a `useMotionValueEvent` listener:
+
+```tsx
+useMotionValueEvent(clientX, 'change', (latest: number) => {
+  if (sliderRef.current) {
+    const { left, right } = sliderRef.current.getBoundingClientRect();
+    let newValue: number;
+    if (latest < left) {
+      setRegion('left');
+      newValue = left - latest;
+    } else if (latest > right) {
+      setRegion('right');
+      newValue = latest - right;
+    } else {
+      setRegion('middle');
+      newValue = 0;
+    }
+    overflow.jump(decay(newValue, MAX_OVERFLOW));
+  }
+});
+```
+
+**Track deformation**
+
+The track element stretches to follow the overflow using `useTransform` on both `scaleX` and `scaleY`. The transform origin flips depending on which side is overflowing:
+
+```tsx
+<motion.div
+  style={{
+    scaleX: useTransform(() => {
+      if (sliderRef.current) {
+        const { width } = sliderRef.current.getBoundingClientRect();
+        return 1 + overflow.get() / width;
+      }
+      return 1;
+    }),
+    scaleY: useTransform(overflow, [0, MAX_OVERFLOW], [1, 0.8]),
+    transformOrigin: useTransform(() => {
+      if (sliderRef.current) {
+        const { left, width } = sliderRef.current.getBoundingClientRect();
+        return clientX.get() < left + width / 2 ? 'right' : 'left';
+      }
+      return 'center';
+    }),
+    height: useTransform(scale, [1, 1.2], [6, 12]),
+  }}
+  className='flex flex-grow'
+>
+```
+
+The `scaleY` compression from 1 to 0.8 as overflow increases makes the track look like it is being squished sideways, which reinforces the rubber-band feeling.
+
+**Spring snap-back on release**
+
+On pointer up, we animate the overflow back to 0 with a spring that has enough bounce to feel satisfying:
+
+```tsx
+const handlePointerUp = () => {
+  animate(overflow, 0, { type: 'spring', bounce: 0.5 });
+};
+```
+
+**Left and right icon bounce**
+
+The icons at each end pulse when you overflow past their side:
+
+```tsx
+<motion.div
+  animate={{
+    scale: region === 'left' ? [1, 1.4, 1] : 1,
+    transition: { duration: 0.25 },
+  }}
+  style={{
+    x: useTransform(() =>
+      region === 'left' ? -overflow.get() / scale.get() : 0
+    ),
+  }}
+>
+  {leftIcon}
+</motion.div>
+```
+
+## How to use it
+
+```tsx
+<ElasticSlider
+  defaultValue={50}
+  startingValue={0}
+  maxValue={100}
+  isStepped={false}
+  leftIcon={<span>-</span>}
+  rightIcon={<span>+</span>}
+/>
+```
+
+| Prop | Default | Description |
+|------|---------|-------------|
+| `defaultValue` | `50` | Initial slider value |
+| `startingValue` | `0` | Minimum value |
+| `maxValue` | `100` | Maximum value |
+| `isStepped` | `false` | Snap to step increments |
+| `stepSize` | `1` | Step increment when `isStepped` is true |
+
+## Key takeaways
+
+- `useMotionValueEvent` lets you respond to MotionValue changes without subscribing via `useEffect`, and it automatically cleans up when the component unmounts.
+- The `decay` sigmoid function is what separates a good rubber-band effect from a bad one. Linear resistance feels mechanical; sigmoid resistance feels physical.
+- Using `animate(overflow, 0, { type: 'spring', bounce: 0.5 })` rather than setting the value directly means the snap-back inherits the spring physics rather than just jumping.
