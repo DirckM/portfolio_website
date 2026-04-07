@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import dynamic from 'next/dynamic';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog-utils';
 import { highlightCode } from '@/lib/shiki';
@@ -72,17 +71,16 @@ import MarqueeAlongSvgPath from '@/components/library/blocks/MarqueeAlongSvgPath
 import Terminal from '@/components/library/blocks/Terminal';
 import WorldMap from '@/components/library/blocks/WorldMap';
 
-// Dynamic (WebGL / heavy)
-const ASCIIText = dynamic(() => import('@/components/library/text-animations/ASCIIText'), { ssr: false });
-const SoftAurora = dynamic(() => import('@/components/library/backgrounds/SoftAurora'), { ssr: false });
-const ColorBends = dynamic(() => import('@/components/library/backgrounds/ColorBends'), { ssr: false });
-const DarkVeil = dynamic(() => import('@/components/library/backgrounds/DarkVeil'), { ssr: false });
-const EvilEye = dynamic(() => import('@/components/library/backgrounds/EvilEye'), { ssr: false });
-const LightPillar = dynamic(() => import('@/components/library/backgrounds/LightPillar'), { ssr: false });
-const Radar = dynamic(() => import('@/components/library/backgrounds/Radar'), { ssr: false });
-const PixelCard = dynamic(() => import('@/components/library/components/PixelCard'), { ssr: false });
-const ParallaxFloating = dynamic(() => import('@/components/library/blocks/ParallaxFloating').then(m => ({ default: m.default })), { ssr: false });
-const FloatingElement = dynamic(() => import('@/components/library/blocks/ParallaxFloating').then(m => ({ default: m.FloatingElement })), { ssr: false });
+// WebGL / heavy — imported normally since they're only passed into LiveStep scope (client component)
+import ASCIIText from '@/components/library/text-animations/ASCIIText';
+import SoftAurora from '@/components/library/backgrounds/SoftAurora';
+import ColorBends from '@/components/library/backgrounds/ColorBends';
+import DarkVeil from '@/components/library/backgrounds/DarkVeil';
+import EvilEye from '@/components/library/backgrounds/EvilEye';
+import LightPillar from '@/components/library/backgrounds/LightPillar';
+import Radar from '@/components/library/backgrounds/Radar';
+import PixelCard from '@/components/library/components/PixelCard';
+import ParallaxFloating, { FloatingElement } from '@/components/library/blocks/ParallaxFloating';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
