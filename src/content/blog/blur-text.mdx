@@ -13,7 +13,7 @@ A plain fade-in is fine. A blur-to-sharp reveal is something else entirely. It g
 Play with the controls to see how the component behaves with different settings:
 
 <LiveStep
-  code={'<BlurText text="Crafted with care" animateBy="words" delay={0.05} className="text-4xl font-bold" />'}
+  codeId="blur-text-final"
   controls={[
     { prop: 'animateBy', type: 'select', options: ['words', 'characters'], default: 'words', label: 'animate by' },
     { prop: 'delay', type: 'slider', min: 0.01, max: 0.2, step: 0.01, default: 0.05, label: 'delay' },
@@ -58,7 +58,7 @@ const isInView = useInView(ref, { once: true, margin: '-50px' });
 Each segment gets its own `motion.span`. The blur, opacity, and y-offset animate together for a rich reveal. Try switching between words and characters:
 
 <LiveStep
-  code={'<BlurText text="Each word fades in" animateBy="words" delay={0.05} className="text-3xl font-bold" />'}
+  codeId="blur-text-step3"
   controls={[
     { prop: 'animateBy', type: 'select', options: ['words', 'characters'], default: 'words', label: 'animate by' },
   ]}
@@ -80,7 +80,7 @@ transition={{ duration: 0.5, delay: i * delay }}
 The delay between segments controls the feel. Low values (0.02) feel like a wave, high values (0.15) feel deliberate. Play with it:
 
 <LiveStep
-  code={'<BlurText text="Timing is everything in animation" animateBy="words" delay={0.05} direction="bottom" className="text-2xl font-bold" />'}
+  codeId="blur-text-step4"
   controls={[
     { prop: 'delay', type: 'slider', min: 0.01, max: 0.2, step: 0.01, default: 0.05, label: 'delay' },
     { prop: 'direction', type: 'select', options: ['top', 'bottom'], default: 'bottom', label: 'direction' },

@@ -13,7 +13,7 @@ Static backgrounds feel static. Softly undulating lines of color feel alive. Thi
 Adjust the number of lines, amplitude, and color to see how different configurations feel:
 
 <LiveStep
-  code={'<div style={{ width: "100%", height: "300px" }}>\n  <LineWaves lineCount={8} lineColor="#000" amplitude={40} frequency={0.02} speed={0.02} />\n</div>'}
+  codeId="line-waves-final"
   controls={[
     { prop: 'lineCount', type: 'slider', min: 2, max: 20, step: 1, default: 8, label: 'lines' },
     { prop: 'amplitude', type: 'slider', min: 10, max: 100, step: 5, default: 40, label: 'amplitude' },
@@ -40,7 +40,7 @@ Each line is positioned at an even vertical spacing. The sine function offsets e
 Try different line counts and amplitudes:
 
 <LiveStep
-  code={'<div style={{ width: "100%", height: "250px" }}>\n  <LineWaves lineCount={5} lineColor="#e5e5e5" amplitude={30} />\n</div>'}
+  codeId="line-waves-step2"
   controls={[
     { prop: 'lineCount', type: 'slider', min: 2, max: 20, step: 1, default: 5, label: 'lines' },
     { prop: 'amplitude', type: 'slider', min: 10, max: 100, step: 5, default: 30, label: 'amplitude' },
@@ -57,7 +57,7 @@ The offset advances each frame, creating continuous horizontal motion. Keep spee
 Drop it inside any positioned container:
 
 <LiveStep
-  code={'<div style={{ width: "100%", height: "300px", background: "#000" }}>\n  <LineWaves lineCount={12} lineColor="#333" amplitude={60} speed={0.02} />\n</div>'}
+  codeId="line-waves-step4"
   previewBg="bg-black"
   controls={[
     { prop: 'lineCount', type: 'slider', min: 2, max: 20, step: 1, default: 12, label: 'lines' },
