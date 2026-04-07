@@ -8,11 +8,14 @@ import Modal from '@/components/modal/Modal';
 import { RefObject, useRef, useState, useEffect } from 'react';
 import BlurText from '@/components/library/text-animations/BlurText';
 import Magnet from '@/components/library/animations/Magnet';
+import ScrollVelocity from '@/components/library/text-animations/ScrollVelocity';
 
 interface Project {
   title: string;
   description: string;
   image: string;
+  cardBg: string;
+  cardTextColor: string;
   media: {
     type: 'image' | 'video';
     src: string;
@@ -105,6 +108,8 @@ export default function Home() {
     {
       title: 'Wakeup',
       image: '/projects/wakeup-not-rounded.svg',
+      cardBg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+      cardTextColor: '#ffffff',
       description: 'Competitive screentime tracking app',
       media: {
         type: 'image' as const,
@@ -135,6 +140,8 @@ export default function Home() {
     {
       title: 'Teckit',
       image: '/projects/teckit.svg',
+      cardBg: 'linear-gradient(135deg, #0f0f0f 0%, #2d2d2d 100%)',
+      cardTextColor: '#ffffff',
       description: 'All-in-one platform for event managers',
       media: {
         type: 'video' as const,
@@ -166,6 +173,8 @@ export default function Home() {
     {
       title: 'EarnIt',
       image: '/projects/earnit.svg',
+      cardBg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      cardTextColor: '#ffffff',
       description: 'The job platform for internationals',
       media: {
         type: 'image' as const,
@@ -195,6 +204,8 @@ export default function Home() {
     {
       title: 'Othello Game',
       image: '/projects/othello.png',
+      cardBg: 'linear-gradient(135deg, #2d3436 0%, #000000 100%)',
+      cardTextColor: '#ffffff',
       description: 'Multiplayer board game with AI opponent',
       media: {
         type: 'image' as const,
@@ -216,6 +227,8 @@ export default function Home() {
     {
       title: 'Iron Man Helmet',
       image: '/projects/iron-man-helmet.svg',
+      cardBg: 'linear-gradient(135deg, #b71c1c 0%, #880e0e 100%)',
+      cardTextColor: '#ffffff',
       description: '3D printed, motorized Iron Man helmet',
       media: {
         type: 'video' as const,
@@ -243,6 +256,8 @@ export default function Home() {
     {
       title: 'Bird CRM',
       image: '/projects/bird.svg',
+      cardBg: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      cardTextColor: '#000000',
       description: 'Relationship management for University of Twente',
       media: {
         type: 'image' as const,
@@ -263,6 +278,126 @@ export default function Home() {
           'Contact tracking',
           'Relationship mapping',
           'Role-based access control',
+        ],
+        link: null,
+      },
+    },
+    {
+      title: 'Cash Out',
+      image: '/projects/wakeup-not-rounded.svg',
+      cardBg: 'linear-gradient(135deg, #0a8f08 0%, #064e06 100%)',
+      cardTextColor: '#ffffff',
+      description: 'Ghost betting app to fight gambling addiction',
+      media: {
+        type: 'image' as const,
+        src: '/projects/wakeup-not-rounded.svg',
+        alt: 'Cash Out app',
+      },
+      content: {
+        description:
+          '<strong>Cash Out</strong> tackles gambling addiction from a completely different angle. Instead of blocking access like traditional systems, it lets people experience the <strong>thrill of betting without real money</strong>. We call it <strong>Ghost Betting</strong>: you predict, feel the tension, see the outcome, but never risk a cent.',
+        technologies: [
+          'Next.js',
+          'TypeScript',
+          'Three.js',
+          'React Three Fiber',
+          'Tailwind CSS',
+          'Vitest',
+        ],
+        features: [
+          'Ghost betting without real money',
+          'Behavioral insight tracking',
+          'Gamified self-control rewards',
+        ],
+        link: null,
+      },
+    },
+    {
+      title: 'Content Engine',
+      image: '/projects/teckit.svg',
+      cardBg: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+      cardTextColor: '#000000',
+      description: 'AI-driven content synthesis and video assembly SaaS',
+      media: {
+        type: 'image' as const,
+        src: '/projects/teckit.svg',
+        alt: 'Content Engine',
+      },
+      content: {
+        description:
+          'An <strong>AI-driven content synthesis</strong> platform: feed it videos, it transcribes and indexes them, then you can spar with AI to generate new scripts and assemble videos programmatically. Built with a <strong>microservice architecture</strong>.',
+        technologies: [
+          'Next.js',
+          'Python',
+          'FastAPI',
+          'LangChain',
+          'Remotion',
+          'Whisper AI',
+        ],
+        features: [
+          'Video ingestion and transcription',
+          'AI script generation',
+          'Programmatic video assembly',
+        ],
+        link: null,
+      },
+    },
+    {
+      title: 'Financial Overview',
+      image: '/projects/earnit.svg',
+      cardBg: 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)',
+      cardTextColor: '#000000',
+      description: 'Bank transaction analyzer and categorizer',
+      media: {
+        type: 'image' as const,
+        src: '/projects/earnit.svg',
+        alt: 'Financial Overview',
+      },
+      content: {
+        description:
+          'A tool for analyzing and categorizing <strong>Dutch bank CSV exports</strong>. Upload your Rabobank transactions and get automatic categorization, AI-powered suggestions, and visual dashboards of your spending.',
+        technologies: [
+          'Next.js',
+          'TypeScript',
+          'Tailwind CSS',
+          'Chart.js',
+          'AI categorization',
+        ],
+        features: [
+          'CSV upload and parsing',
+          'Auto-categorization',
+          'Spending visualizations',
+          'AI suggestions',
+        ],
+        link: null,
+      },
+    },
+    {
+      title: 'AI Learner',
+      image: '/projects/bird.svg',
+      cardBg: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      cardTextColor: '#000000',
+      description: 'Personalized AI-powered learning platform',
+      media: {
+        type: 'image' as const,
+        src: '/projects/bird.svg',
+        alt: 'AI Learner',
+      },
+      content: {
+        description:
+          'A <strong>personalized learning platform</strong> powered by AI. Students get adaptive content, progress tracking, and an onboarding flow that tailors the experience to their learning style and goals.',
+        technologies: [
+          'Next.js',
+          'TypeScript',
+          'Tailwind CSS',
+          'Supabase',
+          'AI/ML',
+        ],
+        features: [
+          'Adaptive learning paths',
+          'Progress tracking',
+          'Personalized onboarding',
+          'Admin dashboard',
         ],
         link: null,
       },
@@ -319,7 +454,7 @@ export default function Home() {
       </section>
 
       {/* Selected Work - auto-scrolling 3D carousel */}
-      <section id='projects' className='py-32 overflow-hidden'>
+      <section id='projects' className='py-32 overflow-x-clip'>
         <div className='max-w-5xl mx-auto px-6 md:px-16 mb-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
             Selected{' '}
@@ -330,7 +465,7 @@ export default function Home() {
         </div>
 
         <div
-          className='w-full flex items-center overflow-hidden h-[400px]'
+          className='w-full flex items-center overflow-hidden h-[450px] py-10'
           style={{
             maskImage:
               'linear-gradient(to right, rgba(0,0,0,0) 0%, rgb(0,0,0) 12.5%, rgb(0,0,0) 87.5%, rgba(0,0,0,0) 100%)',
@@ -381,22 +516,60 @@ export default function Home() {
                   el.style.zIndex = '0';
                 }}
               >
-                <div className='relative w-full h-full overflow-hidden bg-library-cream'>
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    className='object-contain p-10'
-                  />
-                  <div className='absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-colors duration-300 flex flex-col justify-end p-5'>
-                    <div className='translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300'>
-                      <h3 className='text-white text-lg font-semibold'>
-                        {project.title}
-                      </h3>
-                      <p className='text-white/60 text-xs mt-1'>
-                        {project.description}
-                      </p>
+                <div
+                  className='relative w-full h-full overflow-hidden flex flex-col justify-between p-6'
+                  style={{ background: project.cardBg }}
+                >
+                  {/* Top: small tech pill */}
+                  <div className='flex gap-1.5 flex-wrap'>
+                    {project.content.technologies.slice(0, 2).map(tech => (
+                      <span
+                        key={tech}
+                        className='text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full border'
+                        style={{
+                          color: project.cardTextColor,
+                          borderColor:
+                            project.cardTextColor === '#ffffff'
+                              ? 'rgba(255,255,255,0.25)'
+                              : 'rgba(0,0,0,0.15)',
+                        }}
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Center: project image */}
+                  <div className='flex-1 relative flex items-center justify-center'>
+                    <div className='relative w-[70%] h-[60%]'>
+                      <Image
+                        src={project.image}
+                        alt={project.title}
+                        fill
+                        className='object-contain drop-shadow-lg'
+                      />
                     </div>
+                  </div>
+
+                  {/* Bottom: title + description */}
+                  <div>
+                    <h3
+                      className='text-base font-[family-name:var(--font-instrument-serif)] italic'
+                      style={{ color: project.cardTextColor }}
+                    >
+                      {project.title}
+                    </h3>
+                    <p
+                      className='text-[10px] mt-1 leading-snug'
+                      style={{
+                        color:
+                          project.cardTextColor === '#ffffff'
+                            ? 'rgba(255,255,255,0.6)'
+                            : 'rgba(0,0,0,0.5)',
+                      }}
+                    >
+                      {project.description}
+                    </p>
                   </div>
                 </div>
               </figure>
@@ -525,8 +698,8 @@ export default function Home() {
         )}
       </section>
 
-      {/* Skills */}
-      <section id='skills' className='py-32'>
+      {/* Skills - Scroll Velocity Marquee */}
+      <section id='skills' className='py-32 overflow-clip'>
         <div className='max-w-5xl mx-auto px-6 md:px-16 mb-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
             My{' '}
@@ -535,82 +708,37 @@ export default function Home() {
             </span>
           </h2>
         </div>
-        <div
-          className='relative h-[300px] overflow-hidden'
-          style={{
-            maskImage:
-              'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
-            WebkitMaskImage:
-              'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
-          }}
-        >
-          <div className='absolute inset-0 flex flex-col items-center animate-[skillScroll_20s_linear_infinite]'>
-            {[
-              'React',
-              'TypeScript',
-              'Next.js',
-              'Tailwind CSS',
-              'Node.js',
-              'Figma',
-              'React Native',
-              'PostgreSQL',
-              'Three.js',
-              'Framer Motion',
-              'Java',
-              'Python',
-              'Git',
-              'Supabase',
-              'REST APIs',
-              'UI/UX Design',
-              'React',
-              'TypeScript',
-              'Next.js',
-              'Tailwind CSS',
-              'Node.js',
-              'Figma',
-              'React Native',
-              'PostgreSQL',
-              'Three.js',
-              'Framer Motion',
-              'Java',
-              'Python',
-              'Git',
-              'Supabase',
-              'REST APIs',
-              'UI/UX Design',
-            ].map((skill, idx) => (
-              <span
-                key={idx}
-                className='text-2xl md:text-4xl font-[family-name:var(--font-instrument-serif)] italic text-black/80 py-3 leading-relaxed'
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
+        <ScrollVelocity
+          texts={[
+            'React  ·  TypeScript  ·  Next.js  ·  Tailwind CSS  ·  Node.js  ·  Figma  ·  React Native  ·  PostgreSQL',
+          ]}
+          velocity={5}
+          className='font-[family-name:var(--font-instrument-serif)] italic text-black/80 leading-[1.3] py-2'
+          numCopies={4}
+        />
+        <div className='mt-2'>
+          <ScrollVelocity
+            texts={[
+              'Three.js  ·  Framer Motion  ·  Java  ·  Python  ·  Git  ·  Supabase  ·  REST APIs  ·  UI/UX Design',
+            ]}
+            velocity={-5}
+            className='font-[family-name:var(--font-instrument-serif)] italic text-black/80 leading-[1.3] py-2'
+            numCopies={4}
+          />
         </div>
-
-        <style>{`
-          @keyframes skillScroll {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-50%); }
-          }
-        `}</style>
       </section>
 
       {/* About */}
-      <section
-        id='about'
-        className='flex justify-center items-center px-6 md:px-16 py-32'
-      >
-        <div className='flex flex-col items-center gap-12 max-w-3xl w-full text-center'>
-          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
+      <section id='about' className='py-32'>
+        <div className='max-w-5xl mx-auto px-6 md:px-16'>
+          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight mb-12'>
             About{' '}
             <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
               Me
             </span>
           </h2>
 
-          <div ref={containerRef}>
+          <div ref={containerRef} className='max-w-3xl'>
             <VariableProximity
               label="Hi, I'm Dirck. I've been creating things my whole life. When I was young, I got my first Arduino, and from that moment on, building and experimenting became my passion. I've always loved discovering new ideas, tools, and skills to unlock. At just 14 or 15, I started my first small business making recycled bracelets because I wanted to experience what it's like to make real business decisions and see an idea come to life. Right now, I'm finishing my bachelor's degree in Computer Science. Over the past few years, I've learned a lot, not only about technology, but also about problem-solving and persistence. The biggest lesson for me has been that with enough dedication, any problem can be solved. Sometimes the odds are against you, but it's up to you to turn that around. Now, I'm looking forward to new challenges that will help me grow, learn, and keep creating."
               className='variable-proximity-demo text-lg leading-relaxed'
