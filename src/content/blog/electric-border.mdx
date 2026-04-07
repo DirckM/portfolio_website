@@ -6,15 +6,30 @@ category: "Animations"
 componentSlug: "electric-border"
 ---
 
-Borders are boring. They sit there, static, doing the minimum. Give that border a moving pulse of light and suddenly your card feels powered on. That is what the Electric Border component does, and the whole thing is pure CSS under the hood.
+Borders are boring. They sit there, static, doing the minimum. Give that border a moving pulse of light and suddenly your card feels powered on.
 
-## What we are building
+## The final result
 
-A glowing light pulse travels continuously around the border of any container. The effect looks like electrical current moving through a wire, completing laps indefinitely. No canvas, no JavaScript animation loop. Just a rotating conic-gradient with a mask.
+The whole thing is pure CSS under the hood. Try changing the color and speed:
+
+<LiveStep
+  code={`<ElectricBorder color="#4af" duration={2} borderWidth={2} borderRadius="16px">
+  <div className="px-8 py-6 bg-zinc-900 text-white rounded-[16px]">
+    <p className="text-lg font-bold">Premium Plan</p>
+    <p className="text-sm text-white/60">Everything included</p>
+  </div>
+</ElectricBorder>`}
+  previewBg="bg-black"
+  controls={[
+    { prop: 'color', type: 'color', default: '#4444ff', label: 'color' },
+    { prop: 'duration', type: 'slider', min: 0.5, max: 6, step: 0.5, default: 2, label: 'speed (s)' },
+    { prop: 'borderWidth', type: 'slider', min: 1, max: 6, step: 1, default: 2, label: 'width' },
+  ]}
+/>
 
 ## Setting up
 
-No dependencies beyond React. The component uses inline styles and a `<style>` tag for the keyframe animation, so it works anywhere.
+No dependencies beyond React. The component uses inline styles and a `<style>` tag for the keyframe.
 
 ```tsx
 interface ElectricBorderProps {
@@ -27,95 +42,70 @@ interface ElectricBorderProps {
 }
 ```
 
-## Building the component
+## Step 1: The spinning gradient
 
-The trick is combining a conic-gradient with CSS masking. Instead of painting a full border, we create a spinning gradient and then cut out the interior so only the edge shows.
+The trick is a conic-gradient. Only a narrow band is visible, the rest is transparent. Spinning it traces a pulse around the element:
 
 ```tsx
-<div
-  className='absolute inset-0'
-  style={{
-    borderRadius,
-    padding: `${borderWidth}px`,
-    background: `conic-gradient(from 0deg, transparent 0%, ${color} 10%, transparent 20%)`,
-    WebkitMask: `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,
-    WebkitMaskComposite: 'xor',
-    maskComposite: 'exclude',
-    animation: `electric-spin ${duration}s linear infinite`,
-  }}
+background: `conic-gradient(from 0deg, transparent 0%, ${color} 10%, transparent 20%)`
+```
+
+## Step 2: The mask trick
+
+Without a mask, the gradient fills the entire rectangle. The CSS mask subtracts the content box, leaving only the border strip:
+
+```tsx
+WebkitMask: `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,
+WebkitMaskComposite: 'xor',
+maskComposite: 'exclude',
+```
+
+## Step 3: The animation
+
+A simple infinite rotation makes the pulse travel. Try different speeds:
+
+<LiveStep
+  code={`<ElectricBorder color="#ffffff" duration={3} borderWidth={2} borderRadius="12px">
+  <div className="px-12 py-8 bg-black text-white text-lg">
+    Electric Border Effect
+  </div>
+</ElectricBorder>`}
+  previewBg="bg-black"
+  controls={[
+    { prop: 'color', type: 'color', default: '#ffffff', label: 'color' },
+    { prop: 'duration', type: 'slider', min: 0.5, max: 6, step: 0.5, default: 3, label: 'speed (s)' },
+  ]}
 />
-```
 
-The `conic-gradient` creates a sweep of color that is mostly transparent. Only a narrow band around the 10% mark is visible. By spinning this gradient with a CSS animation, that narrow band traces around the border.
-
-The `WebkitMask` combination with `maskComposite: 'exclude'` is what turns the filled rectangle into just a border ring. It subtracts the content box from the full box, leaving only the padding area visible.
-
-The keyframe itself is minimal:
+The keyframe is just a rotation:
 
 ```tsx
-<style>{`
-  @keyframes electric-spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-`}</style>
-```
-
-The full component wraps children in a `relative` container, places the animated border layer as an `absolute inset-0` overlay, and puts the children in another `relative` div so they sit on top:
-
-```tsx
-export default function ElectricBorder({
-  children,
-  className = '',
-  duration = 3,
-  color = '#ffffff',
-  borderRadius = '12px',
-  borderWidth = 2,
-}: ElectricBorderProps) {
-  return (
-    <div className={`relative ${className}`} style={{ borderRadius }}>
-      <div className='absolute inset-0 overflow-hidden' style={{ borderRadius }}>
-        <div
-          className='absolute inset-0'
-          style={{
-            borderRadius,
-            padding: `${borderWidth}px`,
-            background: `conic-gradient(from 0deg, transparent 0%, ${color} 10%, transparent 20%)`,
-            WebkitMask: `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,
-            WebkitMaskComposite: 'xor',
-            maskComposite: 'exclude',
-            animation: `electric-spin ${duration}s linear infinite`,
-          }}
-        />
-      </div>
-      <div className='relative' style={{ borderRadius }}>
-        {children}
-      </div>
-      <style>{`
-        @keyframes electric-spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-    </div>
-  );
+@keyframes electric-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 ```
 
-## How to use it
+## Step 4: Try different looks
 
-Wrap any card or container:
+Blue with a thick border, or a subtle white glow. The same component handles both:
 
-```tsx
-<ElectricBorder color="#4af" duration={2} borderWidth={2} borderRadius="16px">
-  <div className="p-6 bg-zinc-900">
-    <h2>Premium Plan</h2>
+<LiveStep
+  code={`<ElectricBorder color="#3b82f6" duration={4} borderRadius="9999px" borderWidth={3}>
+  <div className="px-8 py-3 bg-zinc-900 text-white text-sm rounded-full">
+    Rounded with blue
   </div>
-</ElectricBorder>
-```
+</ElectricBorder>`}
+  previewBg="bg-black"
+  controls={[
+    { prop: 'color', type: 'color', default: '#3b82f6', label: 'color' },
+    { prop: 'duration', type: 'slider', min: 0.5, max: 6, step: 0.5, default: 4, label: 'speed (s)' },
+    { prop: 'borderWidth', type: 'slider', min: 1, max: 6, step: 1, default: 3, label: 'width' },
+  ]}
+/>
 
 ## Key takeaways
 
 - The conic-gradient plus CSS mask technique produces a true border ring with zero canvas or SVG overhead.
-- `maskComposite: 'exclude'` is the key that cuts out the interior and leaves only the border strip visible.
-- Duration between 1.5s and 3s hits the sweet spot. Faster feels jittery, slower loses the energy that makes it work.
+- `maskComposite: 'exclude'` is the key that cuts out the interior.
+- Duration between 1.5s and 3s hits the sweet spot.
