@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { LiveProvider, LiveEditor, LiveError, LivePreview } from 'react-live';
 import PropControls, { type ControlConfig } from './PropControls';
 
@@ -49,8 +49,11 @@ export default function LiveStep({
     return vals;
   }, [controls]);
 
+  const [mounted, setMounted] = useState(false);
   const [controlValues, setControlValues] = useState(defaultValues);
   const [code, setCode] = useState((initialCode || '').trim());
+
+  useEffect(() => setMounted(true), []);
 
   const handleControlChange = useCallback(
     (prop: string, value: string | number | boolean) => {
@@ -62,6 +65,10 @@ export default function LiveStep({
     },
     []
   );
+
+  if (!mounted) {
+    return <div className='my-8 h-[300px] rounded-lg bg-[#282c34] animate-pulse' />;
+  }
 
   return (
     <div className='my-8 rounded-lg overflow-hidden border border-white/10'>
