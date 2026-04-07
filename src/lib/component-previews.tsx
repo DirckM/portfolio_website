@@ -687,7 +687,7 @@ export const cardPreviews: Record<string, React.ReactNode> = {
   ),
   'fluid-glass': (
     <div className='w-full h-full'>
-      <FluidGlass mode='lens' />
+      <FluidGlass />
     </div>
   ),
   folder: (

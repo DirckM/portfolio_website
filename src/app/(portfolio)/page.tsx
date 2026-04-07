@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import VariableProximity from '@/components/proximity-text/ProximityText';
 import ContactForm from '@/components/ContactForm';
 import Modal from '@/components/modal/Modal';
-import { RefObject, useRef, useState } from 'react';
+import { RefObject, useRef, useState, useEffect } from 'react';
 import BlurText from '@/components/library/text-animations/BlurText';
 import Magnet from '@/components/library/animations/Magnet';
 
@@ -30,6 +30,55 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<
+    (typeof experienceData)[0] | null
+  >(null);
+
+  const experienceData = [
+    {
+      title: 'Full-Stack Developer',
+      company: 'Freelance',
+      period: 'Jan 2023 - Present',
+      desc: 'Building digital products for clients across Europe. From concept to deployment.',
+      fullDesc:
+        'Working as a freelance full-stack developer, I build digital products for clients across Europe. This ranges from web applications and mobile apps to complete design systems. I handle the entire process from initial concept and design through development and deployment. Working directly with clients has taught me how to translate business needs into technical solutions.',
+      skills: [
+        'React',
+        'Next.js',
+        'TypeScript',
+        'Tailwind CSS',
+        'Figma',
+        'Node.js',
+      ],
+    },
+    {
+      title: 'Co-Founder',
+      company: 'Teckit',
+      period: '2022 - 2024',
+      desc: 'Built an all-in-one event management platform with a team of four.',
+      fullDesc:
+        'Co-founded Teckit with four friends who shared a passion for the event industry. We built a complete business dashboard, a client-side interface, and a mobile scanner app for on-site ticket verification. After two years of full-time work, we decided not to launch due to heavy market competition. This experience was invaluable and marked the beginning of my journey into frontend development and product design.',
+      skills: ['React', 'Next.js', 'NestJS', 'React Native', 'Prisma', 'Figma'],
+    },
+    {
+      title: 'Course Assistant',
+      company: 'Co-Teach',
+      period: 'Sep 2022 - Jun 2023',
+      desc: 'Guided students through web development fundamentals at university.',
+      fullDesc:
+        'As a course assistant at the University of Twente, I helped guide students through web development fundamentals. This included reviewing code, explaining concepts, and helping debug issues. Teaching others solidified my own understanding and improved my ability to communicate technical ideas clearly.',
+      skills: ['JavaScript', 'HTML/CSS', 'React', 'Teaching'],
+    },
+    {
+      title: 'Founder',
+      company: 'MarineNet',
+      period: '2020 - 2022',
+      desc: 'Created a marketplace for marine equipment. My first real venture at 17.',
+      fullDesc:
+        'At 17, I created MarineNet, a marketplace for marine equipment. I handled everything from building the platform to marketing and customer support. This was my first real business venture and taught me the fundamentals of entrepreneurship, customer validation, and building something from scratch.',
+      skills: ['React', 'Node.js', 'PostgreSQL', 'Business Development'],
+    },
+  ];
 
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project);
@@ -40,6 +89,17 @@ export default function Home() {
     setIsModalOpen(false);
     setSelectedProject(null);
   };
+
+  // ESC key closes experience modal
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedJob(null);
+    };
+    if (selectedJob) {
+      window.addEventListener('keydown', handleEsc);
+      return () => window.removeEventListener('keydown', handleEsc);
+    }
+  }, [selectedJob]);
 
   const projects: Project[] = [
     {
@@ -258,7 +318,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Selected Work - 3D perspective cards like hero carousel */}
+      {/* Selected Work - auto-scrolling 3D carousel */}
       <section id='projects' className='py-32 overflow-hidden'>
         <div className='max-w-5xl mx-auto px-6 md:px-16 mb-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
@@ -270,38 +330,55 @@ export default function Home() {
         </div>
 
         <div
-          className='w-full flex items-center overflow-hidden'
+          className='w-full flex items-center overflow-hidden h-[400px]'
           style={{
             maskImage:
-              'linear-gradient(to right, rgba(0,0,0,0) 0%, rgb(0,0,0) 10%, rgb(0,0,0) 90%, rgba(0,0,0,0) 100%)',
+              'linear-gradient(to right, rgba(0,0,0,0) 0%, rgb(0,0,0) 12.5%, rgb(0,0,0) 87.5%, rgba(0,0,0,0) 100%)',
             WebkitMaskImage:
-              'linear-gradient(to right, rgba(0,0,0,0) 0%, rgb(0,0,0) 10%, rgb(0,0,0) 90%, rgba(0,0,0,0) 100%)',
+              'linear-gradient(to right, rgba(0,0,0,0) 0%, rgb(0,0,0) 12.5%, rgb(0,0,0) 87.5%, rgba(0,0,0,0) 100%)',
           }}
         >
-          <div className='flex items-center gap-0 justify-center w-full px-[5vw]'>
-            {projects.map((project, _i) => (
+          <div
+            className='flex items-center gap-0 select-none'
+            style={{
+              animation: `projectScroll ${projects.length * 6}s linear infinite`,
+              width: 'fit-content',
+            }}
+            onMouseEnter={e =>
+              ((e.currentTarget as HTMLElement).style.animationPlayState =
+                'paused')
+            }
+            onMouseLeave={e =>
+              ((e.currentTarget as HTMLElement).style.animationPlayState =
+                'running')
+            }
+          >
+            {[...projects, ...projects].map((project, idx) => (
               <figure
-                key={project.title}
-                className='shrink-0 relative cursor-pointer'
+                key={`${project.title}-${idx}`}
+                className='shrink-0 relative cursor-pointer group'
                 onClick={() => handleProjectClick(project)}
                 style={{
-                  width: '240px',
-                  height: '340px',
+                  width: '260px',
+                  height: '360px',
                   margin: '0',
                   transform: 'perspective(1143px) rotateY(-50deg) skewY(20deg)',
+                  opacity: 0.85,
                   transition: 'opacity 0.3s ease, transform 0.4s ease',
                 }}
                 onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.transform =
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.transform =
                     'perspective(1143px) rotateY(-30deg) skewY(12deg) scale(1.08) translateY(-15px)';
-                  (e.currentTarget as HTMLElement).style.opacity = '1';
-                  (e.currentTarget as HTMLElement).style.zIndex = '10';
+                  el.style.opacity = '1';
+                  el.style.zIndex = '10';
                 }}
                 onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.transform =
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.transform =
                     'perspective(1143px) rotateY(-50deg) skewY(20deg)';
-                  (e.currentTarget as HTMLElement).style.opacity = '0.85';
-                  (e.currentTarget as HTMLElement).style.zIndex = '0';
+                  el.style.opacity = '0.85';
+                  el.style.zIndex = '0';
                 }}
               >
                 <div className='relative w-full h-full overflow-hidden bg-library-cream'>
@@ -309,25 +386,33 @@ export default function Home() {
                     src={project.image}
                     alt={project.title}
                     fill
-                    className='object-contain p-8'
+                    className='object-contain p-10'
                   />
-                  {/* Hover overlay with project info */}
-                  <div className='absolute inset-0 bg-black/0 hover:bg-black/60 transition-colors duration-300 flex flex-col justify-end p-5 opacity-0 hover:opacity-100'>
-                    <h3 className='text-white text-lg font-semibold'>
-                      {project.title}
-                    </h3>
-                    <p className='text-white/60 text-xs mt-1'>
-                      {project.description}
-                    </p>
+                  <div className='absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-colors duration-300 flex flex-col justify-end p-5'>
+                    <div className='translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300'>
+                      <h3 className='text-white text-lg font-semibold'>
+                        {project.title}
+                      </h3>
+                      <p className='text-white/60 text-xs mt-1'>
+                        {project.description}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </figure>
             ))}
           </div>
         </div>
+
+        <style>{`
+          @keyframes projectScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+        `}</style>
       </section>
 
-      {/* Experience - centered grid */}
+      {/* Experience - centered grid with clickable cards */}
       <section id='experience' className='py-32'>
         <div className='max-w-5xl mx-auto px-6 md:px-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight mb-16'>
@@ -338,45 +423,33 @@ export default function Home() {
           </h2>
 
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-            {[
-              {
-                title: 'Full-Stack Developer',
-                company: 'Freelance',
-                period: 'Jan 2023 - Present',
-                desc: 'Building digital products for clients across Europe. From concept to deployment.',
-              },
-              {
-                title: 'Co-Founder',
-                company: 'Teckit',
-                period: '2022 - 2024',
-                desc: 'Built an all-in-one event management platform with a team of four.',
-              },
-              {
-                title: 'Course Assistant',
-                company: 'Co-Teach',
-                period: 'Sep 2022 - Jun 2023',
-                desc: 'Guided students through web development fundamentals at university.',
-              },
-              {
-                title: 'Founder',
-                company: 'MarineNet',
-                period: '2020 - 2022',
-                desc: 'Created a marketplace for marine equipment. My first real venture at 17.',
-              },
-            ].map((job, i) => (
+            {experienceData.map((job, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                className='group relative border border-library-border rounded-xl p-8 hover:border-black/20 transition-colors duration-300'
+                onClick={() => setSelectedJob(job)}
+                className='group relative border border-library-border rounded-xl p-8 hover:border-black/20 transition-colors duration-300 cursor-pointer'
               >
                 <div className='flex justify-between items-start mb-6'>
                   <p className='text-[10px] uppercase tracking-widest text-library-gray'>
                     {job.period}
                   </p>
-                  <div className='w-2 h-2 rounded-full bg-library-border group-hover:bg-black transition-colors' />
+                  <svg
+                    className='w-4 h-4 text-library-gray group-hover:text-black transition-colors'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={1.5}
+                      d='M9 5l7 7-7 7'
+                    />
+                  </svg>
                 </div>
                 <h3 className='text-xl font-[family-name:var(--font-instrument-serif)] italic text-black mb-1'>
                   {job.title}
@@ -389,6 +462,67 @@ export default function Home() {
             ))}
           </div>
         </div>
+
+        {/* Experience Modal */}
+        {selectedJob && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className='fixed inset-0 z-50 flex items-center justify-center px-6'
+            onClick={() => setSelectedJob(null)}
+          >
+            <div className='absolute inset-0 bg-black/40 backdrop-blur-sm' />
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.3 }}
+              className='relative bg-white rounded-xl max-w-lg w-full p-10 shadow-2xl'
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedJob(null)}
+                className='absolute top-4 right-4 text-library-gray hover:text-black transition-colors'
+              >
+                <svg
+                  className='w-5 h-5'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={1.5}
+                    d='M6 18L18 6M6 6l12 12'
+                  />
+                </svg>
+              </button>
+              <p className='text-[10px] uppercase tracking-widest text-library-gray mb-4'>
+                {selectedJob.period}
+              </p>
+              <h3 className='text-2xl font-[family-name:var(--font-instrument-serif)] italic text-black mb-1'>
+                {selectedJob.title}
+              </h3>
+              <p className='text-sm text-library-gray mb-6'>
+                {selectedJob.company}
+              </p>
+              <p className='text-sm text-black/80 leading-relaxed mb-8'>
+                {selectedJob.fullDesc}
+              </p>
+              <div className='flex flex-wrap gap-2'>
+                {selectedJob.skills.map(skill => (
+                  <span
+                    key={skill}
+                    className='px-3 py-1 text-xs bg-black text-white rounded-full'
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </section>
 
       {/* Skills */}
@@ -466,9 +600,9 @@ export default function Home() {
       {/* About */}
       <section
         id='about'
-        className='flex justify-center items-start px-6 md:px-16 py-32'
+        className='flex justify-center items-center px-6 md:px-16 py-32'
       >
-        <div className='flex flex-col gap-12 max-w-5xl w-full'>
+        <div className='flex flex-col items-center gap-12 max-w-3xl w-full text-center'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
             About{' '}
             <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
@@ -476,21 +610,16 @@ export default function Home() {
             </span>
           </h2>
 
-          <div
-            ref={containerRef}
-            className='flex flex-col md:flex-row gap-8 md:gap-16'
-          >
-            <div className='md:w-2/3'>
-              <VariableProximity
-                label="Hi, I'm Dirck. I've been creating things my whole life. When I was young, I got my first Arduino, and from that moment on, building and experimenting became my passion. I've always loved discovering new ideas, tools, and skills to unlock. At just 14 or 15, I started my first small business making recycled bracelets because I wanted to experience what it's like to make real business decisions and see an idea come to life. Right now, I'm finishing my bachelor's degree in Computer Science. Over the past few years, I've learned a lot, not only about technology, but also about problem-solving and persistence. The biggest lesson for me has been that with enough dedication, any problem can be solved. Sometimes the odds are against you, but it's up to you to turn that around. Now, I'm looking forward to new challenges that will help me grow, learn, and keep creating."
-                className='variable-proximity-demo text-lg leading-relaxed'
-                fromFontVariationSettings="'wght' 400, 'opsz' 9"
-                toFontVariationSettings="'wght' 1000, 'opsz' 40"
-                containerRef={containerRef as RefObject<HTMLElement>}
-                radius={100}
-                falloff='linear'
-              />
-            </div>
+          <div ref={containerRef}>
+            <VariableProximity
+              label="Hi, I'm Dirck. I've been creating things my whole life. When I was young, I got my first Arduino, and from that moment on, building and experimenting became my passion. I've always loved discovering new ideas, tools, and skills to unlock. At just 14 or 15, I started my first small business making recycled bracelets because I wanted to experience what it's like to make real business decisions and see an idea come to life. Right now, I'm finishing my bachelor's degree in Computer Science. Over the past few years, I've learned a lot, not only about technology, but also about problem-solving and persistence. The biggest lesson for me has been that with enough dedication, any problem can be solved. Sometimes the odds are against you, but it's up to you to turn that around. Now, I'm looking forward to new challenges that will help me grow, learn, and keep creating."
+              className='variable-proximity-demo text-lg leading-relaxed'
+              fromFontVariationSettings="'wght' 400, 'opsz' 9"
+              toFontVariationSettings="'wght' 1000, 'opsz' 40"
+              containerRef={containerRef as RefObject<HTMLElement>}
+              radius={100}
+              falloff='linear'
+            />
           </div>
         </div>
       </section>
