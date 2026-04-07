@@ -50,6 +50,7 @@ export default function LiveStep({
   }, [controls]);
 
   const [mounted, setMounted] = useState(false);
+  const [replayKey, setReplayKey] = useState(0);
   const [controlValues, setControlValues] = useState(defaultValues);
   const [code, setCode] = useState((initialCode || '').trim());
 
@@ -92,9 +93,17 @@ export default function LiveStep({
             />
           </div>
           <div
-            className={`${previewBg} min-h-[200px] flex items-center justify-center p-6 ${previewClassName}`}
+            className={`${previewBg} min-h-[200px] flex items-center justify-center p-6 relative ${previewClassName}`}
           >
-            <LivePreview />
+            <div key={replayKey} className='w-full flex items-center justify-center'>
+              <LivePreview />
+            </div>
+            <button
+              onClick={() => setReplayKey(k => k + 1)}
+              className='absolute top-3 right-3 text-xs px-3 py-1.5 rounded-md bg-black/10 hover:bg-black/20 text-black/50 hover:text-black/80 transition-colors'
+            >
+              Replay
+            </button>
           </div>
         </div>
         <LiveError className='bg-red-900/50 text-red-200 text-xs p-3 font-[family-name:var(--font-jetbrains-mono)]' />
