@@ -6,11 +6,19 @@ category: "Text Animations"
 componentSlug: "blur-text"
 ---
 
-A plain fade-in is fine. A blur-to-sharp reveal is something else entirely. It gives the impression that the text is materializing out of thin air, snapping into focus like a camera lens settling on a subject.
+A plain fade-in is fine. A blur-to-sharp reveal is something else entirely. It gives the impression that the text is materializing out of thin air.
 
-## What we are building
+## The final result
 
-BlurText splits a string into words or individual characters and animates each segment from a blurred, transparent state to sharp and fully visible. The animation fires once when the element scrolls into view, with a stagger so each segment follows the last.
+Play with the controls to see how the component behaves with different settings:
+
+<LiveStep
+  code={`<BlurText text="Crafted with care" animateBy="words" delay={0.05} className="text-4xl font-bold" />`}
+  controls={[
+    { prop: 'animateBy', type: 'select', options: ['words', 'characters'], default: 'words', label: 'animate by' },
+    { prop: 'delay', type: 'slider', min: 0.01, max: 0.2, step: 0.01, default: 0.05, label: 'delay' },
+  ]}
+/>
 
 ## Setting up
 
@@ -21,9 +29,9 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 ```
 
-## Building the component
+## Step 1: Define the props
 
-The props are minimal on purpose. The key decision is whether you split by words or characters.
+The key decision is whether you split by words or characters. We keep the API minimal.
 
 ```tsx
 interface BlurTextProps {
@@ -35,67 +43,60 @@ interface BlurTextProps {
 }
 ```
 
-Split the text string based on `animateBy`, then calculate the vertical offset based on direction.
+## Step 2: Split text and detect viewport
+
+Split the text string based on `animateBy`, then use `useInView` to trigger when the element scrolls into view.
 
 ```tsx
 const segments = animateBy === 'words' ? text.split(' ') : text.split('');
-const yOffset = direction === 'top' ? -20 : 20;
-```
-
-The `useInView` hook from Framer Motion watches the container and flips to `true` when it crosses the viewport threshold. We use `once: true` so the animation does not replay on scroll-back.
-
-```tsx
 const ref = useRef<HTMLDivElement>(null);
 const isInView = useInView(ref, { once: true, margin: '-50px' });
 ```
 
-Each segment gets its own `motion.span`. The `animate` prop switches between the hidden and visible states based on `isInView`. The stagger comes from multiplying the segment index by the `delay` value.
+## Step 3: Animate each segment
+
+Each segment gets its own `motion.span`. The blur, opacity, and y-offset animate together for a rich reveal. Try switching between words and characters:
+
+<LiveStep
+  code={`<BlurText text="Each word fades in" animateBy="words" delay={0.05} className="text-3xl font-bold" />`}
+  controls={[
+    { prop: 'animateBy', type: 'select', options: ['words', 'characters'], default: 'words', label: 'animate by' },
+  ]}
+/>
+
+The motion values that make this work:
 
 ```tsx
-return (
-  <div ref={ref} className={`flex flex-wrap ${className}`}>
-    {segments.map((segment, i) => (
-      <motion.span
-        key={i}
-        initial={{ opacity: 0, filter: 'blur(12px)', y: yOffset }}
-        animate={
-          isInView
-            ? { opacity: 1, filter: 'blur(0px)', y: 0 }
-            : { opacity: 0, filter: 'blur(12px)', y: yOffset }
-        }
-        transition={{
-          duration: 0.5,
-          delay: i * delay,
-          ease: [0.25, 0.1, 0.25, 1],
-        }}
-        className='inline-block'
-      >
-        {segment}
-        {animateBy === 'words' && i < segments.length - 1 && <span>&nbsp;</span>}
-      </motion.span>
-    ))}
-  </div>
-);
-```
-
-Note the `&nbsp;` insertion after each word. When splitting by words, the spaces between them need to be explicit, otherwise the flex layout collapses them.
-
-## How to use it
-
-```tsx
-<BlurText
-  text="Crafted with care"
-  animateBy="words"
-  delay={0.05}
-  direction="bottom"
-  className="text-4xl font-bold"
+<motion.span
+  initial={{ opacity: 0, filter: 'blur(12px)', y: yOffset }}
+  animate={
+    isInView
+      ? { opacity: 1, filter: 'blur(0px)', y: 0 }
+      : { opacity: 0, filter: 'blur(12px)', y: yOffset }
+  }
+  transition={{
+    duration: 0.5,
+    delay: i * delay,
+    ease: [0.25, 0.1, 0.25, 1],
+  }}
 />
 ```
 
-Switch `animateBy` to `"characters"` for a finer-grained effect on short words or labels.
+## Step 4: Fine-tune the timing
+
+The delay between segments controls the feel. Low values (0.02) feel like a wave, high values (0.15) feel deliberate. Play with it:
+
+<LiveStep
+  code={`<BlurText text="Timing is everything in animation" animateBy="words" delay={0.05} direction="bottom" className="text-2xl font-bold" />`}
+  controls={[
+    { prop: 'delay', type: 'slider', min: 0.01, max: 0.2, step: 0.01, default: 0.05, label: 'delay' },
+    { prop: 'direction', type: 'select', options: ['top', 'bottom'], default: 'bottom', label: 'direction' },
+    { prop: 'animateBy', type: 'select', options: ['words', 'characters'], default: 'words', label: 'animate by' },
+  ]}
+/>
 
 ## Key takeaways
 
 - Animating `filter: blur()` along with `opacity` and `y` creates a much richer reveal than opacity alone.
-- Framer Motion's `useInView` hook keeps the trigger logic outside your component, making the animation state simple and declarative.
-- Word-level splitting works better for longer phrases; character-level splitting works better for short headings where you want maximum drama.
+- Framer Motion's `useInView` hook keeps the trigger logic simple and declarative.
+- The stagger delay is the single most impactful parameter to tune.
