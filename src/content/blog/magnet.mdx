@@ -6,28 +6,112 @@ category: "Animations"
 componentSlug: "magnet"
 ---
 
-Most hover effects are binary. On or off. The cursor is either over the element or it isn't. The Magnet effect breaks that rule by starting the interaction before the cursor even arrives, pulling the element toward the mouse as it gets close.
+Most hover effects are binary. On or off. The cursor is either over the element or it isn't. The Magnet effect breaks that rule by starting the interaction before the cursor arrives, pulling the element toward the mouse as it gets close.
 
-## What it does
+## What we are building
 
-As the cursor approaches the element within a configurable radius, the element begins moving toward the cursor. The pull strengthens as the cursor gets closer, peaks when directly over the element, and releases with a spring snap when the cursor moves away.
+As the cursor enters a configurable radius around the element, the element moves toward the cursor. The closer the cursor gets, the more offset the element applies. When the cursor leaves the field, the element eases back to its resting position with a spring-like transition.
 
-## How it works
+## Setting up
 
-A `mousemove` listener computes the distance between the cursor and the element's center. If that distance is within the activation radius, a pull force is calculated using the inverse of the distance, clamped to a maximum offset.
+No dependencies beyond React. The component uses CSS `transform` and transition strings directly.
 
-The element's transform is updated via Framer Motion's `useSpring`, which handles the smooth approach and the elastic return to the original position.
+```tsx
+interface MagnetProps extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode;
+  padding?: number;
+  disabled?: boolean;
+  magnetStrength?: number;
+  activeTransition?: string;
+  inactiveTransition?: string;
+  wrapperClassName?: string;
+  innerClassName?: string;
+}
+```
 
-## Key properties
+## Building the component
 
-- **radius** - Distance in pixels at which the effect activates (default: 100px)
-- **strength** - How far the element moves at maximum pull (default: 0.4)
-- **stiffness** - Spring stiffness for the return snap (default: 150)
-- **damping** - Spring damping (default: 15)
-- **scale** - Scale applied when the cursor is directly over the element
+The core is a `mousemove` listener attached to the window. Every mouse movement triggers a check against the element's bounding rect:
 
-## When to use it
+```tsx
+const handleMouseMove = (e: MouseEvent) => {
+  if (!magnetRef.current) return;
 
-Perfect for navigation items, call-to-action buttons, and social icons. It turns passive UI into something the user wants to interact with just to feel the pull.
+  const { left, top, width, height } = magnetRef.current.getBoundingClientRect();
+  const centerX = left + width / 2;
+  const centerY = top + height / 2;
 
-Keep the strength value between 0.3 and 0.5. Too strong and the element leaps around unpredictably. Too weak and users won't notice the effect.
+  const distX = Math.abs(centerX - e.clientX);
+  const distY = Math.abs(centerY - e.clientY);
+
+  if (distX < width / 2 + padding && distY < height / 2 + padding) {
+    setIsActive(true);
+    const offsetX = (e.clientX - centerX) / magnetStrength;
+    const offsetY = (e.clientY - centerY) / magnetStrength;
+    setPosition({ x: offsetX, y: offsetY });
+  } else {
+    setIsActive(false);
+    setPosition({ x: 0, y: 0 });
+  }
+};
+```
+
+The `padding` prop extends the bounding box beyond the element's edges, so the pull begins before the cursor is directly over it. The `magnetStrength` divisor controls how far the element moves. A higher value means less movement per pixel of cursor offset.
+
+The actual animation is handled entirely by CSS transitions:
+
+```tsx
+const transitionStyle = isActive ? activeTransition : inactiveTransition;
+
+// inner div:
+style={{
+  transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+  transition: transitionStyle,
+  willChange: 'transform',
+}}
+```
+
+Two transition strings lets you tune the follow feel and the return feel independently:
+
+- `activeTransition` defaults to `'transform 0.3s ease-out'` for a snappy follow.
+- `inactiveTransition` defaults to `'transform 0.5s ease-in-out'` for a slower, springier return.
+
+The full component structure is two nested divs: an outer wrapper that gets the ref for bounding rect calculations, and an inner div that gets the transform applied:
+
+```tsx
+return (
+  <div
+    ref={magnetRef}
+    className={wrapperClassName}
+    style={{ position: 'relative', display: 'inline-block' }}
+    {...props}
+  >
+    <div
+      className={innerClassName}
+      style={{
+        transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+        transition: transitionStyle,
+        willChange: 'transform',
+      }}
+    >
+      {children}
+    </div>
+  </div>
+);
+```
+
+## How to use it
+
+```tsx
+<Magnet padding={80} magnetStrength={3}>
+  <button className="px-6 py-3 bg-white text-black rounded-full">
+    Get started
+  </button>
+</Magnet>
+```
+
+## Key takeaways
+
+- Using the window for `mousemove` instead of the element itself means the magnetic field works even when the cursor has not yet touched the element.
+- Dividing cursor offset by `magnetStrength` keeps the movement proportional. A value of 2 means the element moves half as far as the cursor does, which feels natural.
+- The `disabled` prop resets position to zero and skips the event listener, making it easy to turn the effect off on mobile or for reduced-motion preferences.

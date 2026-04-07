@@ -6,29 +6,107 @@ category: "Animations"
 componentSlug: "magic-rings"
 ---
 
-Concentric circles have a meditative quality. Water ripples, signal waves, sonar pings. There's something satisfying about watching rings expand outward, and with a WebGL shader you can make them glow with a depth that CSS simply can't match.
+Concentric circles have a meditative quality. Water ripples, signal waves, sonar pings. There is something satisfying about watching rings expand outward, and with a WebGL shader you can make them glow with a depth that CSS simply cannot match.
 
-## What it does
+## What we are building
 
-Multiple concentric rings pulse outward from the center in a continuous loop. Each ring has a slight color variation and phase offset, creating a layered, organic rhythm. The whole thing runs at 60fps on the GPU.
+Multiple concentric rings pulse outward from the center in a continuous loop. Each ring has a slight color variation and phase offset, creating a layered, organic rhythm. Mouse interaction shifts the rings and a click triggers a burst. The whole thing runs at 60fps entirely on the GPU.
 
-## How it works
+## Setting up
 
-The component renders a full-canvas WebGL shader via a single quad. The fragment shader computes the distance from the fragment's UV coordinates to the center, then uses a sine function modulated by time to create the rippling pattern.
+You need Three.js:
 
-Each ring's brightness is calculated with a smooth step around specific distance thresholds. Color is interpolated across the rings using the distance as the input.
+```bash
+npm install three
+```
 
-## Key properties
+The component manages its own WebGL renderer via `useRef` and a `useEffect`, rendering directly into a `<div>`.
 
-- **ringCount** - Number of visible rings (default: 6)
-- **speed** - Animation speed multiplier (default: 1.0)
-- **colorA** - Inner ring color as an RGB triplet
-- **colorB** - Outer ring color as an RGB triplet
-- **thickness** - Width of each ring relative to total radius
-- **glow** - Amount of bloom applied around each ring
+## Building the component
 
-## When to use it
+The fragment shader is where the rings are born. Each ring is computed in a `ring()` function that calculates radial distance, applies a time-based phase offset, and fades in and out over a cycle:
 
-Ideal for loading overlays, hero backgrounds, or animated section dividers. The circular geometry draws the eye to the center, making it a natural frame for a logo or headline.
+```glsl
+float ring(vec2 p, float ri, float cut, float t0, float px) {
+  float t = mod(uTime + t0, CYCLE);
+  float r = ri + t / CYCLE * uScaleRate;
+  float d = abs(length(p) - r);
+  float a = atan(abs(p.y), abs(p.x)) / HP;
+  float th = max(1.0 - a, 0.5) * px * uLineThickness;
+  float h = (1.0 - smoothstep(th, th * 1.5, d)) + 1.0;
+  d += pow(cut * a, 3.0) * r;
+  return h * exp(-uAttenuation * d) * fade(t);
+}
+```
 
-Pair complementary colors for a vibrant look, or use two shades of the same hue for something more restrained and atmospheric.
+The `fade()` function uses smoothstep to ramp the ring in and out over its lifetime, which prevents any harsh popping at cycle boundaries:
+
+```glsl
+float fade(float t) {
+  return t < uFadeIn ? smoothstep(0.0, uFadeIn, t) : 1.0 - smoothstep(uFadeOut, CYCLE - 0.2, t);
+}
+```
+
+The main loop runs up to 10 rings, mixing color between `uColor` and `uColorTwo` across the ring count:
+
+```glsl
+for (int i = 0; i < 10; i++) {
+  if (i >= uRingCount) break;
+  float fi = float(i);
+  vec2 pr = p - fi * uParallax * uMouse;
+  vec3 rc = mix(uColor, uColorTwo, fi / rcf);
+  c = mix(c, rc, vec3(ring(pr, uBaseRadius + fi * uRadiusStep, ...)));
+}
+```
+
+On the JavaScript side, props are stored in a `propsRef` so the animation loop can read them without needing to restart when props change:
+
+```tsx
+propsRef.current = { color, colorTwo, speed, ringCount, ... };
+
+const animate = (t: number) => {
+  frameId = requestAnimationFrame(animate);
+  const p = propsRef.current!;
+  uniforms.uTime.value = t * 0.001 * p.speed;
+  uniforms.uColor.value.set(p.color);
+  // ... update all uniforms from current props
+  renderer.render(scene, camera);
+};
+```
+
+Mouse tracking smooths the cursor position and feeds it to the shader:
+
+```tsx
+smoothMouseRef.current[0] += (mouseRef.current[0] - smoothMouseRef.current[0]) * 0.08;
+smoothMouseRef.current[1] += (mouseRef.current[1] - smoothMouseRef.current[1]) * 0.08;
+uniforms.uMouse.value.set(smoothMouseRef.current[0], smoothMouseRef.current[1]);
+```
+
+The click burst decays each frame:
+
+```tsx
+burstRef.current *= 0.95;
+if (burstRef.current < 0.001) burstRef.current = 0;
+uniforms.uBurst.value = p.clickBurst ? burstRef.current : 0;
+```
+
+## How to use it
+
+```tsx
+<div style={{ width: '600px', height: '600px' }}>
+  <MagicRings
+    color="#fc42ff"
+    colorTwo="#42fcff"
+    ringCount={6}
+    speed={1}
+    followMouse
+    clickBurst
+  />
+</div>
+```
+
+## Key takeaways
+
+- Storing props in a `ref` and reading from it inside the animation loop is a clean pattern for keeping WebGL uniforms in sync without restarting the render loop on every prop change.
+- The `fade()` function with smoothstep ramps prevents visible cycle boundaries, making the loop feel truly continuous.
+- Noise is added in the final step with a hash function to break up banding artifacts that pure math rings tend to produce.

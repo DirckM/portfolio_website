@@ -6,28 +6,126 @@ category: "Animations"
 componentSlug: "crosshair"
 ---
 
-GSAP has been the gold standard for animation on the web for years, and for good reason. When it comes to a cursor effect that needs to feel precise and immediate, GSAP's rendering pipeline delivers a smoothness that spring physics libraries struggle to match at high refresh rates.
+GSAP has been the gold standard for web animation for years, and for good reason. When it comes to a cursor effect that needs to feel precise and immediate, GSAP's rendering pipeline delivers a smoothness that spring-based libraries struggle to match at high refresh rates.
 
-## What it does
+## What we are building
 
-The default cursor is replaced with a crosshair made of four extending lines and a center dot. The crosshair follows the mouse with a tight lag. When hovering over interactive elements, the lines contract inward in a targeting animation, then expand back out when the cursor leaves.
+The default cursor is replaced with two full-width crosshair lines: one horizontal, one vertical. They follow the mouse with a slight lag using a manual lerp on every animation frame. When hovering over any link, an SVG noise filter kicks in and shakes the lines briefly, like a targeting glitch effect.
 
-## How it works
+## Setting up
 
-GSAP's `quickTo` function creates optimized setters for the x and y properties of the crosshair element, minimizing layout recalculation on every frame. Mouse position updates call these setters directly.
+You need GSAP:
 
-The extending lines are absolutely positioned elements whose scaleX and scaleY are animated with GSAP timelines on hover state changes. The targeting animation uses a short ease-out tween for contraction and a bounce ease for expansion.
+```bash
+npm install gsap
+```
 
-## Key properties
+```tsx
+import { gsap } from 'gsap';
 
-- **lineLength** - Length of each crosshair line in pixels (default: 20px)
-- **lineThickness** - Stroke width in pixels (default: 1px)
-- **color** - Crosshair color (default: white)
-- **lag** - How much the crosshair trails the cursor (default: 0.1s)
-- **targetingScale** - How far lines contract on hover (default: 0.4)
+interface CrosshairProps {
+  color?: string;
+  containerRef?: RefObject<HTMLElement>;
+}
+```
 
-## When to use it
+The optional `containerRef` scopes the crosshair to a specific element rather than the whole page.
 
-This suits high-craft portfolios, interactive installations, and any creative site where every pixel signals intention. The targeting animation rewards users who hover over buttons and links.
+## Building the component
 
-Keep the lag value between 0.08s and 0.15s. Lower than that and it feels like a normal cursor. Higher and it starts to feel laggy.
+The crosshair renders two absolutely positioned divs: a 1px-tall div spanning full width for the horizontal line, and a 1px-wide div spanning full height for the vertical line:
+
+```tsx
+<div ref={lineHorizontalRef}
+  className='absolute w-full h-px pointer-events-none opacity-0 transform translate-y-1/2'
+  style={{ background: color }}
+/>
+<div ref={lineVerticalRef}
+  className='absolute h-full w-px pointer-events-none opacity-0 transform translate-x-1/2'
+  style={{ background: color }}
+/>
+```
+
+Both start at `opacity-0`. The first mouse move triggers a GSAP tween to fade them in, and then the `onMouseMove` listener that triggered it removes itself so it only fires once:
+
+```tsx
+const onMouseMove = (_ev: Event) => {
+  renderedStyles.tx.previous = renderedStyles.tx.current = mouse.x;
+  renderedStyles.ty.previous = renderedStyles.ty.current = mouse.y;
+
+  gsap.to([lineHorizontalRef.current, lineVerticalRef.current], {
+    duration: 0.9,
+    ease: 'Power3.easeOut',
+    opacity: 1,
+  });
+
+  requestAnimationFrame(render);
+  target.removeEventListener('mousemove', onMouseMove);
+};
+```
+
+The render loop uses a manual lerp to smooth the crosshair position. The `amt` value of `0.15` means the lines close 15% of the remaining distance each frame:
+
+```tsx
+const lerp = (a: number, b: number, n: number): number => (1 - n) * a + n * b;
+
+const render = () => {
+  renderedStyles.tx.current = mouse.x;
+  renderedStyles.ty.current = mouse.y;
+
+  for (const key in renderedStyles) {
+    const style = renderedStyles[key];
+    style.previous = lerp(style.previous, style.current, style.amt);
+  }
+
+  gsap.set(lineVerticalRef.current, { x: renderedStyles.tx.previous });
+  gsap.set(lineHorizontalRef.current, { y: renderedStyles.ty.previous });
+
+  requestAnimationFrame(render);
+};
+```
+
+The glitch effect on link hover uses a GSAP timeline that animates the `baseFrequency` attribute of SVG `feTurbulence` elements. These are embedded in the component's SVG filter definitions:
+
+```tsx
+const tl = gsap.timeline({ paused: true,
+  onStart: () => {
+    lineHorizontalRef.current!.style.filter = 'url(#filter-noise-x)';
+    lineVerticalRef.current!.style.filter = 'url(#filter-noise-y)';
+  },
+  onUpdate: () => {
+    filterXRef.current!.setAttribute('baseFrequency', primitiveValues.turbulence.toString());
+    filterYRef.current!.setAttribute('baseFrequency', primitiveValues.turbulence.toString());
+  },
+  onComplete: () => {
+    lineHorizontalRef.current!.style.filter = 'none';
+    lineVerticalRef.current!.style.filter = 'none';
+  },
+}).to(primitiveValues, { duration: 0.5, ease: 'power1', startAt: { turbulence: 1 }, turbulence: 0 });
+```
+
+The `enter` handler restarts this timeline and the `leave` handler skips it to the end, ensuring the filter is always cleaned up even if the user moves fast:
+
+```tsx
+const enter = () => tl.restart();
+const leave = () => { tl.progress(1).kill(); };
+```
+
+## How to use it
+
+```tsx
+// Full-page crosshair at the app root
+<Crosshair color="white" />
+
+// Scoped to a specific container
+const ref = useRef<HTMLDivElement>(null);
+<div ref={ref}>
+  <Crosshair color="red" containerRef={ref} />
+</div>
+```
+
+## Key takeaways
+
+- Manual lerp in a `requestAnimationFrame` loop gives you precise control over lag without needing a physics simulation. The `amt` value is intuitive: 0 is no movement, 1 is instant.
+- Animating SVG filter attributes directly with GSAP produces a glitch effect that CSS transitions simply cannot replicate.
+- The `containerRef` scope makes the component reusable for interactive regions within a page rather than forcing a full-document takeover.

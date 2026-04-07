@@ -6,29 +6,114 @@ category: "Animations"
 componentSlug: "meta-balls"
 ---
 
-Meta balls are one of those effects that look impossibly satisfying. Two blobs approach each other, develop a neck, then merge into one continuous shape. It's organic, tactile, and just unsettling enough to be interesting. And yes, you can do it in a browser at full speed.
+Meta balls are one of those effects that look impossibly satisfying. Two blobs approach each other, develop a neck, then merge into one continuous shape. It's organic, tactile, and just unsettling enough to be interesting. With the OGL library and a fragment shader, you can run this at full speed in the browser.
 
-## What it does
+## What we are building
 
-Circular blobs move around the canvas and merge smoothly when they get close, forming organic compound shapes. The cursor influences the field, attracting or repelling the nearest ball. The merging is physically convincing because of how the underlying math works.
+Circular blobs float around the canvas on sine wave paths, merging smoothly when they overlap. The cursor adds a bonus ball that follows your mouse. When the cursor leaves, the ball orbits the center automatically. The rendering is done with a WebGL fragment shader via the OGL library.
 
-## How it works
+## Setting up
 
-Each ball contributes an influence value at every point in space, calculated as the inverse square of the distance from the ball's center. The fragment shader sums all influence values at each pixel. Where the total exceeds a threshold, the pixel is filled, creating a smooth boundary that naturally blends between overlapping balls.
+You need OGL:
 
-The cursor position is fed to the shader as a uniform, adding an extra influence point that shifts the field in real time.
+```bash
+npm install ogl
+```
 
-## Key properties
+```tsx
+import { Renderer, Program, Mesh, Triangle, Transform, Vec3, Camera } from 'ogl';
+```
 
-- **ballCount** - Number of meta balls (default: 4)
-- **threshold** - Merge sensitivity, higher means earlier merging (default: 1.0)
-- **speed** - Base movement speed of the balls (default: 0.8)
-- **color** - Fill color of the combined shape
-- **cursorInfluence** - Strength of cursor attraction (default: 0.5)
-- **glowAmount** - Soft glow applied around the shape boundary
+## Building the component
 
-## When to use it
+Each ball has physics parameters generated from a deterministic hash function. This means the animation is seeded and reproducible:
 
-Use this as a hero decoration, a loading indicator with personality, or a playful interactive element in an otherwise structured layout. It signals creativity and technical depth immediately.
+```tsx
+function hash31(p: number): number[] {
+  const r = [p * 0.1031, p * 0.103, p * 0.0973].map(fract);
+  const dotVal = r[0] * (r[1] + 33.33) + ...;
+  return r.map(v => fract(v + dotVal));
+}
 
-A single solid color with a strong glow reads as premium. Multiple colors that blend at merge points feel more experimental and expressive.
+for (let i = 0; i < effectiveBallCount; i++) {
+  const h1 = hash31(i + 1);
+  const st = h1[0] * (2 * Math.PI);
+  const dtFactor = 0.1 * Math.PI + h1[1] * (0.4 * Math.PI - 0.1 * Math.PI);
+  const baseScale = 5.0 + h1[1] * (10.0 - 5.0);
+  ballParams.push({ st, dtFactor, baseScale, toggle: Math.floor(h2[0] * 2), radius: radiusVal });
+}
+```
+
+Each frame, ball positions are computed as Lissajous-like curves using time, the per-ball phase offset (`st`), and the `toggle` flag that flips the Y frequency:
+
+```tsx
+function update(t: number) {
+  const elapsed = (t - startTime) * 0.001;
+
+  for (let i = 0; i < effectiveBallCount; i++) {
+    const p = ballParams[i];
+    const dt = elapsed * speed * p.dtFactor;
+    const th = p.st + dt;
+    const x = Math.cos(th);
+    const y = Math.sin(th + dt * p.toggle);
+    const posX = x * p.baseScale * clumpFactor;
+    const posY = y * p.baseScale * clumpFactor;
+    metaBallsUniform[i].set(posX, posY, p.radius);
+  }
+}
+```
+
+These positions are uploaded to the shader as a uniform array of `Vec3` values where X and Y are world position and Z is radius.
+
+The fragment shader computes the meta ball field at each pixel using the inverse square formula. Where the total field exceeds a threshold, the pixel is filled:
+
+```glsl
+float getMetaBallValue(vec2 c, float r, vec2 p) {
+    vec2 d = p - c;
+    float dist2 = dot(d, d);
+    return (r * r) / dist2;
+}
+
+void main() {
+    float m1 = 0.0;
+    for (int i = 0; i < 50; i++) {
+        if (i >= iBallCount) break;
+        m1 += getMetaBallValue(iMetaBalls[i].xy, iMetaBalls[i].z, coord);
+    }
+    float m2 = getMetaBallValue(mouseW, iCursorBallSize, coord);
+    float total = m1 + m2;
+    float f = smoothstep(-1.0, 1.0, (total - 1.3) / min(1.0, fwidth(total)));
+```
+
+The `fwidth(total)` in the smoothstep denominator is what makes the merging boundary anti-aliased. It measures how fast the field changes at that pixel and uses that to set the smooth band width automatically.
+
+Color blending between the ball color and cursor color is proportional to each source's contribution to the total field:
+
+```glsl
+float alpha1 = m1 / total;
+float alpha2 = m2 / total;
+cFinal = iColor * alpha1 + iCursorColor * alpha2;
+outColor = vec4(cFinal * f, enableTransparency ? f : 1.0);
+```
+
+## How to use it
+
+```tsx
+<div style={{ width: '100%', height: '500px' }}>
+  <MetaBalls
+    color="#ffffff"
+    cursorBallColor="#ff6600"
+    ballCount={15}
+    speed={0.3}
+    animationSize={30}
+    enableMouseInteraction
+    enableTransparency
+  />
+</div>
+```
+
+## Key takeaways
+
+- The inverse square formula `(r * r) / dist2` is the core of meta balls. Fields from multiple balls simply add together, and the smooth boundary emerges automatically when they overlap.
+- `fwidth()` in the smoothstep call provides free hardware anti-aliasing of the blob boundary without any manual tuning.
+- When the cursor is outside the container, the component substitutes an auto-animated orbit position to keep the scene alive even without interaction.

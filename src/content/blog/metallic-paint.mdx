@@ -6,29 +6,112 @@ category: "Animations"
 componentSlug: "metallic-paint"
 ---
 
-Metal doesn't have one color. It reflects everything around it: streaks of light, distorted reflections, color shifts as the angle changes. Capturing that in a browser used to be a design compromise. Now, with a well-tuned WebGL shader, you can get genuinely convincing metallic surfaces.
+Metal doesn't have one color. It reflects everything around it: streaks of light, distorted reflections, color shifts as the angle changes. Capturing that in a browser is no longer a compromise. With a well-tuned WebGL2 shader and a depth map baked from your image, you can get genuinely convincing metallic surfaces.
 
-## What it does
+## What we are building
 
-The component renders a animated metallic surface using a fragment shader. Light streaks travel across the surface, and the color shifts between hues as the angle of simulated light changes over time, like an oil slick or brushed chrome.
+The component takes an image, computes a depth map from it using a CPU-side Poisson solver, uploads that as a texture, and then runs a fragment shader that simulates metallic paint flowing across the shape. The shader handles chromatic spread, liquid distortion, contour lines, and a rotating light sweep.
 
-## How it works
+## Setting up
 
-A GLSL fragment shader runs on a full-canvas quad. The shader uses layered noise functions (simplex or fbm) to generate surface irregularities, then applies a specular highlight calculation based on a simulated light position that moves with time.
+No external libraries. The component uses raw WebGL2 via a canvas ref.
 
-Color is determined by mapping surface normals to a hue rotation, creating the iridescent shift. The whole calculation runs per-pixel on the GPU.
+```tsx
+interface MetallicPaintProps {
+  imageSrc: string;
+  seed?: number;
+  scale?: number;
+  refraction?: number;
+  blur?: number;
+  liquid?: number;
+  speed?: number;
+  lightColor?: string;
+  darkColor?: string;
+  tintColor?: string;
+}
+```
 
-## Key properties
+## Building the component
 
-- **colorA** - Base color at one angle extreme
-- **colorB** - Color at the opposing angle
-- **metalness** - How sharp and reflective the highlights appear (default: 0.8)
-- **speed** - Speed of light movement across the surface (default: 0.5)
-- **roughness** - Surface noise intensity (default: 0.3)
-- **iridescence** - Amount of color shift with viewing angle (default: 0.6)
+The first step is processing the image on the CPU to generate a depth map. The `processImage` function draws the image to a canvas, extracts pixel data, builds a shape mask from non-background pixels, then runs a Successive Over-Relaxation (SOR) solver to compute depth values that peak at the center of the shape and fall to zero at edges:
 
-## When to use it
+```tsx
+const ITERATIONS = 200;
+const omega = 1.85;
 
-Use this for hero sections, product feature backgrounds, or anywhere you want a premium material feel. It pairs well with dark color schemes where the metallic sheen really pops.
+for (let iter = 0; iter < ITERATIONS; iter++) {
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const idx = y * width + x;
+      if (!shapeMask[idx] || boundaryMask[idx]) continue;
+      const sum = (shapeMask[idx + 1] ? u[idx + 1] : 0) + ...;
+      const newVal = (C + sum) / 4;
+      u[idx] = omega * newVal + (1 - omega) * u[idx];
+    }
+  }
+}
+```
 
-Increase roughness for a brushed metal look. Decrease it for a mirror finish that feels almost liquid.
+The resulting depth values are encoded as grayscale in the red channel, with the alpha channel carrying the original shape mask. This single texture gives the shader both depth and clipping information.
+
+The WebGL setup compiles the shaders, links the program, and queries all uniform locations in one pass:
+
+```tsx
+const count = gl.getProgramParameter(prog, gl.ACTIVE_UNIFORMS);
+for (let i = 0; i < count; i++) {
+  const info = gl.getActiveUniform(prog, i);
+  if (info) uniforms[info.name] = gl.getUniformLocation(prog, info.name);
+}
+```
+
+The render loop updates `u_time` each frame. When `mouseAnimation` is enabled, it maps mouse X and Y position to the time value instead, letting the user scrub through the animation by moving the cursor:
+
+```tsx
+if (mouseAnimRef.current) {
+  mouse.x += (mouse.targetX - mouse.x) * 0.08;
+  mouse.y += (mouse.targetY - mouse.y) * 0.08;
+  animTimeRef.current = mouse.x * 3000 + mouse.y * 1500;
+} else {
+  animTimeRef.current += delta * speedRef.current;
+}
+
+gl.uniform1f(u.u_time, animTimeRef.current);
+gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+```
+
+The component uses two separate `useEffect` hooks: one to initialize the WebGL context, and one to load the image and upload the texture. This lets the canvas be ready before the image finishes loading:
+
+```tsx
+useEffect(() => {
+  if (!ready || !imageSrc) return;
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    const imgData = processImage(img);
+    uploadTexture(imgData);
+    setTextureReady(true);
+  };
+  img.src = imageSrc;
+}, [ready, imageSrc, uploadTexture]);
+```
+
+## How to use it
+
+```tsx
+<div style={{ width: '400px', height: '400px' }}>
+  <MetallicPaint
+    imageSrc="/my-logo.png"
+    lightColor="#ffffff"
+    darkColor="#000000"
+    tintColor="#feb3ff"
+    speed={0.3}
+    scale={4}
+  />
+</div>
+```
+
+## Key takeaways
+
+- The SOR Poisson solver on the CPU generates a depth map that the GPU shader uses to simulate how light wraps around the shape. Without it, the metallic effect would look flat.
+- Storing `speed` in a `ref` and reading from it in the render loop means you can change the speed prop without restarting the animation or re-uploading the texture.
+- The `mouseAnimation` mode remaps mouse position to the time uniform, which turns the animation into a direct scrubbing control rather than an autonomous loop.

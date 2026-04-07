@@ -6,28 +6,124 @@ category: "Animations"
 componentSlug: "glare-hover"
 ---
 
-Physical objects reflect light. Flat UI doesn't, and that's why so much of it feels lifeless. Add a glare that moves with the cursor and your card suddenly behaves like a real surface, catching and bouncing light as the user moves around.
+Physical objects reflect light. Flat UI doesn't, and that gap is part of why so much of it feels lifeless. Add a glare that moves with the cursor and your card starts to behave like a real surface, catching and bouncing light as the user moves around.
 
-## What it does
+## What we are building
 
-A radial gradient highlight follows the cursor across the component. As the mouse moves, the glare repositions smoothly, simulating specular reflection on a slightly tilted surface. The effect disappears when the cursor leaves.
+A diagonal streak of light sweeps across the component on mouse enter and retreats on mouse leave. The animation uses a gradient that slides from outside the visible area through the element and back out. No tilt, no 3D transform. Just a well-timed gradient sweep.
 
-## How it works
+## Setting up
 
-Mouse position is tracked relative to the component's bounding rectangle. Those coordinates are normalized to a 0-1 range and mapped to CSS custom properties that control the gradient's center point.
+You need React with `useRef`. No extra dependencies.
 
-A radial gradient goes from a semi-transparent white at the cursor position to transparent at the edges. The tilt effect is achieved with a CSS transform that applies a subtle perspective rotation based on the same mouse coordinates.
+```tsx
+import React, { useRef } from 'react';
+```
 
-## Key properties
+The component accepts these props:
 
-- **glareOpacity** - Maximum opacity of the highlight (default: 0.2)
-- **glareColor** - Color of the glare, usually white
-- **tiltAmount** - Degrees of 3D tilt applied on hover (default: 10)
-- **scale** - How much the card scales up on hover (default: 1.02)
-- **borderRadius** - Should match the container's border radius
+```tsx
+interface GlareHoverProps {
+  glareColor?: string;
+  glareOpacity?: number;
+  glareAngle?: number;
+  glareSize?: number;
+  transitionDuration?: number;
+  playOnce?: boolean;
+}
+```
 
-## When to use it
+## Building the component
 
-This is perfect for product cards, testimonial tiles, and profile cards where you want tactile feedback without a click. It rewards users who explore the UI with a mouse.
+The first step is converting the hex color to an rgba value so we can apply the opacity:
 
-Keep glare opacity between 0.1 and 0.25. Any higher and it starts to look like a bug rather than a feature.
+```tsx
+const hex = glareColor.replace('#', '');
+let rgba = glareColor;
+if (/^[\dA-Fa-f]{6}$/.test(hex)) {
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  rgba = `rgba(${r}, ${g}, ${b}, ${glareOpacity})`;
+}
+```
+
+The overlay div holds the gradient and slides around via `backgroundPosition`. It starts off-canvas at `-100% -100%` and animates to `100% 100%` on hover:
+
+```tsx
+const overlayStyle: React.CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  background: `linear-gradient(${glareAngle}deg,
+      hsla(0,0%,0%,0) 60%,
+      ${rgba} 70%,
+      hsla(0,0%,0%,0) 100%)`,
+  backgroundSize: `${glareSize}% ${glareSize}%, 100% 100%`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: '-100% -100%, 0 0',
+  pointerEvents: 'none',
+};
+```
+
+The animation functions toggle CSS transitions directly on the element ref:
+
+```tsx
+const animateIn = () => {
+  const el = overlayRef.current;
+  if (!el) return;
+  el.style.transition = 'none';
+  el.style.backgroundPosition = '-100% -100%, 0 0';
+  el.style.transition = `${transitionDuration}ms ease`;
+  el.style.backgroundPosition = '100% 100%, 0 0';
+};
+
+const animateOut = () => {
+  const el = overlayRef.current;
+  if (!el) return;
+  if (playOnce) {
+    el.style.transition = 'none';
+    el.style.backgroundPosition = '-100% -100%, 0 0';
+  } else {
+    el.style.transition = `${transitionDuration}ms ease`;
+    el.style.backgroundPosition = '-100% -100%, 0 0';
+  }
+};
+```
+
+The container wires up the mouse events and renders the overlay on top of the children:
+
+```tsx
+return (
+  <div
+    className={`relative grid place-items-center overflow-hidden border cursor-pointer ${className}`}
+    style={{ width, height, background, borderRadius, borderColor, ...style }}
+    onMouseEnter={animateIn}
+    onMouseLeave={animateOut}
+  >
+    <div ref={overlayRef} style={overlayStyle} />
+    {children}
+  </div>
+);
+```
+
+## How to use it
+
+```tsx
+<GlareHover
+  width="400px"
+  height="300px"
+  background="#111"
+  borderRadius="12px"
+  glareColor="#ffffff"
+  glareOpacity={0.4}
+  glareAngle={-45}
+>
+  <p>Your content here</p>
+</GlareHover>
+```
+
+## Key takeaways
+
+- The glare is a `linear-gradient` that slides via `backgroundPosition`, not a moving element. This keeps DOM manipulation to a minimum.
+- Setting `transition: none` before repositioning to the start point prevents a visible snap from ruining the re-entry animation.
+- The `playOnce` flag lets you snap the overlay back to start instantly on leave, useful for one-shot reveal cards rather than repeating hovers.

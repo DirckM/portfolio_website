@@ -6,29 +6,119 @@ category: "Animations"
 componentSlug: "target-cursor"
 ---
 
-The cursor is the one thing on screen that the user controls completely. Most sites ignore it and leave the default arrow. Swap that for a precision crosshair and you immediately change the feel of the entire interface.
+The cursor is the one thing on screen the user controls completely. Most sites ignore it and leave the default arrow. Swap that for a precision crosshair that snaps around interactive elements and you immediately change the feel of the entire interface.
 
-## What it does
+## What we are building
 
-The native cursor is hidden and replaced with a custom crosshair that follows the mouse. The crosshair lags slightly behind using spring physics, giving the motion a satisfying weight. It can also expand or contract when hovering over interactive elements.
+The native cursor is hidden and replaced with a GSAP-driven crosshair made of four L-shaped corner brackets. The crosshair spins continuously. When hovering over a target element, it stops spinning, expands to frame the element's corners, and tracks the element even during scroll.
 
-## How it works
+## Setting up
 
-Mouse position is tracked globally via a `mousemove` event listener. The custom crosshair element's position is updated using Framer Motion's `useSpring`, which interpolates toward the target position with configurable stiffness and damping values.
+You need GSAP:
 
-Hoverable targets get a data attribute that the cursor listens to. When the cursor enters one of those elements, it transitions to an expanded or outlined state.
+```bash
+npm install gsap
+```
 
-## Key properties
+```tsx
+import { gsap } from 'gsap';
+```
 
-- **size** - Default crosshair size in pixels (default: 32px)
-- **color** - Crosshair stroke color
-- **stiffness** - Spring stiffness for the follow lag (default: 400)
-- **damping** - Spring damping (default: 28)
-- **expandOnHover** - Whether to grow when over interactive elements
-- **expandedSize** - Crosshair size in the hover state
+The component accepts a CSS selector to identify which elements trigger the lock-on behavior:
 
-## When to use it
+```tsx
+interface TargetCursorProps {
+  targetSelector?: string;   // default: '.cursor-target'
+  spinDuration?: number;     // default: 2
+  hideDefaultCursor?: boolean;
+  hoverDuration?: number;
+  parallaxOn?: boolean;
+}
+```
 
-Use this for portfolios, creative agencies, or any site where craft and attention to detail are part of the brand. It signals intentionality immediately.
+## Building the component
 
-Lower the stiffness value (200-300) if you want a floatier feel. Higher values (500+) make it feel snappy and precise, which suits a tactical or technical aesthetic.
+The component renders four corner brackets and a center dot, all positioned at `top-0 left-0` with `translate` offsets:
+
+```tsx
+<div
+  ref={cursorRef}
+  className='fixed top-0 left-0 w-0 h-0 pointer-events-none z-[9999]'
+  style={{ willChange: 'transform' }}
+>
+  <div ref={dotRef} className='absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full -translate-x-1/2 -translate-y-1/2' />
+  <div className='target-cursor-corner absolute top-1/2 left-1/2 w-3 h-3 border-[3px] border-white -translate-x-[150%] -translate-y-[150%] border-r-0 border-b-0' />
+  <div className='target-cursor-corner absolute top-1/2 left-1/2 w-3 h-3 border-[3px] border-white translate-x-1/2 -translate-y-[150%] border-l-0 border-b-0' />
+  <div className='target-cursor-corner absolute top-1/2 left-1/2 w-3 h-3 border-[3px] border-white translate-x-1/2 translate-y-1/2 border-l-0 border-t-0' />
+  <div className='target-cursor-corner absolute top-1/2 left-1/2 w-3 h-3 border-[3px] border-white -translate-x-[150%] translate-y-1/2 border-r-0 border-t-0' />
+</div>
+```
+
+The continuous spin is a looping GSAP timeline:
+
+```tsx
+spinTl.current = gsap.timeline({ repeat: -1 }).to(cursor, {
+  rotation: '+=360',
+  duration: spinDuration,
+  ease: 'none',
+});
+```
+
+On mouse enter to a target element, the spin pauses and each corner bracket is animated to its matching corner of the element's bounding rect:
+
+```tsx
+const rect = target.getBoundingClientRect();
+const { borderWidth, cornerSize } = constants;
+
+targetCornerPositionsRef.current = [
+  { x: rect.left - borderWidth,                  y: rect.top - borderWidth },
+  { x: rect.right + borderWidth - cornerSize,    y: rect.top - borderWidth },
+  { x: rect.right + borderWidth - cornerSize,    y: rect.bottom + borderWidth - cornerSize },
+  { x: rect.left - borderWidth,                  y: rect.bottom + borderWidth - cornerSize },
+];
+```
+
+The GSAP ticker keeps the corners updated relative to the cursor position while hovered, which handles parallax scrolling automatically:
+
+```tsx
+const tickerFn = () => {
+  const strength = activeStrengthRef.current.current;
+  if (strength === 0) return;
+  const cursorX = gsap.getProperty(cursorRef.current, 'x') as number;
+  const cursorY = gsap.getProperty(cursorRef.current, 'y') as number;
+  corners.forEach((corner, i) => {
+    const targetX = targetCornerPositionsRef.current![i].x - cursorX;
+    const targetY = targetCornerPositionsRef.current![i].y - cursorY;
+    gsap.to(corner, { x: targetX, y: targetY, duration: parallaxOn ? 0.2 : 0 });
+  });
+};
+gsap.ticker.add(tickerFn);
+```
+
+Mobile detection is handled up front so the component returns null and preserves the default cursor on touch devices:
+
+```tsx
+const isMobile = useMemo(() => {
+  const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isSmallScreen = window.innerWidth <= 768;
+  return (hasTouchScreen && isSmallScreen) || isMobileUserAgent;
+}, []);
+
+if (isMobile) return null;
+```
+
+## How to use it
+
+Add the component once at the app root. Mark interactive elements with your chosen selector:
+
+```tsx
+<TargetCursor targetSelector=".cursor-target" spinDuration={2} />
+
+<button className="cursor-target">Click me</button>
+```
+
+## Key takeaways
+
+- GSAP's ticker runs outside React's render cycle, keeping corner tracking smooth even during heavy renders.
+- The spin timeline normalizes its rotation before restarting after a hover ends, so it never jumps to an unexpected angle.
+- The component cleans up all event listeners, ticker functions, and GSAP timelines in the `useEffect` return to prevent memory leaks.

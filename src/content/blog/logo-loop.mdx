@@ -6,28 +6,100 @@ category: "Animations"
 componentSlug: "logo-loop"
 ---
 
-Social proof is most effective when it feels effortless. A static grid of client logos takes up space and demands the user to actively read it. A smooth, scrolling loop presents the same information passively, and it looks polished doing it.
+Social proof is most effective when it feels effortless. A static grid of client logos takes up space and demands attention. A smooth, scrolling loop presents the same information passively, and it looks polished doing it.
 
-## What it does
+## What we are building
 
-A row of logos scrolls horizontally in a continuous loop. The items repeat seamlessly so there is never a gap or jump. Hovering pauses the animation so users can read a specific logo without chasing it.
+A row of logos scrolls in a continuous loop in any direction: left, right, up, or down. The items repeat seamlessly with no jump. Hovering slows or pauses the animation. The scroll speed eases smoothly rather than snapping, so it feels alive rather than mechanical.
 
-## How it works
+## Setting up
 
-The logo list is duplicated in the DOM, and both copies animate with a CSS translate transform moving left by exactly one set's width. When the first copy has moved fully off screen, it snaps back to the start, creating a seamless loop.
+No external animation libraries. The component uses `requestAnimationFrame` and CSS transforms directly.
 
-The animation is driven by a CSS keyframe rather than JavaScript, keeping it smooth and off the main thread. A CSS variable controls the duration so speed is easy to adjust.
+```tsx
+import { LogoLoop } from './LogoLoop';
+```
 
-## Key properties
+Logos can be image sources or arbitrary React nodes:
 
-- **items** - Array of logo image sources or React nodes
-- **speed** - Duration of one full loop in seconds (default: 20s)
-- **gap** - Spacing between each logo item
-- **direction** - Scroll left or right (default: left)
-- **pauseOnHover** - Whether to pause on hover (default: true)
+```tsx
+export type LogoItem =
+  | { node: React.ReactNode; href?: string; ariaLabel?: string }
+  | { src: string; alt?: string; href?: string; width?: number; height?: number };
+```
 
-## When to use it
+## Building the component
 
-This is the standard treatment for social proof sections, tech stack displays, and partner logo rows. It saves vertical space and adds motion where there would otherwise be none.
+The animation loop is the heart of the component. It uses a velocity-based approach where the current speed eases toward the target speed each frame, using exponential smoothing:
 
-Balance the speed with how many logos you have. More logos need a longer duration so each one is visible long enough to register.
+```tsx
+const easingFactor = 1 - Math.exp(-deltaTime / ANIMATION_CONFIG.SMOOTH_TAU);
+velocityRef.current += (target - velocityRef.current) * easingFactor;
+```
+
+`SMOOTH_TAU` is set to `0.25`, giving a quarter-second feel of acceleration and deceleration. This makes the pause-on-hover feel weighted rather than abrupt.
+
+The offset is accumulated each frame and wrapped to the sequence width to create the seamless loop:
+
+```tsx
+let nextOffset = offsetRef.current + velocityRef.current * deltaTime;
+nextOffset = ((nextOffset % seqSize) + seqSize) % seqSize;
+offsetRef.current = nextOffset;
+
+const transformValue = isVertical
+  ? `translate3d(0, ${-offsetRef.current}px, 0)`
+  : `translate3d(${-offsetRef.current}px, 0, 0)`;
+track.style.transform = transformValue;
+```
+
+How many copies of the logo list do we need? Enough to always fill the container, plus a headroom buffer:
+
+```tsx
+const copiesNeeded =
+  Math.ceil(containerWidth / sequenceWidth) + ANIMATION_CONFIG.COPY_HEADROOM;
+setCopyCount(Math.max(ANIMATION_CONFIG.MIN_COPIES, copiesNeeded));
+```
+
+The component uses `ResizeObserver` to recalculate this whenever the container or images change size:
+
+```tsx
+useResizeObserver(
+  updateDimensions,
+  [containerRef, seqRef],
+  [logos, gap, logoHeight, isVertical]
+);
+```
+
+The fade-out overlays at the edges are purely decorative divs with a gradient from the background color to transparent:
+
+```tsx
+<div
+  aria-hidden
+  className='pointer-events-none absolute inset-y-0 left-0 z-10 w-[clamp(24px,8%,120px)]'
+  style={{ background: 'linear-gradient(to right, var(--logoloop-fadeColor) 0%, transparent 100%)' }}
+/>
+```
+
+## How to use it
+
+```tsx
+<LogoLoop
+  logos={[
+    { src: '/logos/acme.svg', alt: 'Acme' },
+    { src: '/logos/globex.svg', alt: 'Globex' },
+    { node: <MyCustomLogo />, ariaLabel: 'Custom Co' },
+  ]}
+  speed={120}
+  direction="left"
+  pauseOnHover
+  fadeOut
+  logoHeight={32}
+  gap={48}
+/>
+```
+
+## Key takeaways
+
+- Velocity-based scrolling with exponential smoothing gives pause-on-hover a natural deceleration rather than a hard stop.
+- Dynamic copy count means the component works for any container width without you specifying anything manually.
+- The `prefers-reduced-motion` media query is checked inside the animation loop. If the user has it enabled, the transform is frozen at zero and no animation runs.

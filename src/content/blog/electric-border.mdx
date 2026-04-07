@@ -6,28 +6,116 @@ category: "Animations"
 componentSlug: "electric-border"
 ---
 
-Borders are boring. They sit there, static, doing the minimum. But give that border a moving current of light and suddenly your card feels like it's powered on, ready to react. That's what the Electric Border component does.
+Borders are boring. They sit there, static, doing the minimum. Give that border a moving pulse of light and suddenly your card feels powered on. That is what the Electric Border component does, and the whole thing is pure CSS under the hood.
 
-## What it does
+## What we are building
 
-A glowing light pulse travels continuously along the border of any container. The effect looks like electrical current moving through a wire, completing laps around the element indefinitely.
+A glowing light pulse travels continuously around the border of any container. The effect looks like electrical current moving through a wire, completing laps indefinitely. No canvas, no JavaScript animation loop. Just a rotating conic-gradient with a mask.
 
-## How it works
+## Setting up
 
-The animation uses a pseudo-element technique with a conic-gradient that rotates around the element's border. A CSS custom property tracks the angle, and a keyframe animation increments it from 0 to 360 degrees on a loop.
+No dependencies beyond React. The component uses inline styles and a `<style>` tag for the keyframe animation, so it works anywhere.
 
-The glow is layered with a blur and a color tint, giving it that plasma-like quality. The border itself stays transparent so only the animated gradient shows through.
+```tsx
+interface ElectricBorderProps {
+  children: React.ReactNode;
+  className?: string;
+  duration?: number;
+  color?: string;
+  borderRadius?: string;
+  borderWidth?: number;
+}
+```
 
-## Key properties
+## Building the component
 
-- **color** - The primary glow color (default: electric blue)
-- **duration** - Time in seconds for one full lap (default: 2s)
-- **borderWidth** - Thickness of the glowing border (default: 2px)
-- **glowSize** - How far the glow bleeds beyond the border
-- **borderRadius** - Matches rounded corners on the container
+The trick is combining a conic-gradient with CSS masking. Instead of painting a full border, we create a spinning gradient and then cut out the interior so only the edge shows.
 
-## When to use it
+```tsx
+<div
+  className='absolute inset-0'
+  style={{
+    borderRadius,
+    padding: `${borderWidth}px`,
+    background: `conic-gradient(from 0deg, transparent 0%, ${color} 10%, transparent 20%)`,
+    WebkitMask: `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,
+    WebkitMaskComposite: 'xor',
+    maskComposite: 'exclude',
+    animation: `electric-spin ${duration}s linear infinite`,
+  }}
+/>
+```
 
-Use this on feature cards, pricing plan highlights, or any container you want to signal as active or premium. It draws the eye without requiring the user to hover.
+The `conic-gradient` creates a sweep of color that is mostly transparent. Only a narrow band around the 10% mark is visible. By spinning this gradient with a CSS animation, that narrow band traces around the border.
 
-Keep the duration between 1.5s and 3s. Faster feels jittery, slower loses the energy that makes it interesting.
+The `WebkitMask` combination with `maskComposite: 'exclude'` is what turns the filled rectangle into just a border ring. It subtracts the content box from the full box, leaving only the padding area visible.
+
+The keyframe itself is minimal:
+
+```tsx
+<style>{`
+  @keyframes electric-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`}</style>
+```
+
+The full component wraps children in a `relative` container, places the animated border layer as an `absolute inset-0` overlay, and puts the children in another `relative` div so they sit on top:
+
+```tsx
+export default function ElectricBorder({
+  children,
+  className = '',
+  duration = 3,
+  color = '#ffffff',
+  borderRadius = '12px',
+  borderWidth = 2,
+}: ElectricBorderProps) {
+  return (
+    <div className={`relative ${className}`} style={{ borderRadius }}>
+      <div className='absolute inset-0 overflow-hidden' style={{ borderRadius }}>
+        <div
+          className='absolute inset-0'
+          style={{
+            borderRadius,
+            padding: `${borderWidth}px`,
+            background: `conic-gradient(from 0deg, transparent 0%, ${color} 10%, transparent 20%)`,
+            WebkitMask: `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,
+            WebkitMaskComposite: 'xor',
+            maskComposite: 'exclude',
+            animation: `electric-spin ${duration}s linear infinite`,
+          }}
+        />
+      </div>
+      <div className='relative' style={{ borderRadius }}>
+        {children}
+      </div>
+      <style>{`
+        @keyframes electric-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
+```
+
+## How to use it
+
+Wrap any card or container:
+
+```tsx
+<ElectricBorder color="#4af" duration={2} borderWidth={2} borderRadius="16px">
+  <div className="p-6 bg-zinc-900">
+    <h2>Premium Plan</h2>
+  </div>
+</ElectricBorder>
+```
+
+## Key takeaways
+
+- The conic-gradient plus CSS mask technique produces a true border ring with zero canvas or SVG overhead.
+- `maskComposite: 'exclude'` is the key that cuts out the interior and leaves only the border strip visible.
+- Duration between 1.5s and 3s hits the sweet spot. Faster feels jittery, slower loses the energy that makes it work.

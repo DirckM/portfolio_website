@@ -6,28 +6,108 @@ category: "Animations"
 componentSlug: "antigravity"
 ---
 
-Gravity pulls everything down. Flip that, and you immediately create a sense of lightness, magic, or otherworldliness. The Antigravity component does exactly that: elements drift upward as if they've forgotten which way is down.
+Gravity pulls everything down. Flip that and you immediately create a sense of lightness, magic, or otherworldliness. The Antigravity component uses a Three.js particle system where hundreds of small shapes are magnetically attracted to your cursor, orbiting it like a living field.
 
-## What it does
+## What we are building
 
-A collection of elements rises continuously from the bottom of the canvas, drifting upward with subtle horizontal sway. Each element has its own velocity, making the motion feel organic rather than mechanical.
+A field of particles scattered across the canvas. When your cursor moves close, particles peel away from their resting positions and orbit the cursor in a ring. Move the cursor away and they drift back. The whole scene runs inside a React Three Fiber canvas.
 
-## How it works
+## Setting up
 
-Three.js manages a particle system where each particle is assigned an initial position along the bottom edge and a randomized upward velocity. On every frame, position is updated by velocity, and a small sinusoidal offset on the x-axis creates the sway.
+You need `@react-three/fiber` and `three`:
 
-When a particle reaches the top of the canvas, it resets to the bottom with fresh random values so the effect loops forever. The renderer uses an orthographic camera for a clean 2D-like look.
+```bash
+npm install @react-three/fiber three
+```
 
-## Key properties
+The component splits into two parts: `AntigravityInner` runs inside the R3F canvas and has access to Three.js hooks, and `Antigravity` is the outer wrapper that creates the canvas.
 
-- **count** - Number of floating elements (default: 40)
-- **speed** - Base upward velocity (default: 0.5)
-- **spread** - Horizontal distribution across the canvas
-- **swayAmount** - Amplitude of the left-right drift
-- **elementSize** - Radius of each floating element
+## Building the component
 
-## When to use it
+Each particle is initialized with random position data spread across the viewport:
 
-Great for atmospheric backgrounds, loading screens, or ambient section decoration. It creates energy without demanding attention.
+```tsx
+const particles = useMemo(() => {
+  const temp = [];
+  const width = viewport.width || 100;
+  const height = viewport.height || 100;
 
-Don't overload the count. Forty to sixty elements is usually plenty. Beyond that, the canvas starts to feel cluttered and performance drops on mobile.
+  for (let i = 0; i < count; i++) {
+    const x = (Math.random() - 0.5) * width;
+    const y = (Math.random() - 0.5) * height;
+    const z = (Math.random() - 0.5) * 20;
+    temp.push({
+      t: Math.random() * 100,
+      speed: 0.01 + Math.random() / 200,
+      mx: x, my: y, mz: z,
+      cx: x, cy: y, cz: z,
+      randomRadiusOffset: (Math.random() - 0.5) * 2,
+    });
+  }
+  return temp;
+}, [count, viewport.width, viewport.height]);
+```
+
+Each frame, the `useFrame` hook checks whether a particle is within `magnetRadius` of the cursor. If it is, the particle is pulled into a circular orbit:
+
+```tsx
+if (dist < magnetRadius) {
+  const angle = Math.atan2(dy, dx) + globalRotation;
+  const wave = Math.sin(t * waveSpeed + angle) * (0.5 * waveAmplitude);
+  const deviation = randomRadiusOffset * (5 / (fieldStrength + 0.1));
+  const currentRingRadius = ringRadius + wave + deviation;
+
+  targetPos.x = projectedTargetX + currentRingRadius * Math.cos(angle);
+  targetPos.y = projectedTargetY + currentRingRadius * Math.sin(angle);
+}
+```
+
+The particle's current position lerps toward the target position each frame:
+
+```tsx
+particle.cx += (targetPos.x - particle.cx) * lerpSpeed;
+particle.cy += (targetPos.y - particle.cy) * lerpSpeed;
+particle.cz += (targetPos.z - particle.cz) * lerpSpeed;
+```
+
+Particles are rendered with a Three.js `instancedMesh` so all 300 shapes are drawn in a single GPU draw call. The shape is swappable between capsule, sphere, box, or tetrahedron:
+
+```tsx
+<instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+  {particleShape === 'capsule' && <capsuleGeometry args={[0.1, 0.4, 4, 8]} />}
+  {particleShape === 'sphere' && <sphereGeometry args={[0.2, 16, 16]} />}
+  <meshBasicMaterial color={color} />
+</instancedMesh>
+```
+
+The outer wrapper provides the canvas:
+
+```tsx
+const Antigravity: React.FC<AntigravityProps> = props => {
+  return (
+    <Canvas camera={{ position: [0, 0, 50], fov: 35 }}>
+      <AntigravityInner {...props} />
+    </Canvas>
+  );
+};
+```
+
+## How to use it
+
+```tsx
+<div style={{ width: '100%', height: '500px' }}>
+  <Antigravity
+    count={300}
+    color="#FF9FFC"
+    magnetRadius={10}
+    ringRadius={10}
+    particleShape="capsule"
+  />
+</div>
+```
+
+## Key takeaways
+
+- `instancedMesh` is essential here. Drawing 300 individual meshes would be painfully slow. Instancing collapses them into one draw call.
+- The `lerpSpeed` prop controls how snappy or floaty the follow feels. Low values (0.05) create lag that reads as weight. Higher values (0.2+) feel magnetic and responsive.
+- The `autoAnimate` flag drives the cursor target through a sine wave pattern when the mouse hasn't moved, keeping the effect alive on touch devices or in demos.

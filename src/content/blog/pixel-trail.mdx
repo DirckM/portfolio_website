@@ -6,28 +6,114 @@ category: "Animations"
 componentSlug: "pixel-trail"
 ---
 
-Cursor trails are a classic web effect that never quite gets old when done right. The Pixel Trail takes that idea and gives it a retro twist: instead of smooth particles, you get chunky pixel blocks that stamp down as you move and fade out behind you.
+Cursor trails are a classic web effect that never quite gets old when done right. The Pixel Trail takes that idea and gives it a retro twist: instead of smooth particles, you get chunky pixel blocks that appear as you move and fade out behind you. It is all done in a WebGL shader running on the GPU.
 
-## What it does
+## What we are building
 
-As the cursor moves, square pixel blocks appear along the path. Each block fades out independently after a short delay, leaving a decaying trail of color that follows the mouse's history across the screen.
+As the cursor moves, square pixels light up along the path. The pixels fade out over time, leaving a decaying trail behind the mouse. The grid snapping creates the chunky, retro pixel aesthetic. The whole thing runs in a React Three Fiber canvas with a custom shader material.
 
-## How it works
+## Setting up
 
-Mouse position is sampled on a `mousemove` listener. Each position is snapped to a grid by rounding to the nearest pixel size, which creates the chunky pixel look. New blocks are added to a state array, and each block has a timestamp.
+You need `@react-three/fiber`, `@react-three/drei`, and `three`:
 
-A `requestAnimationFrame` loop runs continuously, filtering out blocks older than the configured lifetime and updating the canvas or DOM element positions and opacities.
+```bash
+npm install @react-three/fiber @react-three/drei three
+```
 
-## Key properties
+## Building the component
 
-- **pixelSize** - Size of each pixel block in pixels (default: 20px)
-- **trailLength** - How many pixels stay visible at once (default: 20)
-- **fadeTime** - Milliseconds before a pixel fully fades (default: 600ms)
-- **color** - Block color, can be a function for rainbow variation
-- **snapToGrid** - Whether to snap positions to pixel grid (default: true)
+The component has three parts: a `GooeyFilter` SVG helper, a `Scene` that runs inside the canvas, and the main `PixelTrail` wrapper.
 
-## When to use it
+The shader material is created with `shaderMaterial` from drei. It takes the mouse trail texture and a grid size, then samples the trail at each pixel's grid center to decide whether to draw a pixel:
 
-This works on portfolio landing pages, creative agency sites, and anywhere you want a distinctly handcrafted, retro vibe. It turns cursor movement into an expressive act.
+```glsl
+void main() {
+  vec2 screenUv = gl_FragCoord.xy / resolution;
+  vec2 uv = coverUv(screenUv);
 
-Use a fixed color for a clean, branded look. Use a hue-shifting function to get a rainbow trail that's harder to ignore.
+  vec2 gridUv = fract(uv * gridSize);
+  vec2 gridUvCenter = (floor(uv * gridSize) + 0.5) / gridSize;
+
+  float trail = texture2D(mouseTrail, gridUvCenter).r;
+
+  gl_FragColor = vec4(pixelColor, trail);
+}
+```
+
+`fract(uv * gridSize)` divides the screen into a grid. `floor(uv * gridSize)` snaps to the grid cell, and adding `0.5 / gridSize` jumps to the cell's center. The trail texture value at that center point becomes the alpha of the entire cell, creating clean square pixels.
+
+The `useTrailTexture` hook from drei handles all the trail painting. It writes to a texture that decays over time:
+
+```tsx
+const [trail, onMove] = useTrailTexture({
+  size: 512,
+  radius: trailSize,
+  maxAge: maxAge,
+  interpolate: interpolate || 0.1,
+  ease: easingFunction || identityEase,
+});
+```
+
+The texture filters are set to `NearestFilter` to prevent any blurring between pixels, which would undermine the hard-edge pixel aesthetic:
+
+```tsx
+useEffect(() => {
+  if (!trail) return;
+  trail.minFilter = THREE.NearestFilter;
+  trail.magFilter = THREE.NearestFilter;
+}, [trail]);
+```
+
+The mesh covers the full viewport and captures pointer move events, passing them to the trail painter:
+
+```tsx
+<mesh scale={[scale, scale, 1]} onPointerMove={onMove}>
+  <planeGeometry args={[2, 2]} />
+  <primitive object={dotMaterial} gridSize={gridSize} mouseTrail={trail} />
+</mesh>
+```
+
+The optional gooey filter merges the pixels into organic blobs by blurring then re-sharpening with a color matrix:
+
+```tsx
+const GooeyFilter = ({ id, strength }) => (
+  <svg className='z-1 absolute overflow-hidden'>
+    <defs>
+      <filter id={id}>
+        <feGaussianBlur in='SourceGraphic' stdDeviation={strength} result='blur' />
+        <feColorMatrix in='blur' type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9' result='goo' />
+        <feComposite in='SourceGraphic' in2='goo' operator='atop' />
+      </filter>
+    </defs>
+  </svg>
+);
+```
+
+## How to use it
+
+```tsx
+<div style={{ position: 'relative', width: '100%', height: '400px' }}>
+  <PixelTrail
+    gridSize={40}
+    trailSize={0.1}
+    maxAge={250}
+    color="#ffffff"
+  />
+</div>
+```
+
+With the gooey filter:
+
+```tsx
+<PixelTrail
+  gridSize={20}
+  color="#ff6600"
+  gooeyFilter={{ id: 'goo', strength: 8 }}
+/>
+```
+
+## Key takeaways
+
+- Sampling the trail texture at the grid cell center rather than the fragment's exact UV is what creates the hard square pixel edges.
+- `NearestFilter` on the trail texture prevents WebGL from interpolating between trail values, preserving the crisp pixelated look.
+- The gooey filter is a classic SVG trick: blur everything, then snap it back with a steep color matrix. The result looks like melting blobs.

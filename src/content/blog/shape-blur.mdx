@@ -6,29 +6,114 @@ category: "Animations"
 componentSlug: "shape-blur"
 ---
 
-The best backgrounds don't compete with your content. They breathe beneath it. Shape Blur creates slow-moving, heavily blurred organic shapes that shift and morph, giving any section a sense of ambient depth without ever grabbing focus.
+The best backgrounds don't compete with your content. They breathe beneath it. Shape Blur creates a mouse-reactive shape rendered through a WebGL shader, giving any section a sense of ambient depth without ever grabbing focus.
 
-## What it does
+## What we are building
 
-Soft, rounded shapes drift across the canvas, morphing between forms. Everything is rendered with a heavy blur pass, so the result is closer to a painted wash of color than recognizable geometry. The motion is slow and continuous, never repeating exactly.
+A soft, blurred shape follows the cursor with a smooth lag. The shape can be a rounded rectangle, a circle, a circle outline, or a triangle. The whole thing is a WebGL shader running on a Three.js quad, so it's performant and fully GPU-driven.
 
-## How it works
+## Setting up
 
-Three.js renders a small set of mesh objects using morph target animation to shift their geometry over time. A custom post-processing pass applies a large-radius Gaussian blur to the entire scene output.
+You need Three.js:
 
-Each shape has its own randomized velocity and morph speed. The camera is fixed and orthographic so the shapes feel 2D despite being 3D geometry.
+```bash
+npm install three
+```
 
-## Key properties
+```tsx
+interface ShapeBlurProps {
+  variation?: number;      // 0: rounded rect, 1: circle fill, 2: circle stroke, 3: triangle
+  shapeSize?: number;
+  roundness?: number;
+  borderSize?: number;
+  circleSize?: number;
+  circleEdge?: number;
+}
+```
 
-- **shapeCount** - Number of shapes in the scene (default: 5)
-- **blurRadius** - Size of the Gaussian blur kernel (default: 80px)
-- **speed** - Base drift speed (default: 0.3)
-- **colors** - Array of colors assigned randomly to shapes
-- **opacity** - Global opacity of the canvas (default: 0.6)
-- **morphSpeed** - How fast shapes change form (default: 0.5)
+## Building the component
 
-## When to use it
+The fragment shader defines SDF (signed distance field) functions for each shape type. These return positive values outside the shape and negative inside:
 
-This is a background treatment, not a foreground element. Layer it behind hero text, feature sections, or pricing cards to add warmth and motion without distraction.
+```glsl
+float sdRoundRect(vec2 p, vec2 b, float r) {
+    vec2 d = abs(p - 0.5) * 4.2 - b + vec2(r);
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0)) - r;
+}
+float sdCircle(in vec2 st, in vec2 center) {
+    return length(st - center) * 2.0;
+}
+float sdPoly(in vec2 p, in float w, in int sides) {
+    float a = atan(p.x, p.y) + PI;
+    float r = TWO_PI / float(sides);
+    float d = cos(floor(0.5 + a / r) * r - a) * length(max(abs(p) * 1.0, 0.0));
+    return d * 2.0 - w;
+}
+```
 
-Limit colors to two or three from a cohesive palette. Too many colors start to look chaotic once blurred together.
+The `VAR` define (set at compile time from the `variation` prop) selects which shape to render. This avoids runtime branching for unused shapes:
+
+```glsl
+if (VAR == 0) {
+    sdf = sdRoundRect(st, vec2(size), roundness);
+    sdf = strokeAA(sdf, 0.0, borderSize, sdfCircle) * 4.0;
+} else if (VAR == 1) {
+    sdf = sdCircle(st, vec2(0.5));
+    sdf = fill(sdf, 0.6, sdfCircle) * 1.2;
+}
+```
+
+The circle under the cursor (`sdfCircle`) is used as the `edge` parameter in `strokeAA` and `fill`. This makes the shape's softness depend on cursor proximity, creating the blur-at-cursor-position effect.
+
+Mouse tracking in the React side keeps two vectors: raw mouse position and a damped version:
+
+```tsx
+const vMouse = new THREE.Vector2();
+const vMouseDamp = new THREE.Vector2();
+
+const update = () => {
+  const dt = time - lastTime;
+  vMouseDamp.x = THREE.MathUtils.damp(vMouseDamp.x, vMouse.x, 8, dt);
+  vMouseDamp.y = THREE.MathUtils.damp(vMouseDamp.y, vMouse.y, 8, dt);
+
+  renderer.render(scene, camera);
+  animationFrameId = requestAnimationFrame(update);
+};
+```
+
+`THREE.MathUtils.damp` is a frame-rate-independent lerp using the `dt` delta time, which prevents the mouse lag from being inconsistent at different frame rates.
+
+The orthographic camera and a plane geometry that scales to the container size means the shader always fills exactly the container regardless of its dimensions:
+
+```tsx
+camera.left = -w / 2;
+camera.right = w / 2;
+camera.top = h / 2;
+camera.bottom = -h / 2;
+camera.updateProjectionMatrix();
+quad.scale.set(w, h, 1);
+vResolution.set(w, h).multiplyScalar(dpr);
+```
+
+The `variation` prop changes the shader define, which requires recreating the material. This is handled by listing `variation` in the `useEffect` dependency array, which tears down and reinitializes the entire Three.js scene when it changes.
+
+## How to use it
+
+```tsx
+<div style={{ width: '100%', height: '500px', position: 'relative' }}>
+  <ShapeBlur
+    variation={0}
+    shapeSize={1.2}
+    roundness={0.4}
+    borderSize={0.05}
+    circleSize={0.3}
+    circleEdge={0.5}
+  />
+</div>
+```
+
+## Key takeaways
+
+- SDFs are the right tool for GPU-rendered shapes because they give you distance information at every pixel, which makes anti-aliasing and smooth edges trivial to compute.
+- Using `defines: { VAR: variation }` in the shader material bakes the shape selection into the compiled shader, which is faster than a runtime uniform branch.
+- `THREE.MathUtils.damp` is preferred over a fixed lerp factor because it corrects for frame rate variation, keeping the mouse lag consistent at 30fps, 60fps, and 120fps.
