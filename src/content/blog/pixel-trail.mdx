@@ -8,6 +8,13 @@ componentSlug: "pixel-trail"
 
 Cursor trails are a classic web effect that never quite gets old when done right. The Pixel Trail takes that idea and gives it a retro twist: instead of smooth particles, you get chunky pixel blocks that appear as you move and fade out behind you. It is all done in a WebGL shader running on the GPU.
 
+## The final result
+
+<LiveStep codeId="pixel-trail-final" previewBg="bg-black" controls={[
+  { type: "slider", id: "gridSize", label: "Grid Size", min: 10, max: 50, default: 24 },
+  { type: "color", id: "color", label: "Color", default: "#ffffff" }
+]} />
+
 ## What we are building
 
 As the cursor moves, square pixels light up along the path. The pixels fade out over time, leaving a decaying trail behind the mouse. The grid snapping creates the chunky, retro pixel aesthetic. The whole thing runs in a React Three Fiber canvas with a custom shader material.

@@ -8,6 +8,10 @@ componentSlug: "target-cursor"
 
 The cursor is the one thing on screen the user controls completely. Most sites ignore it and leave the default arrow. Swap that for a precision crosshair that snaps around interactive elements and you immediately change the feel of the entire interface.
 
+## The final result
+
+<LiveStep codeId="target-cursor-final" />
+
 ## What we are building
 
 The native cursor is hidden and replaced with a GSAP-driven crosshair made of four L-shaped corner brackets. The crosshair spins continuously. When hovering over a target element, it stops spinning, expands to frame the element's corners, and tracks the element even during scroll.

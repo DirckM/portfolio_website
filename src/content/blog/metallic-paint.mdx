@@ -8,6 +8,10 @@ componentSlug: "metallic-paint"
 
 Metal doesn't have one color. It reflects everything around it: streaks of light, distorted reflections, color shifts as the angle changes. Capturing that in a browser is no longer a compromise. With a well-tuned WebGL2 shader and a depth map baked from your image, you can get genuinely convincing metallic surfaces.
 
+## The final result
+
+<LiveStep codeId="metallic-paint-final" />
+
 ## What we are building
 
 The component takes an image, computes a depth map from it using a CPU-side Poisson solver, uploads that as a texture, and then runs a fragment shader that simulates metallic paint flowing across the shape. The shader handles chromatic spread, liquid distortion, contour lines, and a rotating light sweep.

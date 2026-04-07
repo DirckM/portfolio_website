@@ -8,6 +8,12 @@ componentSlug: "crosshair"
 
 GSAP has been the gold standard for web animation for years, and for good reason. When it comes to a cursor effect that needs to feel precise and immediate, GSAP's rendering pipeline delivers a smoothness that spring-based libraries struggle to match at high refresh rates.
 
+## The final result
+
+<LiveStep codeId="crosshair-final" previewBg="bg-black" controls={[
+  { type: "color", id: "color", label: "Color", default: "#ffffff" }
+]} />
+
 ## What we are building
 
 The default cursor is replaced with two full-width crosshair lines: one horizontal, one vertical. They follow the mouse with a slight lag using a manual lerp on every animation frame. When hovering over any link, an SVG noise filter kicks in and shakes the lines briefly, like a targeting glitch effect.

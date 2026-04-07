@@ -8,6 +8,13 @@ componentSlug: "magnet"
 
 Most hover effects are binary. On or off. The cursor is either over the element or it isn't. The Magnet effect breaks that rule by starting the interaction before the cursor arrives, pulling the element toward the mouse as it gets close.
 
+## The final result
+
+<LiveStep codeId="magnet-final" controls={[
+  { type: "slider", id: "magnetStrength", label: "Magnet Strength", min: 1, max: 10, default: 3 },
+  { type: "slider", id: "padding", label: "Padding", min: 20, max: 150, default: 80 }
+]} />
+
 ## What we are building
 
 As the cursor enters a configurable radius around the element, the element moves toward the cursor. The closer the cursor gets, the more offset the element applies. When the cursor leaves the field, the element eases back to its resting position with a spring-like transition.

@@ -8,6 +8,13 @@ componentSlug: "meta-balls"
 
 Meta balls are one of those effects that look impossibly satisfying. Two blobs approach each other, develop a neck, then merge into one continuous shape. It's organic, tactile, and just unsettling enough to be interesting. With the OGL library and a fragment shader, you can run this at full speed in the browser.
 
+## The final result
+
+<LiveStep codeId="meta-balls-final" previewBg="bg-black" controls={[
+  { type: "color", id: "color", label: "Color", default: "#5227FF" },
+  { type: "slider", id: "ballCount", label: "Ball Count", min: 3, max: 20, default: 8 }
+]} />
+
 ## What we are building
 
 Circular blobs float around the canvas on sine wave paths, merging smoothly when they overlap. The cursor adds a bonus ball that follows your mouse. When the cursor leaves, the ball orbits the center automatically. The rendering is done with a WebGL fragment shader via the OGL library.

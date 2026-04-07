@@ -8,6 +8,13 @@ componentSlug: "shape-blur"
 
 The best backgrounds don't compete with your content. They breathe beneath it. Shape Blur creates a mouse-reactive shape rendered through a WebGL shader, giving any section a sense of ambient depth without ever grabbing focus.
 
+## The final result
+
+<LiveStep codeId="shape-blur-final" controls={[
+  { type: "slider", id: "shapeSize", label: "Shape Size", min: 0.5, max: 2, step: 0.1, default: 1.2 },
+  { type: "slider", id: "roundness", label: "Roundness", min: 0, max: 1, step: 0.1, default: 0.4 }
+]} />
+
 ## What we are building
 
 A soft, blurred shape follows the cursor with a smooth lag. The shape can be a rounded rectangle, a circle, a circle outline, or a triangle. The whole thing is a WebGL shader running on a Three.js quad, so it's performant and fully GPU-driven.

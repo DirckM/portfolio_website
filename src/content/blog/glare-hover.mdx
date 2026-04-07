@@ -8,6 +8,13 @@ componentSlug: "glare-hover"
 
 Physical objects reflect light. Flat UI doesn't, and that gap is part of why so much of it feels lifeless. Add a glare that moves with the cursor and your card starts to behave like a real surface, catching and bouncing light as the user moves around.
 
+## The final result
+
+<LiveStep codeId="glare-hover-final" controls={[
+  { type: "color", id: "glareColor", label: "Glare Color", default: "#ffffff" },
+  { type: "slider", id: "glareOpacity", label: "Glare Opacity", min: 0.1, max: 1, step: 0.1, default: 0.6 }
+]} />
+
 ## What we are building
 
 A diagonal streak of light sweeps across the component on mouse enter and retreats on mouse leave. The animation uses a gradient that slides from outside the visible area through the element and back out. No tilt, no 3D transform. Just a well-timed gradient sweep.

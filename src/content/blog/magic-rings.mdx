@@ -8,6 +8,13 @@ componentSlug: "magic-rings"
 
 Concentric circles have a meditative quality. Water ripples, signal waves, sonar pings. There is something satisfying about watching rings expand outward, and with a WebGL shader you can make them glow with a depth that CSS simply cannot match.
 
+## The final result
+
+<LiveStep codeId="magic-rings-final" previewBg="bg-black" controls={[
+  { type: "color", id: "color", label: "Color", default: "#5227FF" },
+  { type: "slider", id: "ringCount", label: "Ring Count", min: 3, max: 10, default: 6 }
+]} />
+
 ## What we are building
 
 Multiple concentric rings pulse outward from the center in a continuous loop. Each ring has a slight color variation and phase offset, creating a layered, organic rhythm. Mouse interaction shifts the rings and a click triggers a burst. The whole thing runs at 60fps entirely on the GPU.
