@@ -1,0 +1,33 @@
+---
+title: "Create Circular Text in React"
+description: "Arrange text along a rotating circle using SVG and CSS, perfect for badges, labels, and decorative UI elements."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "circular-text"
+---
+
+You have seen it on vinyl record labels, magazine covers, and those retro badge stickers. Circular text is one of those design details that immediately signals craft. And it is surprisingly simple to pull off in React.
+
+## What it does
+
+Circular Text places a string of characters along the path of a circle, then continuously rotates the whole arrangement. The result is a spinning text ring that works as a label, a decorative badge, or an ambient UI element.
+
+## How it works
+
+The component renders an SVG with a circular `<path>` element. Text is placed on that path using the SVG `<textPath>` element, which distributes characters evenly around the arc. A CSS `animation` with `rotate` handles the continuous spin.
+
+No physics library needed. Just SVG and a CSS keyframe.
+
+## Key properties
+
+- **text** - The string to arrange around the circle (repeats to fill the ring)
+- **radius** - Radius of the circle in pixels
+- **fontSize** - Size of the characters
+- **duration** - Time in seconds for one full rotation
+- **direction** - Clockwise or counter-clockwise rotation
+
+## When to use it
+
+This fits naturally around profile avatars, call-to-action badges ("scroll down", "open to work"), or decorative section markers. It adds personality without taking up much space.
+
+Keep the text short enough that it wraps naturally around the circle once or twice. Repeating a short phrase like "available for hire" works better than a full sentence.

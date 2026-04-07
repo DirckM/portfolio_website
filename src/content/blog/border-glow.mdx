@@ -1,0 +1,33 @@
+---
+title: "Create a Border Glow Effect in React"
+description: "Add a cursor-following glow that traces the border of a card or container as the mouse moves around it."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "border-glow"
+---
+
+A static glowing border is decorative. A border glow that follows your cursor is interactive. That small distinction turns a passive element into something that responds to you.
+
+## What it does
+
+The Border Glow component wraps any content in a container with a gradient border that intensifies near the cursor position. Moving along the edge creates a traveling glow that traces where you are hovering.
+
+## How it works
+
+The border is rendered using a CSS `conic-gradient` or `radial-gradient` that rotates or shifts based on cursor angle relative to the element center. The gradient position is updated via a CSS custom property on `mousemove`.
+
+A thin overflow clip on the inner content ensures the glow stays on the border itself rather than leaking into the card interior.
+
+## Key properties
+
+- **glowColor** - Primary glow color
+- **glowSize** - Width of the glow band in pixels
+- **borderWidth** - Thickness of the border
+- **borderRadius** - Corner radius
+- **opacity** - Glow opacity range (min at rest, max at cursor)
+
+## When to use it
+
+This is a refined choice for interactive cards, CTA buttons, or input fields where you want to subtly acknowledge cursor presence without a full hover animation. It layers well with dark backgrounds and vibrant accent colors.
+
+It reads best when the rest of the card is fairly understated so the glow stands out.

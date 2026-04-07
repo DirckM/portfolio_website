@@ -1,0 +1,33 @@
+---
+title: "Create a Dark Veil Background in React"
+description: "Render an animated neural network of glowing nodes and connecting lines that pulse and shift, creating a dark, technical atmosphere."
+date: "2026-04-07"
+category: "Backgrounds"
+componentSlug: "dark-veil"
+---
+
+Some pages need to feel smart. Technical. Like something important is happening underneath. The Dark Veil component draws that impression literally, with an animated network of nodes and connections that evokes data, intelligence, and depth.
+
+## What it does
+
+Dark Veil animates a neural network-style pattern across a dark canvas. Nodes drift slowly across the space and draw connections to their nearest neighbors. The connections fade with distance, and nodes pulse gently over time, giving the whole thing an organic heartbeat.
+
+## How it works
+
+The component spawns a configurable number of particles, each with a random position and velocity. Every frame, it updates positions, bounces particles off edges, then draws connection lines between any two particles within a proximity threshold. Line opacity is proportional to proximity, so connections fade in as nodes approach and fade out as they drift apart.
+
+Everything runs on a 2D canvas with `requestAnimationFrame`, keeping it smooth and performant even at high particle counts.
+
+## Key properties
+
+- **particleCount** - Number of nodes in the network (default: 80)
+- **connectionDistance** - Maximum distance for drawing a connection line
+- **nodeColor** - Fill color for the node circles
+- **lineColor** - Stroke color for the connection lines
+- **speed** - Base velocity multiplier for particle movement
+
+## When to use it
+
+Dark Veil is ideal for tech product landing pages, AI-related projects, or anything that wants to communicate complexity and intelligence. It works best on very dark backgrounds where the glowing nodes stand out clearly.
+
+Keep node count reasonable (60-120) to avoid visual noise. More particles do not always mean more impact.

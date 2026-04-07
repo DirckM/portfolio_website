@@ -1,0 +1,32 @@
+---
+title: "Create a Fluid Glass Effect in React"
+description: "Build a glassmorphic surface with dynamic blur and distortion that responds to content and cursor movement."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "fluid-glass"
+---
+
+Glassmorphism went through a trend phase and came out the other side as a legitimate design tool. The difference is in how it moves. Static glass is decoration. Fluid glass is atmosphere.
+
+## What it does
+
+The Fluid Glass component renders a translucent panel that blurs and distorts content behind it. The effect shifts dynamically as the cursor moves, creating a subtle refraction that makes the panel feel like real frosted glass rather than a CSS trick.
+
+## How it works
+
+A `backdrop-filter: blur()` handles the core frost effect. On top of that, a SVG turbulence filter creates a gentle distortion that shifts based on cursor position. The distortion is updated via a CSS custom property tied to a `mousemove` listener on the container.
+
+The combination of blur and distortion is what separates this from standard glassmorphism.
+
+## Key properties
+
+- **blur** - Backdrop blur radius in pixels (default: 12)
+- **distortion** - Intensity of the SVG turbulence effect
+- **tint** - Background color and opacity of the panel
+- **border** - Whether to show a subtle edge highlight
+
+## When to use it
+
+Use this for modals, sidebars, or floating panels where the content behind the glass is interesting enough to be partially visible. It works especially well over gradient or image backgrounds where the blur adds genuine depth.
+
+Avoid using it over plain white or black backgrounds where there is nothing to blur.

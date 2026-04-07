@@ -1,0 +1,32 @@
+---
+title: "Build a MacBook Scroll Animation in React"
+description: "Create a scroll-driven animation where a MacBook opens and loads a screenshot as the user scrolls down the page."
+date: "2026-04-07"
+category: "Blocks"
+componentSlug: "macbook-scroll"
+---
+
+Product screenshots are essential, but they are also boring. A static image on a white background does not inspire confidence. The MacBook Scroll component turns your screenshot into a reveal moment, letting users scroll into the product experience rather than just looking at a picture of it.
+
+## What it does
+
+MacBook Scroll shows a 3D-perspective laptop that starts closed at the top of the scroll trigger zone. As the user scrolls down, the lid opens progressively and reveals a screenshot inside the display. By the time the laptop is fully open, the screenshot is fully visible and the product speaks for itself.
+
+## How it works
+
+The component uses an Intersection Observer combined with a scroll event listener to calculate how far through the trigger zone the user has scrolled, expressed as a value from 0 to 1. This progress value drives the lid rotation angle (from closed to open) via a CSS custom property applied to a 3D-transformed element.
+
+The screenshot fades in as the lid approaches its fully open position, timed to match the animation so the reveal feels intentional.
+
+## Key properties
+
+- **screenshot** - URL of the image to display inside the laptop screen
+- **scrollRange** - Height of the scroll trigger zone in pixels (default: 800)
+- **lidAngle** - Maximum opening angle in degrees (default: 135)
+- **perspective** - CSS perspective value for the 3D scene
+
+## When to use it
+
+This is the go-to component for SaaS landing pages where showing the product in context is important. Place it after the hero with a strong heading above it and the product screenshot inside.
+
+Make sure the screenshot is high resolution. It will be displayed prominently and a blurry image will undercut the whole effect.

@@ -1,0 +1,31 @@
+---
+title: "Create an Elastic Slider in React"
+description: "Build a slider that stretches beyond its bounds on drag and snaps back with a spring animation."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "elastic-slider"
+---
+
+Standard sliders stop at the end of their track. An elastic slider lets you pull past the limit and then snaps back. That small bit of physical feedback makes the whole control feel more real.
+
+## What it does
+
+The Elastic Slider behaves like a standard range input until you drag past either end. At the boundary, the thumb continues to move but decelerates, stretching the track visually. Release it and it springs back to the nearest valid value with momentum.
+
+## How it works
+
+Drag position is tracked without constraints during the drag gesture. When the thumb reaches either end of the track, an elastic resistance formula reduces movement speed, simulating a rubber-band effect.
+
+On pointer release, a Framer Motion spring animates the thumb from its over-dragged position back to the clamped value. The track deforms using a CSS `scaleX` transform on a highlighted segment.
+
+## Key properties
+
+- **value** - Current slider value
+- **onChange** - Value change callback
+- **min** / **max** - Value range
+- **elasticity** - Resistance beyond bounds (0 = rigid, 1 = very stretchy)
+- **springConfig** - Framer Motion spring settings for snap-back
+
+## When to use it
+
+Use this wherever you have a standard slider and want to make the interaction feel noticeably better. Volume controls, brightness adjusters, and filter range inputs all benefit from the tactile snap-back. It is one of those details users notice without being able to explain why the UI feels good.

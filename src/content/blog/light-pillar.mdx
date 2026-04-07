@@ -1,0 +1,33 @@
+---
+title: "Build a Light Pillar Effect in React with WebGL"
+description: "Render a dramatic volumetric light beam rising from the ground using raymarching in a WebGL fragment shader."
+date: "2026-04-07"
+category: "Backgrounds"
+componentSlug: "light-pillar"
+---
+
+Volumetric light is one of those effects that makes people stop scrolling. When it is done well, it feels physical, like the light is actually occupying the space. The Light Pillar component achieves this in the browser with a raymarching shader, no 3D engine required.
+
+## What it does
+
+Light Pillar renders a glowing, vertical beam of light that rises from the bottom of the canvas and softens into the background at the top. The beam has visible density variation that shifts over time, giving it the appearance of foggy, atmospheric light.
+
+## How it works
+
+The fragment shader uses raymarching to simulate volumetric scattering. For each pixel, a ray is marched through a virtual scene and samples are accumulated along the beam volume. A noise function adds density variation, and a `uTime` uniform animates those variations so the glow shifts and pulses slowly.
+
+The final color accumulates based on sample density and the beam's falloff function, producing a soft, convincing glow without any 3D geometry.
+
+## Key properties
+
+- **color** - The primary hue of the light beam as an RGB vector
+- **intensity** - Brightness of the glow at the beam center
+- **width** - Angular width of the pillar
+- **speed** - How quickly the internal density noise animates
+- **height** - How high the beam extends before fading out
+
+## When to use it
+
+This component makes a strong statement in hero sections where you want a single dramatic focal point. It works well centered on the page with a title or CTA placed in or above the beam.
+
+Use it sparingly, one pillar per view at most. Its power comes from being the only dramatic element on the screen.

@@ -1,0 +1,32 @@
+---
+title: "Build a Shiny Text Effect in React"
+description: "Add a shimmering light sweep animation to text using CSS gradients and keyframes, no JavaScript animation library required."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "shiny-text"
+---
+
+Some UI elements just need to gleam. A premium label, a "new" badge, a call to action you want people to notice. The shiny text effect does exactly one thing, and it does it well: it drags a highlight across your text like light catching a metallic surface.
+
+## What it does
+
+Shiny Text applies a moving gradient highlight across a string of text. The shimmer sweeps from left to right on a loop, creating a polished, premium feel without any user interaction required.
+
+## How it works
+
+This one is pure CSS. The component renders the text with a `background-image` set to a linear gradient that includes a bright highlight band. A CSS keyframe animation shifts the `background-position` continuously, making the highlight appear to travel across the text.
+
+The `background-clip: text` property combined with `color: transparent` is what makes the gradient show through the actual letterforms instead of behind them.
+
+## Key properties
+
+- **text** - The string to render with the shimmer
+- **speed** - Duration of one shimmer cycle (default: 3s)
+- **className** - For overriding base text styles (size, weight, color scheme)
+- **disabled** - Turns off the animation and renders plain text
+
+## When to use it
+
+Use this on labels like "Premium", "New", "Beta", or "Coming Soon". It also works great on a single word in a hero heading that you want to pull focus. Do not overuse it. One shiny element per view is compelling; three is cluttered.
+
+Pair it with a slightly metallic base color like silver or gold for maximum effect.

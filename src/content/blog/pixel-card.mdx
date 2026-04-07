@@ -1,0 +1,31 @@
+---
+title: "Build a Pixel Card Effect in React"
+description: "Create a card that reveals its content through a pixelated dissolve animation on hover or scroll."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "pixel-card"
+---
+
+Pixels dissolving into a sharp image is a visual trick that never really gets old. It triggers the same satisfaction as a developing photograph, and your brain cannot help but watch it finish.
+
+## What it does
+
+The Pixel Card component covers its content with a grid of colored squares that dissolve away on trigger, revealing the card content beneath. The dissolve can run in reverse on mouse-leave, making the card feel like it materializes on hover.
+
+## How it works
+
+A canvas element overlays the card content. On trigger, the canvas renders a grid of rectangles drawn from sampled colors of the underlying content. Each pixel square then fades out with a randomized delay, creating an organic rather than mechanical reveal.
+
+The color sampling happens once on mount using an offscreen canvas, keeping the hover response instant.
+
+## Key properties
+
+- **pixelSize** - Size of each pixel square in the grid
+- **trigger** - What starts the animation ("hover", "inView", "click")
+- **colors** - Custom color palette for the pixel overlay
+- **duration** - Total reveal duration in milliseconds
+- **reverse** - Animate back to pixels on mouse-leave
+
+## When to use it
+
+This is a strong choice for image cards, project thumbnails, or any card where the reveal itself is part of the experience. The pixel aesthetic also works well in design systems with a retro or technical theme.

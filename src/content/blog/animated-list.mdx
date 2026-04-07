@@ -1,0 +1,32 @@
+---
+title: "Build an Animated List in React"
+description: "Add staggered entrance animations to any list so items appear one by one with satisfying timing."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "animated-list"
+---
+
+Lists are boring by default. They just appear all at once and you scan them without really noticing. A staggered entrance changes that entirely.
+
+## What it does
+
+The Animated List component renders a list where each item enters the screen with a slight delay after the previous one. The result is a cascading reveal that draws the eye down the list naturally.
+
+## How it works
+
+Each list item is wrapped in a Framer Motion `motion.div`. The parent uses `staggerChildren` inside its `variants` config to automatically offset each child's animation timing.
+
+When the list enters the viewport, Framer Motion fires the parent animation, which cascades down through every child in sequence. No manual delay calculations needed.
+
+## Key properties
+
+- **items** - Array of content to render
+- **delay** - Stagger delay between each item (default: 0.1s)
+- **duration** - Duration of each individual item animation
+- **direction** - Slide in from top, bottom, or fade only
+
+## When to use it
+
+This is ideal for notification feeds, activity streams, or any list where content feels like it is arriving rather than just loading. It gives your UI a sense of life without being distracting.
+
+Keep the stagger tight (0.05-0.15s) for lists with more than five items. A big stagger on a long list makes users wait too long to see the bottom.

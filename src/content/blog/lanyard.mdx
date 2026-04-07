@@ -1,0 +1,31 @@
+---
+title: "Build a Lanyard Badge in React with Physics"
+description: "Simulate a physics-driven ID badge hanging from a lanyard that swings and reacts to mouse input."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "lanyard"
+---
+
+An ID badge hanging from a lanyard is one of the most universally recognized objects in professional life. Building one that actually swings and sways makes your about page or contact section unforgettable.
+
+## What it does
+
+The Lanyard Badge component renders a virtual ID badge suspended from a cord. The badge has real physics: it swings on drag, reacts to cursor proximity, and settles back to a natural hanging position with momentum and bounce.
+
+## How it works
+
+The physics simulation uses a spring model. The badge position is driven by a Framer Motion spring that updates in response to drag events and mouse proximity. The cord is drawn as an SVG path that bends based on the badge position, using a quadratic bezier curve.
+
+The connection point at the top stays fixed while the badge end follows physics, creating a convincing pendulum simulation.
+
+## Key properties
+
+- **badge** - Content to display on the badge (name, photo, role)
+- **cordColor** - Color of the lanyard cord
+- **stiffness** - Spring stiffness (lower = more floppy)
+- **damping** - How quickly the swing settles
+- **maxRotation** - Maximum angle the badge can tilt
+
+## When to use it
+
+This is a perfect detail for personal websites, conference pages, or team profile sections. It rewards users who interact with the page and creates a memorable moment without interrupting any actual workflow.

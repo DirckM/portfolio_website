@@ -1,0 +1,33 @@
+---
+title: "Create a Glass Surface Effect in React"
+description: "Build a reusable frosted glass material component that works consistently across different background contexts."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "glass-surface"
+---
+
+Frosted glass is one of those effects that looks effortless when done right and terrible when done halfway. Getting it right is mostly about controlling the context it appears in.
+
+## What it does
+
+The Glass Surface component provides a frosted glass panel as a reusable primitive. It handles backdrop blur, a subtle tint, and a thin edge border that catches light, so you get consistent glass material across your UI without re-implementing it everywhere.
+
+## How it works
+
+The component combines `backdrop-filter: blur()` with a semi-transparent background color. A 1px border with a translucent white or light color on the top and left edges creates the illusion of a polished surface catching light from above.
+
+The implementation is intentionally simple because the effect is purely CSS. The component mainly provides consistent prop-driven control over blur intensity and tint.
+
+## Key properties
+
+- **blur** - Blur radius in pixels
+- **tint** - Background color with opacity (e.g., rgba(255,255,255,0.1))
+- **border** - Show edge highlight border (default: true)
+- **borderRadius** - Corner radius
+- **padding** - Internal padding for content
+
+## When to use it
+
+Use this as the base for cards, modals, tooltips, or navigation bars that float over a rich background. It works best over images, videos, or colorful gradients where the blur reveals something worth blurring.
+
+On dark backgrounds, use a white tint. On light backgrounds, use a near-black tint. The contrast is what makes glass legible.

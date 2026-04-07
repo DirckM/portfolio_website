@@ -1,0 +1,33 @@
+---
+title: "Create an Evil Eye Background in React"
+description: "Animate a hypnotic iris that tracks the mouse and blinks, built with layered canvas drawing and trigonometry."
+date: "2026-04-07"
+category: "Backgrounds"
+componentSlug: "evil-eye"
+---
+
+The eye is the most attention-grabbing shape the human brain knows. We are wired to notice it, track it, make eye contact with it. The Evil Eye component exploits that instinct deliberately, rendering an animated iris that feels like it is watching the viewer right back.
+
+## What it does
+
+Evil Eye draws a detailed animated iris on a canvas background. The pupil tracks the mouse cursor in real time, rotating to follow as the user moves. The eye blinks on a randomized interval, and the iris pattern rotates slowly on its own, giving the whole thing an eerie, alive quality.
+
+## How it works
+
+The component listens to `mousemove` events and calculates the angle between the eye center and the cursor using `Math.atan2`. The pupil offset is clamped to stay within the iris, then the position is applied each frame via `requestAnimationFrame`.
+
+The iris itself is drawn with layered arcs, radial lines, and color fills that build up a believable eye texture. Blinking is implemented as a vertical scale animation that collapses the eye to a line and opens it back up.
+
+## Key properties
+
+- **irisColor** - Base hue of the iris (default: deep amber)
+- **pupilSize** - Radius of the pupil relative to the iris
+- **blinkInterval** - Approximate time between blinks in milliseconds
+- **trackingStrength** - How far the pupil shifts toward the cursor
+- **size** - Diameter of the entire eye in pixels
+
+## When to use it
+
+Evil Eye is a deliberate design choice. It suits projects with a dark, mystical, or unsettling theme. Think Halloween microsites, occult branding, or interactive art installations.
+
+It is not subtle. Use it only when the tone of the page can carry the weight of a giant watching eye.

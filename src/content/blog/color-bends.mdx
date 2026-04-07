@@ -1,0 +1,32 @@
+---
+title: "Build a Color Bends Shader in React"
+description: "Animate fluid, bending color gradients with a WebGL fragment shader that warps hues as if the screen itself is made of liquid."
+date: "2026-04-07"
+category: "Backgrounds"
+componentSlug: "color-bends"
+---
+
+There is something satisfying about a gradient that actually moves. Not a CSS keyframe that slides a color stop, but something that bends and warps like it has physics behind it. Color Bends delivers that with a GLSL shader running on the GPU.
+
+## What it does
+
+Color Bends renders a continuously animating background where color regions distort and flow into one another. The result looks like ink dropped in water, caught in slow motion. It is vivid without being overwhelming.
+
+## How it works
+
+The component initializes a WebGL canvas and compiles a fragment shader that samples color based on screen coordinates warped by multiple sine and cosine waves. Each wave has a different frequency and phase, and a `uTime` uniform drives their progression. The combination of warps produces the fluid bending motion that makes the effect feel three-dimensional.
+
+Color mixing happens entirely in the shader with smooth blending between hue stops defined as uniforms.
+
+## Key properties
+
+- **colors** - Array of up to four hue stops to blend between
+- **speed** - Animation playback rate (default: 0.6)
+- **warpStrength** - How aggressively coordinates are distorted
+- **scale** - Zoom level of the color regions
+
+## When to use it
+
+This component shines in hero backgrounds where you want bold, branded color without reaching for a static image. It is also a strong choice for loading screens or transitions where you need something visually interesting that does not compete with content.
+
+Match the color stops to your brand palette and dial back the warp strength for a more professional, less psychedelic result.

@@ -1,0 +1,33 @@
+---
+title: "Create an Interactive Folder Component in React"
+description: "Build a skeuomorphic folder that opens and fans out its contents on click, making file groupings feel tangible."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "folder"
+---
+
+Everyone knows what a folder does. That shared mental model is precisely what makes a skeuomorphic folder component so effective. No instructions needed.
+
+## What it does
+
+The Folder component renders a stylized folder icon that opens when clicked. Papers or thumbnails fan out from inside the folder, giving users a preview of the contents before they commit to navigating into them.
+
+## How it works
+
+The closed state shows a folder shape built with CSS. On click, a Framer Motion animation triggers that lifts the folder flap and fans the contained items outward using staggered `rotate` and `translate` animations.
+
+Each item inside the folder is a child element, so the component is composable and works with any content type.
+
+## Key properties
+
+- **label** - Folder name shown below the icon
+- **color** - Folder body color
+- **open** - Controlled open/closed state (optional)
+- **onToggle** - Callback when folder is clicked
+- **items** - Content items to fan out on open
+
+## When to use it
+
+This is a great fit for file browsers, project dashboards, or any UI where you are grouping related items and want the grouping to feel physical. It is particularly effective when the contents are image thumbnails that make the fan visually interesting.
+
+Limit the visible fan items to three or four. More than that gets crowded and the metaphor starts to break down.

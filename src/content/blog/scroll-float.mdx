@@ -1,0 +1,33 @@
+---
+title: "Build a Scroll Float Text Animation in React"
+description: "Animate text so it floats upward and fades in as the user scrolls, using Framer Motion's scroll-linked animation hooks."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "scroll-float"
+---
+
+Scroll-linked animations feel modern and considered. When text appears to float up as you scroll down the page, it creates a sense of depth, like content is emerging from beneath the surface. It is subtle, but users notice.
+
+## What it does
+
+Scroll Float ties text opacity and vertical position to the scroll progress of the viewport. As the element enters the visible area, it rises into place and becomes fully opaque. The result is a smooth float-in triggered by scrolling.
+
+## How it works
+
+Framer Motion's `useScroll` and `useTransform` hooks make this clean. The component creates a scroll progress value scoped to the element's position in the document, then maps that value to `y` and `opacity` ranges. No event listeners, no manual scroll handlers.
+
+Each line or word can have a slightly different range, creating a subtle parallax within a single text block.
+
+## Key properties
+
+- **text** - The string or lines to animate
+- **startY** - Starting vertical offset (e.g., 40px below final position)
+- **threshold** - Scroll percentage at which animation completes
+- **stagger** - Delay between lines or words if animating multiple segments
+- **easing** - Framer Motion easing function for the transform
+
+## When to use it
+
+This is ideal for long-form pages where content needs to feel alive as users scroll. About sections, feature descriptions, and testimonial text all benefit from a gentle float-in. It rewards careful scrollers.
+
+Keep the vertical travel short, 20-50px is enough. Larger offsets can feel jumpy on fast scrolls.

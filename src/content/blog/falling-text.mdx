@@ -1,0 +1,33 @@
+---
+title: "Create a Falling Text Animation in React"
+description: "Characters drop from above with physics-based gravity and bounce, creating a playful and dynamic text reveal effect."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "falling-text"
+---
+
+Picture each letter as a separate object, falling from the top of the screen and landing with a little bounce. It is chaotic in the best way. Falling Text turns a heading into a mini physics simulation.
+
+## What it does
+
+Falling Text drops each character from above the element, with gravity and a bounce or damping effect on landing. Characters can be triggered all at once or in a staggered sequence, and each can have slightly randomized timing for a natural feel.
+
+## How it works
+
+Each character is wrapped in a `motion.span` and animated with Framer Motion's spring physics. The animation starts from a negative `y` value (off-screen) and ends at `y: 0` using a spring with configurable stiffness and damping. Lower damping means more bounce.
+
+A random horizontal offset can be applied to each character's start position for extra chaos, then corrected to `x: 0` on landing.
+
+## Key properties
+
+- **text** - The string to animate
+- **trigger** - Start the fall on mount, click, or scroll
+- **gravity** - Spring stiffness (higher feels snappier)
+- **bounce** - Spring damping (lower means more bounce)
+- **stagger** - Delay between each character dropping
+
+## When to use it
+
+This is a high-energy effect suited for playful brands, game UIs, or any context where you want the page to feel fun. A "Game Over" screen, a "Congratulations" heading, or a 404 page are all great fits.
+
+Keep stagger around 0.04-0.08s so characters feel related. Too much stagger and it reads like individual events rather than one unified animation.

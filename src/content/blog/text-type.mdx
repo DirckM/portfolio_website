@@ -1,0 +1,33 @@
+---
+title: "Build a Typewriter Effect in React"
+description: "Create a classic typewriter animation that types text character by character, with support for multiple strings and a blinking cursor."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "text-type"
+---
+
+The typewriter effect never really goes out of style. It communicates something being composed in real time, which makes it feel alive in a way that static text just does not. It is one of the oldest web animations and still one of the most effective.
+
+## What it does
+
+Text Type animates a string by revealing one character at a time, simulating typing. It supports looping through multiple strings, a configurable typing speed, a backspace (delete) animation, and a blinking cursor at the end.
+
+## How it works
+
+A `useEffect` hook drives the animation with `setTimeout`. The component tracks the current character index and whether it is typing forward or deleting. When it finishes one string, it waits briefly then starts deleting before moving to the next.
+
+The cursor is a simple `span` element with a CSS blink animation applied via a keyframe.
+
+## Key properties
+
+- **words** - Array of strings to type through
+- **speed** - Milliseconds between each character (default: 100ms)
+- **deleteSpeed** - Milliseconds per character when deleting (default: 50ms)
+- **pauseTime** - How long to pause after completing a word (default: 1500ms)
+- **loop** - Whether to repeat after all words are shown
+
+## When to use it
+
+Hero sections with rotating taglines are the classic use case. "I build websites." becomes much more interesting when it types out, deletes, and cycles through a few variations. It is also great for terminal-style UIs or loading states.
+
+Keep typing speed around 80-120ms per character. Faster feels robotic; slower starts to frustrate users who can already read ahead.

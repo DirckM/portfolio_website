@@ -1,0 +1,33 @@
+---
+title: "Create a Text Shuffle Animation in React"
+description: "Animate text by scrambling through random characters before landing on the final string, creating a high-energy reveal effect."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "shuffle"
+---
+
+Imagine text that does not know what it wants to say yet. It cycles through random characters, flickers, then locks into place. It looks like something decoding, something arriving from a signal. That energy is exactly what this component delivers.
+
+## What it does
+
+The Shuffle component animates each character of a string through a rapid series of random characters before settling on the correct one. The final text resolves character by character, left to right, giving the impression of decryption or live rendering.
+
+## How it works
+
+Each character slot runs its own interval using `setInterval`, pulling from a pool of random alphanumeric characters. After a set number of cycles, the slot locks to the correct character and the interval clears. A stagger offset means slots resolve in order rather than all at once.
+
+The randomness pool can be customized to change the aesthetic from alphanumeric to symbols or even emoji-free characters.
+
+## Key properties
+
+- **text** - The final string to resolve to
+- **speed** - How fast characters cycle (lower is faster)
+- **revealDelay** - Stagger delay between each character resolving
+- **characters** - Pool of random characters to cycle through
+- **trigger** - What starts the animation: mount, hover, or scroll into view
+
+## When to use it
+
+This works brilliantly for tech-forward brands, data-heavy dashboards, or anything that wants a "loading from a server" vibe. Use it on short labels or headings, not paragraphs. The effect loses its impact at length.
+
+Keep the cycle speed fast (10-30ms) and the stagger tight (30-50ms) so the whole animation completes in under a second.

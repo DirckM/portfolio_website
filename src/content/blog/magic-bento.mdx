@@ -1,0 +1,32 @@
+---
+title: "Build a Magic Bento Grid in React"
+description: "Create an interactive bento grid layout where tiles respond to cursor position with light and movement effects."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "magic-bento"
+---
+
+Bento grids became popular because they make information feel organized and intentional. The magic version takes that further by making the grid feel alive.
+
+## What it does
+
+The Magic Bento component renders a grid of tiles where each tile reacts to the cursor. Moving your mouse over a tile shifts a radial gradient highlight, creating the impression of a light source tracking your pointer across the surface.
+
+## How it works
+
+Each tile listens for `mousemove` events and calculates the cursor position relative to the tile's bounding box. That position drives a CSS custom property that controls a `radial-gradient` overlay.
+
+The effect is pure CSS once the variable is set, which keeps the rendering performant even with many tiles on screen simultaneously.
+
+## Key properties
+
+- **tiles** - Array of tile content and span configurations
+- **glowColor** - The color of the cursor-following highlight
+- **glowSize** - Radius of the glow effect in pixels
+- **gap** - Grid gap between tiles
+
+## When to use it
+
+This shines on about pages, feature grids, or dashboard overviews where you want to reward exploration. It turns a static layout into something users actually hover over just to see what happens.
+
+Keep the glow subtle. A soft, low-opacity highlight adds polish without feeling like a flashlight pointed at the screen.

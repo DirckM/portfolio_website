@@ -1,0 +1,33 @@
+---
+title: "Create a Marquee Along SVG Path in React"
+description: "Animate content along any curved SVG path, turning logos, text, or icons into a flowing marquee that follows the arc you define."
+date: "2026-04-07"
+category: "Blocks"
+componentSlug: "marquee-svg-path"
+---
+
+A straight marquee is fine. A marquee that follows a curve is something you actually remember. The Marquee SVG Path component lets you define any path, then sends your content flowing along it in a smooth, continuous loop.
+
+## What it does
+
+Marquee SVG Path distributes elements evenly along a custom SVG path and animates them so they travel along the curve continuously. The items maintain their tangent orientation as they move, rotating to follow the direction of the path at each point. The loop is seamless.
+
+## How it works
+
+The component uses the SVG `getTotalLength` and `getPointAtLength` APIs to measure the path and sample positions along it. Each element is placed at its calculated position using CSS `transform: translate` combined with a rotation derived from the tangent angle at that point.
+
+An animation loop increments a shared offset value each frame. All elements sample their new position from `(baseOffset + itemOffset) % pathLength`, wrapping seamlessly at the end.
+
+## Key properties
+
+- **path** - The SVG `d` attribute string defining the curve
+- **items** - Array of React nodes to place along the path
+- **speed** - Pixels advanced along the path per frame
+- **gap** - Spacing between items in path-length units
+- **rotate** - Whether items should rotate to follow the path tangent
+
+## When to use it
+
+This component is ideal for circular marquees (sending logos around a ring), wave-shaped text flows, or any decorative layout where you want motion that follows a deliberate shape rather than a straight line.
+
+Define your path in an SVG editor first, then paste the `d` string in. Freehand curves work just as well as geometric ones.

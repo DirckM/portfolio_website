@@ -1,0 +1,33 @@
+---
+title: "Create a Scrambled Text Effect in React"
+description: "Scramble text into random characters on hover and restore it, creating a glitchy interactive effect for headings and labels."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "scrambled-text"
+---
+
+Hover over a heading and watch it lose its mind for a second before snapping back. That micro-moment of chaos is what makes Scrambled Text memorable. It is interactive, slightly unpredictable, and makes even simple text feel like it has personality.
+
+## What it does
+
+Scrambled Text replaces characters with random symbols on hover (or another trigger), then restores the original string. The scramble and restore can happen character by character in sequence or all at once for a more explosive feel.
+
+## How it works
+
+Mouse enter and mouse leave events drive the animation. On hover, each character is replaced with a random value from a character pool on a fast interval. A secondary timer restores characters back to the original string one by one. The component holds the display string in state and mutates individual character positions.
+
+The sequence can run left-to-right, right-to-left, or randomized for different feels.
+
+## Key properties
+
+- **text** - The string to scramble and restore
+- **trigger** - hover, click, or mount
+- **speed** - Interval speed during scramble phase (ms)
+- **restoreDelay** - How long to scramble before restoring
+- **characters** - Character pool for the random phase
+
+## When to use it
+
+Navigation links, skill labels, and project titles all feel more alive with this treatment. It rewards users who explore your interface by hovering over things. Keep it on short strings, typically under 20 characters, where the scramble is legible.
+
+A restore delay of 500-800ms is the sweet spot. Long enough to feel intentional, short enough not to frustrate.

@@ -1,0 +1,33 @@
+---
+title: "Build an ASCII Text Renderer in React"
+description: "Render text as ASCII art using a character ramp mapped to pixel brightness, entirely in the browser with a canvas element."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "ascii-text"
+---
+
+Before high-resolution screens, programmers rendered images and text using nothing but printable characters. ASCII art was practical necessity. Today it is pure aesthetic, and it hits differently in a world of polished UI. This component brings that texture to the browser.
+
+## What it does
+
+ASCII Text converts a string into ASCII art by rendering it to a canvas, sampling pixel brightness values, and mapping each sample to a character from a density ramp. Dense characters represent dark areas, light characters represent highlights.
+
+## How it works
+
+The component first renders the input text to an offscreen `<canvas>` at large size using a standard font. It then reads the pixel data with `getImageData`, divides the canvas into a grid, and calculates average brightness per cell. Each brightness value maps to a character in the ramp (from dense like `@` and `#` to light like `.` and space).
+
+The output is a `<pre>` block of monospaced ASCII characters that recreates the shape of the original text.
+
+## Key properties
+
+- **text** - The string to convert to ASCII art
+- **fontSize** - Size used when rendering the source text to canvas
+- **charset** - The character ramp from dense to light
+- **cellSize** - Pixel grid cell size (smaller = finer detail, larger = blockier look)
+- **color** - Text color for the output
+
+## When to use it
+
+404 pages, terminal-themed UIs, developer portfolios, and retro-aesthetic projects all love this. It is a strong statement piece rather than a subtle accent. One large ASCII heading per page is usually plenty.
+
+A `cellSize` of 6-10px gives good detail without becoming too computationally heavy.

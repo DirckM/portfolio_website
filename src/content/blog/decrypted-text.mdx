@@ -1,0 +1,33 @@
+---
+title: "Build a Decrypted Text Effect in React"
+description: "Reveal text by scrambling through random characters that resolve one by one, mimicking a decryption sequence."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "decrypted-text"
+---
+
+There is something cinematic about watching encrypted text decode itself in real time. Think spy films, hacker interfaces, classified document reveals. The Decrypted Text component brings that energy to your React app with a few lines of code.
+
+## What it does
+
+Decrypted Text scrambles each character of a string through random symbols, then resolves them in sequence from left to right until the full intended text is visible. Each character "cracks" at a slightly different time, creating a cascading decode effect.
+
+## How it works
+
+The component holds a display string in state, where each position starts as a random character from a defined character pool. An interval cycles each unresolved character through new random values. After a character has cycled enough times (or after its stagger delay), it locks to the final correct value.
+
+A `useEffect` triggers on mount or when the parent signals a replay, resetting the scrambled state and running the decode again.
+
+## Key properties
+
+- **text** - The final revealed string
+- **speed** - How fast characters cycle through randoms (ms per frame)
+- **characters** - Pool of characters to scramble through
+- **revealDelay** - Per-character stagger for the reveal
+- **sequential** - Whether characters resolve left-to-right or all at once
+
+## When to use it
+
+Perfect for sci-fi or tech aesthetics, terminal-style UIs, or dramatic data reveal moments. Pair it with a monospace font to reinforce the "raw data" feel. Works best on short strings of 3-15 characters.
+
+A speed of 30-50ms keeps things fast enough to feel energetic without becoming illegible noise.

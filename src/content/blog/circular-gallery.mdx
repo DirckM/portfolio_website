@@ -1,0 +1,32 @@
+---
+title: "Create a Circular Gallery in React"
+description: "Arrange images in a rotating circular layout that responds to drag and scroll input."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "circular-gallery"
+---
+
+A flat image grid is functional. A circular gallery is a statement. It signals that you thought carefully about how your work is presented, not just what work you are presenting.
+
+## What it does
+
+The Circular Gallery positions images evenly around a circle in 3D space. Users can drag to spin the ring or scroll to rotate through the items. Each image faces the viewer as it moves to the front of the rotation.
+
+## How it works
+
+Images are positioned using CSS `rotateY` transforms distributed at equal angles (360 divided by the number of items). The entire ring is wrapped in a 3D perspective container.
+
+Drag input updates a rotation state value, and Framer Motion applies a smooth spring animation so the gallery decelerates naturally when released rather than stopping abruptly.
+
+## Key properties
+
+- **images** - Array of image sources and alt text
+- **radius** - Distance from the center to each image
+- **autoplay** - Enable automatic slow rotation
+- **autoplaySpeed** - Rotation speed when autoplay is on
+
+## When to use it
+
+This is a strong choice for portfolios, product showcases, or team pages where you want images to feel curated rather than catalogued. The 3D depth makes even a small set of images feel substantial.
+
+Odd numbers of images (5, 7, 9) tend to look better than even numbers because there is never a perfectly symmetrical pair visible at once.

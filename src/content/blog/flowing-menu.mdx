@@ -1,0 +1,31 @@
+---
+title: "Build a Flowing Menu in React"
+description: "Create an animated navigation menu where items ripple and flow as the cursor moves across them."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "flowing-menu"
+---
+
+Most navigation menus are completely static until you click something. They work fine, but they also feel lifeless. A flowing menu turns navigation into a moment worth noticing.
+
+## What it does
+
+The Flowing Menu component renders navigation items that deform and ripple when the cursor passes over them. Text curves, stretches, or flows like liquid fabric, then returns to its resting state when the cursor moves away.
+
+## How it works
+
+Each menu item uses an SVG text element or a canvas-rendered label. The cursor position relative to the item drives a displacement map or a custom path deformation calculated per frame.
+
+For the text deformation, a wave function applies varying vertical offsets to character positions based on cursor proximity and time. Framer Motion handles the smooth lerp between the current and target deformation state.
+
+## Key properties
+
+- **items** - Navigation links with label and href
+- **flowIntensity** - How strongly items deform on hover
+- **flowSpeed** - Speed of the ripple recovery
+- **fontSize** - Base text size
+- **color** - Text color (hover and rest states)
+
+## When to use it
+
+This is an expressive choice for creative agency sites, portfolios, or any site where the navigation itself is meant to be part of the visual experience. It is less suited to dense dashboards or utility tools where users need to navigate quickly without distraction.

@@ -1,0 +1,32 @@
+---
+title: "Create a Scroll Stack Effect in React"
+description: "Stack cards on top of each other as the user scrolls, creating a layered depth effect tied to scroll position."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "scroll-stack"
+---
+
+Scrolling through a flat list of cards feels like flipping through a folder. Stacking them on scroll feels like building something. That difference matters more than you think.
+
+## What it does
+
+The Scroll Stack component layers cards visually as the user scrolls. Each card slides under the previous one and pins to the top, creating a growing stack that communicates progress through the content.
+
+## How it works
+
+Each card gets a `position: sticky` with an incremental `top` offset. As the user scrolls, earlier cards stay pinned while new ones arrive underneath. Framer Motion handles the scale and opacity transitions so the stacking feels physical rather than mechanical.
+
+The scroll position is tracked with a `useScroll` hook, and each card's transform is driven by a `useTransform` mapping from scroll range to visual properties.
+
+## Key properties
+
+- **cards** - Array of card content to stack
+- **topOffset** - Vertical offset between stacked cards
+- **scaleStep** - How much each card shrinks when stacked (default: 0.05)
+- **opacityStep** - Fade amount per card level
+
+## When to use it
+
+Use this for feature showcases, step-by-step walkthroughs, or portfolio pieces where you want the user to feel like they are moving through layers of content. It works especially well on landing pages where you have a few big ideas to present sequentially.
+
+Avoid using it for long lists. Three to six cards is the sweet spot.

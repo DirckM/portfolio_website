@@ -1,0 +1,33 @@
+---
+title: "Create a True Focus Text Effect in React"
+description: "Blur all words in a sentence except the one currently in focus, directing attention word by word as the user reads."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "true-focus"
+---
+
+Reading comprehension tools have known for a while that isolating words helps with focus. True Focus borrows that idea and turns it into a UI animation. Every word is blurred out except the one in the spotlight. It is striking, and oddly meditative.
+
+## What it does
+
+True Focus splits a sentence into words and blurs all of them except the currently active word. The focus steps through each word on a timer, or responds to hover, creating a spotlight that travels across the text.
+
+## How it works
+
+The component splits the string by spaces and renders each word as a `motion.span`. Non-focused words have a CSS `filter: blur(4px)` and reduced `opacity`. The focused word is sharp and fully opaque. Framer Motion handles the transition between states smoothly.
+
+An internal timer or scroll/hover trigger advances the focus index through the array. The transition is fast enough to feel responsive but slow enough to be readable.
+
+## Key properties
+
+- **text** - The sentence to display
+- **mode** - Auto-advance timer, hover, or click to move focus
+- **interval** - Time between word transitions in auto mode (ms)
+- **blurAmount** - Strength of blur on unfocused words (px)
+- **animationDuration** - Speed of the focus transition
+
+## When to use it
+
+Use this for taglines, manifesto statements, or any short declaration you want people to actually read word by word. It is also a surprisingly effective way to animate a list of skills or values without a standard carousel.
+
+Keep blur around 4-6px. Heavier blur makes it hard to perceive the surrounding words at all, which kills the context.

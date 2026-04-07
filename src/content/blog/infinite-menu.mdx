@@ -1,0 +1,33 @@
+---
+title: "Build an Infinite Menu in React"
+description: "Create a circular scrolling menu that loops endlessly, wrapping items around a virtual wheel."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "infinite-menu"
+---
+
+Linear menus have a beginning and an end. An infinite menu loops back on itself, which feels surprisingly natural once you use it. It is the same satisfaction as a carousel that never runs out.
+
+## What it does
+
+The Infinite Menu renders a list of items arranged on a virtual wheel. Scrolling or dragging rotates the wheel and the items cycle through a focused center position continuously, with no first or last item to bump into.
+
+## How it works
+
+Items are positioned using `rotateX` transforms around a fixed radius. As the wheel rotation value increases, items that scroll past the top wrap to the bottom by adjusting their index offset, keeping the total count constant.
+
+The rotation state is unbounded, meaning it increments infinitely in either direction. Each item's visual position is then derived from `(rotation + index * step) % 360`, which handles the circular mapping automatically.
+
+## Key properties
+
+- **items** - Array of menu items (label, value, onClick)
+- **visibleCount** - How many items are visible at once
+- **radius** - Distance from the wheel center to items
+- **perspective** - CSS perspective depth for 3D effect
+- **autoplay** - Slowly rotate the wheel automatically
+
+## When to use it
+
+This is a compelling choice for option selectors, date pickers, or any picker UI where the user is choosing from a continuous range. It also works well as a decorative navigation element on landing pages where you want to show off a larger collection without pagination.
+
+Keep labels short so they read clearly at angle in the 3D rotation.

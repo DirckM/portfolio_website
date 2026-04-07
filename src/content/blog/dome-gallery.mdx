@@ -1,0 +1,32 @@
+---
+title: "Build a Dome Gallery in React"
+description: "Arrange images across a curved 3D dome surface for a unique spatial gallery experience."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "dome-gallery"
+---
+
+Grids are predictable. Domes are not. When your gallery wraps images across a curved 3D surface, it tells visitors they are somewhere worth exploring, not just somewhere worth scrolling.
+
+## What it does
+
+The Dome Gallery places images across the interior surface of a virtual dome. From the viewer's perspective, images curve away in all directions. Dragging or scrolling rotates the dome to reveal more of the collection.
+
+## How it works
+
+Each image is positioned using 3D spherical coordinate math, converting latitude and longitude values into CSS `translate3d` and `rotateX`/`rotateY` transforms. The entire collection sits inside a perspective container.
+
+Pointer drag events update a rotation offset applied to the whole dome, and a momentum animation lets it coast to a stop naturally after a fast drag.
+
+## Key properties
+
+- **images** - Array of image sources
+- **radius** - Size of the dome sphere
+- **rows** - How many horizontal rings to distribute images across
+- **fov** - Field of view in degrees for the perspective effect
+
+## When to use it
+
+This is a statement piece for creative portfolios or art showcases where the presentation itself is part of the message. It works best when you have 12 or more images so the dome looks full.
+
+Performance matters here. Keep images optimized and lazy-loaded since many are rendered simultaneously.

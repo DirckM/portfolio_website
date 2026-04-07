@@ -1,0 +1,32 @@
+---
+title: "Build a Reflective Card in React"
+description: "Add a realistic light reflection effect to cards that moves with the cursor, making surfaces feel tactile and physical."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "reflective-card"
+---
+
+Physical objects catch light. Digital cards usually do not. That gap is exactly why a well-implemented reflection effect feels so satisfying when you first encounter it.
+
+## What it does
+
+The Reflective Card component simulates a moving specular highlight on a card surface. As you move the cursor across the card, a bright sheen tracks your pointer angle, making the card feel like it has a physical finish.
+
+## How it works
+
+The component tracks mouse position relative to the card and calculates an angle from the center. That angle maps to the position of a semi-transparent linear gradient overlay layered above the card content.
+
+The gradient transitions smoothly using CSS transitions on the background-position, so the light always feels like it is gliding rather than jumping.
+
+## Key properties
+
+- **children** - Card content
+- **reflectionColor** - Color of the light sheen (default: white)
+- **reflectionOpacity** - Maximum opacity of the overlay (default: 0.15)
+- **borderRadius** - Corner radius of the card
+
+## When to use it
+
+This works beautifully on product cards, profile cards, or any card where you want to reinforce a premium feel. The effect is most readable on cards with a solid, mid-tone background rather than a busy image.
+
+Less is more. A subtle reflection at 10-20% opacity looks polished. Going higher starts to look like a UI bug.

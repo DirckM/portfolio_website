@@ -1,0 +1,33 @@
+---
+title: "Build Animated Line Waves in React"
+description: "Create a hypnotic animated line wave background using canvas and sine curves that flow in real time."
+date: "2026-04-07"
+category: "Backgrounds"
+componentSlug: "line-waves"
+---
+
+Backgrounds are where first impressions happen. A static color is fine, but a softly undulating wave of lines? That feels alive. The Line Waves component gives you exactly that without reaching for a heavy animation library.
+
+## What it does
+
+Line Waves renders a series of horizontal sine curves that animate continuously across the canvas. The lines oscillate at slightly different frequencies, creating a layered, breathing effect. It runs entirely on a 2D canvas element positioned behind your content.
+
+## How it works
+
+The component mounts a canvas that fills its container, then kicks off a `requestAnimationFrame` loop. Each frame redraws a set of sine curves with an incrementing time offset, which shifts the waves horizontally. Different lines use slightly different amplitudes and frequencies, so they never perfectly overlap.
+
+The canvas scales with `devicePixelRatio` for crisp rendering on high-DPI screens.
+
+## Key properties
+
+- **lineCount** - Number of wave lines drawn (default: 8)
+- **amplitude** - Peak height of each wave in pixels
+- **frequency** - How tightly the waves cycle across the width
+- **speed** - How fast the offset advances per frame
+- **color** - Stroke color, accepts any CSS color string
+
+## When to use it
+
+This works best as a full-bleed hero background or a subtle section divider. It pairs well with dark backgrounds where light, low-opacity lines feel ethereal rather than distracting.
+
+Keep the amplitude low (20-40px) and opacity under 0.4 for a calm, professional feel. Turn them both up and you get something more intense, which suits landing pages that want to make a statement.

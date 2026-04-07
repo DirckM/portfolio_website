@@ -1,0 +1,33 @@
+---
+title: "Build Circling Elements in React"
+description: "Create a set of elements that orbit a center point with configurable speed, radius, and stagger using CSS transforms and requestAnimationFrame."
+date: "2026-04-07"
+category: "Blocks"
+componentSlug: "circling-elements"
+---
+
+Orbiting elements are a classic way to show relationships, teams, or technology stacks visually. The Circling Elements component gives you a reusable orbital system where you supply the content and it handles the physics of the spin.
+
+## What it does
+
+Circling Elements places any number of child elements in a circular orbit around a central point. Each element maintains its upright orientation as it moves around the circle, and items are evenly distributed by default. The whole system rotates continuously, and individual items can have offset speeds for interesting layered motion.
+
+## How it works
+
+Each element is positioned using trigonometry: its x and y coordinates are calculated from `Math.cos` and `Math.sin` of the current angle plus its index offset. A `requestAnimationFrame` loop increments a shared angle value each frame, and all elements recompute their positions together.
+
+CSS `transform: translate` is applied directly to avoid layout reflows, keeping the animation smooth even with many elements.
+
+## Key properties
+
+- **radius** - Orbital radius in pixels
+- **speed** - Degrees advanced per frame (default: 0.4)
+- **items** - Array of React nodes to place in orbit
+- **clockwise** - Boolean to reverse rotation direction
+- **stagger** - Additional angle offset per item beyond even distribution
+
+## When to use it
+
+Circling elements work well for showcasing logos of tech partners, team avatars around a company logo, or feature icons surrounding a central product image. The motion draws attention without demanding it.
+
+Keep the orbiting items visually consistent in size and shape. Mixed sizes look unbalanced as they rotate.

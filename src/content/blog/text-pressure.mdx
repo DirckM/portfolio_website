@@ -1,0 +1,33 @@
+---
+title: "Create a Text Pressure Effect in React"
+description: "Make text respond to cursor proximity by adjusting variable font weight and scale, creating an interactive pressure simulation."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "text-pressure"
+---
+
+What if text felt physical? Like it had weight, and you could press on it. The text pressure effect turns cursor position into a force that distorts letterforms, making your UI feel tactile in a way that flat design rarely achieves.
+
+## What it does
+
+Text Pressure tracks mouse position relative to each character and adjusts the variable font weight and scale based on proximity. Characters closest to the cursor appear heavier and slightly larger, simulating pressure or magnetism.
+
+## How it works
+
+Each character is wrapped in its own `span`. A `mousemove` listener on the parent calculates the distance between the cursor and each character's center using the bounding rect. That distance maps to a font-weight value on the variable font axis, interpolated between a min and max weight.
+
+Variable fonts are key here. Without them, you can only scale characters, not adjust their weight continuously.
+
+## Key properties
+
+- **text** - The string to render
+- **fontFamily** - Must be a variable font that supports the `wght` axis
+- **minWeight** - Base font weight (e.g., 100)
+- **maxWeight** - Maximum weight when cursor is directly over a character (e.g., 900)
+- **radius** - Distance in pixels at which characters start to react
+
+## When to use it
+
+This shines on large display headings in interactive portfolios or experimental landing pages. It rewards curiosity, inviting users to hover and play. Avoid it on body text where the distortion would hurt readability.
+
+Use a radius of 80-150px for a smooth, wide influence. A tight radius (under 50px) feels too sudden.

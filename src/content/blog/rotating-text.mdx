@@ -1,0 +1,33 @@
+---
+title: "Build a Rotating Text Component in React"
+description: "Cycle through a list of words with a smooth rotation or slide animation, ideal for dynamic hero taglines in React."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "rotating-text"
+---
+
+"I design things." is fine. "I design websites / apps / experiences" cycling one after another is far more interesting. Rotating Text is the simplest way to fit multiple ideas into a single fixed space without a carousel.
+
+## What it does
+
+Rotating Text cycles through an array of strings at a set interval. Each transition animates the outgoing word out and the incoming word in, either rotating on a horizontal axis, sliding vertically, or fading. The containing element holds a consistent width so the layout does not shift.
+
+## How it works
+
+The component tracks the current word index in state and advances it on a timer using `setInterval`. Framer Motion's `AnimatePresence` handles the enter and exit animations simultaneously, so the old word animates out at the same time the new one animates in.
+
+The rotation effect uses `rotateX` to flip words like turning a page. A slide uses `y`. A fade is just opacity.
+
+## Key properties
+
+- **words** - Array of strings to cycle through
+- **interval** - Milliseconds between transitions (default: 2000ms)
+- **transition** - Animation type: rotate, slide, or fade
+- **staggerDelay** - Per-character stagger if animating by letter
+- **className** - For custom text sizing and color
+
+## When to use it
+
+Hero sections with a changing adjective or noun are the primary use case. "Built for designers / developers / founders" is a classic pattern this component handles perfectly. Keep word lengths similar to avoid jarring layout shifts if fixed width is not set.
+
+An interval of 1800-2500ms gives readers enough time to absorb each word without making them wait.

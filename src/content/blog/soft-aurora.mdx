@@ -1,0 +1,33 @@
+---
+title: "Create a Soft Aurora Background in React with WebGL"
+description: "Render a living aurora borealis effect in the browser using a WebGL shader that shifts and breathes with organic color transitions."
+date: "2026-04-07"
+category: "Backgrounds"
+componentSlug: "soft-aurora"
+---
+
+The aurora borealis is one of nature's most dramatic light shows. Bringing that energy to a web background sounds impossible until you realize a fragment shader can approximate it beautifully. The Soft Aurora component does exactly that with a tiny WebGL program.
+
+## What it does
+
+Soft Aurora renders a full-canvas WebGL background with slowly shifting bands of color that blend and pulse organically. The colors flow from cool blues and greens into purples and pinks, mimicking the shifting curtains of light you would see in the Arctic sky.
+
+## How it works
+
+The component sets up a WebGL context on a canvas element and compiles a custom fragment shader. The shader uses layered noise functions with time-varying offsets to produce smooth, organic color regions. A `requestAnimationFrame` loop feeds a `uTime` uniform into the shader each frame, which drives the animation.
+
+The math is all GPU-side, so the CPU cost is minimal regardless of canvas size.
+
+## Key properties
+
+- **speed** - Controls how fast the aurora shifts (default: 0.4)
+- **colorA** - Primary hue as an RGB vector (default: teal-blue)
+- **colorB** - Secondary hue blended into the animation
+- **intensity** - Brightness multiplier for the light bands
+- **blur** - Additional softness applied to transitions
+
+## When to use it
+
+Aurora backgrounds work best on pages that want to feel atmospheric and premium. Think SaaS landing pages, portfolio hero sections, or dark-mode product showcases.
+
+Avoid combining it with too many animated foreground elements. The background already moves, and competing motion will feel chaotic.

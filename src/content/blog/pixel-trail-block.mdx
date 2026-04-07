@@ -1,0 +1,32 @@
+---
+title: "Build a Pixel Trail Background in React"
+description: "Create a full-page interactive background where the mouse leaves a glowing trail of pixels that fade out over time."
+date: "2026-04-07"
+category: "Blocks"
+componentSlug: "pixel-trail-block"
+---
+
+Interactive backgrounds are more memorable than static ones, and few interactions feel as satisfying as leaving a trail as you move. The Pixel Trail component turns the entire page into a canvas where the mouse paints and fades, creating a dynamic texture that responds to every visitor differently.
+
+## What it does
+
+Pixel Trail fills a full-page canvas with a grid of square cells. As the mouse moves over the page, the cells it passes over light up. Each lit cell fades back to the background over a short decay period, leaving a ghostly trail of where the cursor has been.
+
+## How it works
+
+The component maps the canvas into a grid of cells at a configurable resolution. On `mousemove`, it calculates which cell the cursor occupies and marks it as active with a timestamp. Each frame in the `requestAnimationFrame` loop, cells are redrawn with opacity proportional to how much time has passed since they were activated, producing a smooth fade effect.
+
+The canvas is positioned absolutely behind all page content so the interaction does not interfere with clicks or scrolling.
+
+## Key properties
+
+- **cellSize** - Width and height of each pixel cell in screen pixels (default: 20)
+- **trailColor** - Fill color for activated cells
+- **fadeSpeed** - How quickly cells decay back to transparent (default: 0.05 per frame)
+- **glow** - Whether to apply a blur filter to lit cells for a soft glow
+
+## When to use it
+
+Pixel Trail works especially well on dark portfolio pages, creative agency sites, or anywhere you want to reward exploration. The interaction is passive, it does not require clicking, so even casual visitors trigger it just by reading.
+
+Keep cell size large enough to be clearly visible but small enough to feel like a trail rather than a map.

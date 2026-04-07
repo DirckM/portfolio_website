@@ -1,0 +1,33 @@
+---
+title: "Create a macOS Dock in React"
+description: "Replicate the macOS Dock magnification effect where icons scale up as the cursor approaches them."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "dock"
+---
+
+The macOS Dock magnification effect has been around since 2001 and it still feels great every single time. There is something deeply satisfying about icons growing toward your cursor like plants toward light.
+
+## What it does
+
+The Dock component renders a row of icons that magnify as the cursor approaches them. Icons closest to the pointer grow the largest, and the effect falls off smoothly on either side, creating a wave-like bulge that follows the cursor along the dock.
+
+## How it works
+
+Each icon's scale is a function of the cursor's horizontal distance from that icon's center. A Gaussian falloff curve determines how the magnification spreads to neighboring icons.
+
+Framer Motion spring animations drive the scale changes so they feel elastic rather than linear. The entire calculation runs on `mousemove` and resets on `mouseleave`.
+
+## Key properties
+
+- **items** - Array of icon content and click handlers
+- **magnification** - Maximum scale factor at cursor (default: 2)
+- **distance** - How far the magnification effect spreads
+- **springConfig** - Framer Motion spring options for the scale animation
+- **size** - Base icon size in pixels
+
+## When to use it
+
+This works as a navigation bar, a toolbar, or an application launcher in any React UI. It is also a genuinely impressive portfolio piece because most developers have wanted to build this at some point.
+
+The effect looks best when there are five to ten items. Too few and there is no wave. Too many and the magnification feels cramped.

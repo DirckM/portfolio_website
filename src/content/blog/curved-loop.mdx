@@ -1,0 +1,33 @@
+---
+title: "Build a Curved Text Loop in React"
+description: "Flow text along a smooth SVG curve that loops continuously, creating an elegant scrolling marquee with a wave-like path."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "curved-loop"
+---
+
+Straight-line marquees are everywhere. A curved one stops people. Text that flows along a wave or arc has an almost hypnotic quality, like watching water move. It is unexpected, and unexpected is memorable.
+
+## What it does
+
+Curved Loop animates text along a smooth SVG bezier curve in a continuous loop. The text flows from one end of the path to the other, then seamlessly repeats, creating an infinite scrolling effect along a curved trajectory.
+
+## How it works
+
+The component uses an SVG `<path>` with a cubic bezier curve as the text's track. A `<textPath>` element places the string on that path, and a CSS animation shifts the `startOffset` attribute continuously from 0% to 100%. When the text reaches the end it wraps back to the start seamlessly because the string is duplicated to fill the path.
+
+The curve shape is defined by control points, which you can adjust to make it gentler or more dramatic.
+
+## Key properties
+
+- **text** - The string to flow along the curve
+- **speed** - Animation duration in seconds (lower is faster)
+- **curveHeight** - How pronounced the curve peak is
+- **width** - Width of the SVG container
+- **direction** - Left-to-right or right-to-left flow
+
+## When to use it
+
+Footer sections, decorative dividers between content blocks, and "available for work" banners all benefit from this treatment. It works best with short repeating phrases rather than long sentences.
+
+Set the curve height to around 40-80px for something that reads as a wave without feeling exaggerated. Anything beyond 120px starts to distort the letterforms.

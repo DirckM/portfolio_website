@@ -1,0 +1,33 @@
+---
+title: "Build a Radar Background in React with WebGL"
+description: "Render a sweeping radar animation with glowing arcs and fading trails using a WebGL fragment shader."
+date: "2026-04-07"
+category: "Backgrounds"
+componentSlug: "radar"
+---
+
+Radar is one of those visuals that immediately signals surveillance, detection, and data in motion. It is a classic for a reason. The Radar component brings that energy to React with a WebGL fragment shader that makes the sweep look genuinely glowing and dimensional.
+
+## What it does
+
+Radar renders a circular display with a sweeping beam that rotates continuously. The sweep leaves a fading trail behind it, and the circular grid lines glow softly against the dark background. The overall effect looks like a live sonar or radar readout.
+
+## How it works
+
+The fragment shader calculates each pixel's polar coordinates relative to the canvas center. It compares the pixel's angle to the current sweep angle (driven by `uTime`) and assigns brightness based on how recently the sweep passed through. The trail fade is a simple exponential decay based on the angular difference.
+
+Grid lines are drawn in the shader by thresholding the radius at fixed intervals, keeping the rendering entirely GPU-side.
+
+## Key properties
+
+- **sweepColor** - Color of the active sweep beam
+- **gridColor** - Color of the circular and radial grid lines
+- **sweepSpeed** - Rotations per second (default: 0.3)
+- **trailLength** - How many degrees of trail remain visible
+- **rings** - Number of concentric distance rings
+
+## When to use it
+
+Radar works well for security, analytics, or monitoring product pages where the metaphor of detection and coverage reinforces the product message. It also looks sharp as a hero background for any technical or data-focused brand.
+
+Combine it with a subtle dark color scheme and keep foreground content minimal so the animation breathes.

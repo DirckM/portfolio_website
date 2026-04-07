@@ -1,0 +1,30 @@
+---
+title: "Create Parallax Floating Images in React"
+description: "Build a collection of images that shift at different depths in response to mouse movement, creating a convincing 3D parallax effect."
+date: "2026-04-07"
+category: "Blocks"
+componentSlug: "parallax-floating"
+---
+
+Depth is hard to achieve on a flat screen, but parallax is one of the oldest tricks for faking it. When objects move at different rates relative to the mouse, the brain interprets them as sitting at different distances. Parallax Floating Images turns that illusion into a ready-to-use React component.
+
+## What it does
+
+Parallax Floating Images renders a group of images at different visual depths. As the mouse moves across the container, each image shifts by a different amount based on its assigned depth layer. Images at deeper layers move less, while surface-layer images shift more, reinforcing the sense of three-dimensional space.
+
+## How it works
+
+The component tracks mouse position relative to the container using an `onMouseMove` handler and calculates a normalized offset between -1 and 1 on each axis. Each image is assigned a depth value, and its CSS `transform: translate` is multiplied by that depth times a maximum shift distance. The transforms are applied with a CSS transition for smooth interpolation rather than frame-by-frame updates.
+
+## Key properties
+
+- **images** - Array of image sources with an associated depth value (0 to 1)
+- **maxShift** - Maximum pixel offset at depth 1 (default: 30px)
+- **easing** - CSS transition timing function for smoothing (default: ease-out)
+- **resetOnLeave** - Whether elements return to center when the mouse exits
+
+## When to use it
+
+This component works well for hero sections with product screenshots, team photos layered with abstract shapes, or any section where you have multiple visual elements and want to add tactile depth.
+
+Three to five layers is the sweet spot. More than that and the effect becomes busy rather than immersive.

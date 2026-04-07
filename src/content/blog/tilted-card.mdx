@@ -1,0 +1,33 @@
+---
+title: "Build a 3D Tilted Card in React"
+description: "Create a card that rotates in 3D space based on cursor position, giving it a physical, interactive quality."
+date: "2026-04-07"
+category: "Components"
+componentSlug: "tilted-card"
+---
+
+Flat cards sit on a page. Tilted cards reach out from it. The moment a card responds to your cursor in three dimensions, it stops feeling like a UI element and starts feeling like an object.
+
+## What it does
+
+The Tilted Card component rotates a card along the X and Y axes as the cursor moves over it. Moving the cursor toward a corner tilts the card away from you on that side, creating a realistic parallax depth effect.
+
+## How it works
+
+The component tracks `mousemove` events and calculates normalized cursor position (-1 to 1) relative to the card center. Those values drive `rotateX` and `rotateY` transforms applied via Framer Motion's spring animations.
+
+A perspective wrapper provides the 3D context so rotations look correct rather than skewed.
+
+## Key properties
+
+- **rotationRange** - Maximum rotation in degrees (default: 15)
+- **springStiffness** - How snappy the tilt returns to flat
+- **springDamping** - Controls bounce on return
+- **glare** - Enable a cursor-following specular highlight
+- **scale** - Slight scale-up on hover (default: 1.05)
+
+## When to use it
+
+This is excellent for portfolio project cards, product showcases, or any card that you want users to interact with rather than just read. The 3D tilt signals interactivity before any click or tap happens.
+
+Keep the rotation range between 10 and 20 degrees. Below that the effect is imperceptible. Above it and cards start to look like they are falling over.

@@ -1,0 +1,33 @@
+---
+title: "Build a Split Text Animation in React"
+description: "Animate text character by character with a staggered reveal effect using Framer Motion."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "split-text"
+---
+
+There is something satisfying about watching text arrive letter by letter. It draws the eye, holds attention for just a moment longer, and makes a heading feel earned rather than static.
+
+## What it does
+
+Split Text breaks a string into individual characters and animates each one in sequence. Letters slide in from below (or above) with a staggered delay, creating a flowing cascade effect across the full word or sentence.
+
+## How it works
+
+The component splits the input string into an array of characters, wrapping each in a `motion.span`. Framer Motion handles the stagger through the `staggerChildren` property on the parent's `transition` config, so you get the cascade without writing manual delays.
+
+The animation is triggered either on mount or when the element scrolls into view using `useInView`. Each character transitions from `y: 20` and `opacity: 0` to its resting position.
+
+## Key properties
+
+- **text** - The string to split and animate
+- **delay** - Stagger delay between characters (default: 0.03s)
+- **duration** - Duration of each character's animation
+- **animationFrom** - Starting transform values (y, opacity, etc.)
+- **onLetterAnimationComplete** - Callback fired when all characters finish
+
+## When to use it
+
+Use this for hero headings, page titles, or short labels where you want the text itself to feel like an event. It works especially well for single words or short phrases. Avoid it on long paragraphs since character-level animation gets visually noisy at scale.
+
+A stagger of 0.02-0.04s keeps things snappy. Anything slower starts to feel sluggish for impatient readers.

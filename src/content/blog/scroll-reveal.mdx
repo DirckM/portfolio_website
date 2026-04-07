@@ -1,0 +1,33 @@
+---
+title: "Create a Scroll Reveal Text Effect in React"
+description: "Reveal text word by word or line by line as the user scrolls, using Framer Motion's viewport detection."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "scroll-reveal"
+---
+
+The best content feels like it is being unveiled, not just displayed. Scroll Reveal gives you that by tying the text's appearance directly to the user's reading progress. Scroll down, and the words appear. Stop scrolling, and they pause. It makes content feel responsive to the reader.
+
+## What it does
+
+Scroll Reveal animates words or lines into view as they enter the viewport, staggered so each segment appears slightly after the last. Unlike a one-shot animation, this can be tied to scroll progress so text reveals at the pace the user scrolls.
+
+## How it works
+
+The component uses Framer Motion's `useInView` or `useScroll` depending on the mode. In viewport mode, a `motion.div` wrapper detects when each word crosses the viewport threshold and transitions from hidden to visible. In scroll-progress mode, `useTransform` maps scroll position to opacity.
+
+Words are split from the input string and each wrapped in a `motion.span` with its own animation state.
+
+## Key properties
+
+- **text** - The paragraph or heading to reveal
+- **animateBy** - Words or lines
+- **threshold** - How far into the viewport before triggering (0-1)
+- **stagger** - Delay between each word appearing
+- **once** - Whether the animation replays when scrolling back up
+
+## When to use it
+
+Long-form landing pages, storytelling sections, and editorial layouts are where this thrives. It is particularly effective for mission statements or "about" copy that you want users to absorb rather than skim.
+
+Set `once: true` for clean forward-scroll reveals. Allowing it to replay on scroll-back can feel jittery on fast scrollers.
