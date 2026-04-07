@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Fingerprint, Activity, Lock } from 'lucide-react';
 
 interface ReflectiveCardProps {
@@ -27,44 +27,13 @@ const ReflectiveCard: React.FC<ReflectiveCardProps> = ({
   displacementStrength = 20,
   noiseScale = 1,
   specularConstant = 1.2,
-  grayscale = 1,
-  glassDistortion = 0,
   className = '',
   style = {},
 }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [streamActive, setStreamActive] = useState(false);
-
-  useEffect(() => {
-    let stream: MediaStream | null = null;
-
-    const startWebcam = async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-            facingMode: 'user',
-          },
-        });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          setStreamActive(true);
-        }
-      } catch (err) {
-        console.error('Error accessing webcam:', err);
-      }
-    };
-
-    startWebcam();
-
-    return () => {
-      if (stream) stream.getTracks().forEach(track => track.stop());
-    };
-  }, []);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
 
   const baseFrequency = 0.03 / Math.max(0.1, noiseScale);
-  const saturation = 1 - Math.max(0, Math.min(1, grayscale));
 
   const cssVariables = {
     '--blur-strength': `${blurStrength}px`,
@@ -72,13 +41,21 @@ const ReflectiveCard: React.FC<ReflectiveCardProps> = ({
     '--roughness': roughness,
     '--overlay-color': overlayColor,
     '--text-color': color,
-    '--saturation': saturation,
   } as React.CSSProperties;
 
-  void streamActive;
+  function handleMouseMove(e: React.MouseEvent) {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setMousePos({
+      x: (e.clientX - rect.left) / rect.width,
+      y: (e.clientY - rect.top) / rect.height,
+    });
+  }
 
   return (
     <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
       className={`relative w-[320px] h-[500px] rounded-[20px] overflow-hidden bg-[#1a1a1a] shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.1)_inset] isolate font-sans ${className}`}
       style={{ ...style, ...cssVariables }}
     >
@@ -135,47 +112,18 @@ const ReflectiveCard: React.FC<ReflectiveCardProps> = ({
               mode='screen'
               result='metallic-result'
             />
-            <feColorMatrix
-              in='SourceAlpha'
-              type='matrix'
-              values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0'
-              result='solidAlpha'
-            />
-            <feMorphology
-              in='solidAlpha'
-              operator='erode'
-              radius='45'
-              result='erodedAlpha'
-            />
-            <feGaussianBlur
-              in='erodedAlpha'
-              stdDeviation='10'
-              result='blurredMap'
-            />
-            <feComponentTransfer in='blurredMap' result='glassMap'>
-              <feFuncA type='linear' slope='0.5' intercept='0' />
-            </feComponentTransfer>
-            <feDisplacementMap
-              in='metallic-result'
-              in2='glassMap'
-              scale={glassDistortion}
-              xChannelSelector='A'
-              yChannelSelector='A'
-              result='final'
-            />
           </filter>
         </defs>
       </svg>
 
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className='absolute top-0 left-0 w-full h-full object-cover scale-[1.2] -scale-x-100 z-0 opacity-90 transition-[filter] duration-300'
+      {/* Animated gradient background instead of webcam */}
+      <div
+        className='absolute inset-0 z-0'
         style={{
-          filter:
-            'saturate(var(--saturation, 0)) contrast(120%) brightness(110%) blur(var(--blur-strength, 12px)) url(#metallic-displacement)',
+          background: `radial-gradient(circle at ${mousePos.x * 100}% ${mousePos.y * 100}%, #2a1a4e 0%, #0d0d2b 40%, #1a0a2e 70%, #0a0a1a 100%)`,
+          filter: `blur(${blurStrength}px) url(#metallic-displacement)`,
+          transition: 'background 0.3s ease',
+          transform: 'scale(1.2)',
         }}
       />
 
