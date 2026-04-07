@@ -1,4 +1,4 @@
-import Header from '@/components/Header';
+import LibraryHeader from '@/components/shell/LibraryHeader';
 import Footer from '@/components/Footer';
 
 export default function PortfolioLayout({
@@ -8,7 +8,7 @@ export default function PortfolioLayout({
 }) {
   return (
     <>
-      <Header />
+      <LibraryHeader />
       {children}
       <Footer />
     </>
