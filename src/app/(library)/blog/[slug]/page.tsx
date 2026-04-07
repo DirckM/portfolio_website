@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog-utils';
+import { highlightCode } from '@/lib/shiki';
 import BlogPostLayout from '@/components/shell/BlogPostLayout';
+import CodeBlock from '@/components/shell/CodeBlock';
 
 import { fullDemos } from '@/lib/component-previews';
 
@@ -33,7 +35,36 @@ export async function generateMetadata({
   };
 }
 
+async function HighlightedPre({
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLPreElement> & { children?: React.ReactNode }) {
+  const codeElement = children as React.ReactElement<{
+    className?: string;
+    children?: string;
+  }>;
+
+  if (!codeElement?.props) {
+    return <pre {...props}>{children}</pre>;
+  }
+
+  const className = codeElement.props.className || '';
+  const lang = className.replace('language-', '') || 'tsx';
+  const code = typeof codeElement.props.children === 'string'
+    ? codeElement.props.children.trim()
+    : '';
+
+  if (!code) {
+    return <pre {...props}>{children}</pre>;
+  }
+
+  const highlightedHtml = await highlightCode(code, lang);
+
+  return <CodeBlock code={code} language={lang} highlightedHtml={highlightedHtml} />;
+}
+
 const mdxComponents = {
+  pre: HighlightedPre,
   h2: ({ children }: { children: React.ReactNode }) => (
     <h2 className='text-2xl font-[family-name:var(--font-instrument-serif)] mt-12 mb-4'>
       {children}
