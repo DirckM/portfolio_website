@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 
 const Header = () => {
   const [_isScrolled, setIsScrolled] = useState(false);
@@ -43,49 +44,66 @@ const Header = () => {
         block: 'start',
       });
     }
-    setIsMobileMenuOpen(false); // Close mobile menu after navigation
+    setIsMobileMenuOpen(false);
   };
 
   return (
-    <header className='fixed top-0 left-0 right-0 z-50 transition-all duration-30 my-8'>
-      <nav className='flex justify-center md:justify-center'>
+    <header className='fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-library-border'>
+      <nav className='flex items-center justify-between max-w-6xl mx-auto px-6 h-14'>
+        {/* Logo */}
+        <span className='text-black font-semibold text-sm tracking-wide'>
+          Dirck Mulder
+        </span>
+
         {/* Desktop Navigation */}
-        <div className='hidden md:flex flex-row gap-12 w-fit px-10 py-3 rounded-4xl bg-black/10 backdrop-blur-md border border-white/20 shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/20 transition-all duration-300s'>
+        <div className='hidden md:flex flex-row gap-8 items-center'>
           <button
             onClick={() => scrollToSection('projects')}
-            className='text-neutral-700 hover:text-primary transition-colors duration-200 font-medium'
+            className='text-library-gray hover:text-black transition-colors duration-200 text-sm font-medium'
           >
             Projects
           </button>
           <button
             onClick={() => scrollToSection('experience')}
-            className='text-neutral-700 hover:text-primary transition-colors duration-200 font-medium'
+            className='text-library-gray hover:text-black transition-colors duration-200 text-sm font-medium'
           >
             Experience
           </button>
           <button
             onClick={() => scrollToSection('about')}
-            className='text-neutral-700 hover:text-primary transition-colors duration-200 font-medium'
+            className='text-library-gray hover:text-black transition-colors duration-200 text-sm font-medium'
           >
-            About Me
+            About
           </button>
           <button
             onClick={() => scrollToSection('contact')}
-            className='text-neutral-700 hover:text-primary transition-colors duration-200 font-medium'
+            className='text-library-gray hover:text-black transition-colors duration-200 text-sm font-medium'
           >
             Contact
           </button>
+          <Link
+            href='/components'
+            className='text-library-gray hover:text-black transition-colors duration-200 text-sm font-medium'
+          >
+            Components
+          </Link>
+          <Link
+            href='/blog'
+            className='text-library-gray hover:text-black transition-colors duration-200 text-sm font-medium'
+          >
+            Blog
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
-        <div className='md:hidden flex justify-end w-full px-8'>
+        <div className='md:hidden'>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className='p-3 rounded-full bg-black/10 backdrop-blur-md border border-white/20 shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/20 transition-all duration-300'
+            className='p-2 text-black'
             aria-label='Toggle mobile menu'
           >
             <svg
-              className='w-6 h-6 text-neutral-700'
+              className='w-5 h-5'
               fill='none'
               stroke='currentColor'
               viewBox='0 0 24 24'
@@ -111,60 +129,50 @@ const Header = () => {
 
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
-          <div className='fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden'>
+          <div className='fixed inset-0 bg-black/30 backdrop-blur-sm z-40 md:hidden'>
             <div
               ref={mobileMenuRef}
-              className='absolute top-4 right-4 w-80 bg-white/95 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl shadow-black/20 p-6'
+              className='absolute top-14 right-0 left-0 bg-white border-b border-library-border shadow-sm px-6 py-4'
             >
-              {/* Close Button */}
-              <div className='flex justify-end mb-6'>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className='p-2 rounded-full hover:bg-gray-100 transition-colors duration-200'
-                  aria-label='Close mobile menu'
-                >
-                  <svg
-                    className='w-6 h-6 text-neutral-700'
-                    fill='none'
-                    stroke='currentColor'
-                    viewBox='0 0 24 24'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M6 18L18 6M6 6l12 12'
-                    />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Mobile Navigation Links */}
-              <div className='flex flex-col gap-4'>
+              <div className='flex flex-col gap-1'>
                 <button
                   onClick={() => scrollToSection('projects')}
-                  className='text-left text-neutral-700 hover:text-primary transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-gray-100'
+                  className='text-left text-black hover:text-library-gray transition-colors duration-200 text-sm font-medium py-2'
                 >
                   Projects
                 </button>
                 <button
-                  onClick={() => scrollToSection('about')}
-                  className='text-left text-neutral-700 hover:text-primary transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-gray-100'
-                >
-                  About Me
-                </button>
-                <button
                   onClick={() => scrollToSection('experience')}
-                  className='text-left text-neutral-700 hover:text-primary transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-gray-100'
+                  className='text-left text-black hover:text-library-gray transition-colors duration-200 text-sm font-medium py-2'
                 >
                   Experience
                 </button>
                 <button
+                  onClick={() => scrollToSection('about')}
+                  className='text-left text-black hover:text-library-gray transition-colors duration-200 text-sm font-medium py-2'
+                >
+                  About
+                </button>
+                <button
                   onClick={() => scrollToSection('contact')}
-                  className='text-left text-neutral-700 hover:text-primary transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-gray-100'
+                  className='text-left text-black hover:text-library-gray transition-colors duration-200 text-sm font-medium py-2'
                 >
                   Contact
                 </button>
+                <Link
+                  href='/components'
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className='text-black hover:text-library-gray transition-colors duration-200 text-sm font-medium py-2'
+                >
+                  Components
+                </Link>
+                <Link
+                  href='/blog'
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className='text-black hover:text-library-gray transition-colors duration-200 text-sm font-medium py-2'
+                >
+                  Blog
+                </Link>
               </div>
             </div>
           </div>

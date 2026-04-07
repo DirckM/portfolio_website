@@ -39,16 +39,14 @@ const Modal = ({ isOpen, onClose, project }: ModalProps) => {
       >
         {/* Header */}
         <div className='flex items-center justify-between px-6 py-4 border-b border-gray-200'>
-          <h2 className='text-2xl font-semibold text-primary'>
-            {project.title}
-          </h2>
+          <h2 className='text-2xl font-semibold text-black'>{project.title}</h2>
           <div className='flex items-center gap-3'>
             {project.content.link && (
               <a
                 href={project.content.link}
                 target='_blank'
                 rel='noopener noreferrer'
-                className='inline-flex items-center px-3 py-1.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors'
+                className='inline-flex items-center px-3 py-1.5 bg-black text-white text-sm font-medium rounded-lg hover:bg-neutral-800 transition-colors'
               >
                 View Project
               </a>
@@ -113,7 +111,7 @@ const Modal = ({ isOpen, onClose, project }: ModalProps) => {
                             key={index}
                             className='text-sm text-gray-700 flex items-start'
                           >
-                            <span className='text-blue-500 mr-2'>•</span>
+                            <span className='text-black mr-2'>•</span>
                             {feature}
                           </li>
                         ))}
@@ -133,7 +131,7 @@ const Modal = ({ isOpen, onClose, project }: ModalProps) => {
                       {project.content.technologies.map((tech, index) => (
                         <span
                           key={index}
-                          className='px-3 py-2 bg-accent text-white text-sm rounded-full font-medium'
+                          className='px-3 py-2 bg-black text-white text-sm rounded-full font-medium'
                         >
                           {tech}
                         </span>
@@ -167,7 +165,7 @@ const Modal = ({ isOpen, onClose, project }: ModalProps) => {
                               key={index}
                               className='text-sm text-gray-700 flex items-start'
                             >
-                              <span className='text-accent mr-2'>•</span>
+                              <span className='text-black mr-2'>•</span>
                               {feature}
                             </li>
                           ))}
@@ -199,7 +197,7 @@ const Modal = ({ isOpen, onClose, project }: ModalProps) => {
                           {project.content.technologies.map((tech, index) => (
                             <span
                               key={index}
-                              className='px-3 py-2 bg-accent text-white text-sm rounded-full font-medium'
+                              className='px-3 py-2 bg-black text-white text-sm rounded-full font-medium'
                             >
                               {tech}
                             </span>

@@ -31,7 +31,7 @@ export interface Job {
         src: "/frontend.svg",
         alt: "Frontend Development",
       },
-      color: "#f2f2f2",
+      color: "#f5f5f5",
     },
     {
         title: "Co-Founder",
@@ -47,7 +47,7 @@ export interface Job {
             src: "/projects/teckit.svg",
             alt: "Teckit",
         },
-        color: "#ECDFFF",
+        color: "#ebebeb",
     },
     {
       title: "Course Assistant (IT Education)",
@@ -65,7 +65,7 @@ export interface Job {
         src: "/cti-vaksteunpunt.svg",
         alt: "CTI Vaksteunpunt",
       },
-      color: "#FFE5FF",
+      color: "#e5e5e5",
     },
     {
       title: "Founder & Owner",
@@ -82,7 +82,7 @@ export interface Job {
         src: "/marinenet.svg",
         alt: "Ocean Bracelets",
       },
-      color: "#C7DBFF",
+      color: "#d8d8d8",
     },
     {
       title: "Service Staff",
@@ -99,7 +99,7 @@ export interface Job {
         src: "/lekker_aan_de_haven.svg",
         alt: "Restaurant Lekker aan de Haven",
       },
-      color: "#FFD2D3",
+      color: "#cccccc",
     },
   ];
   

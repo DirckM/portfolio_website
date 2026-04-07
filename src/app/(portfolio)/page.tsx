@@ -271,7 +271,7 @@ The system gives the internal office a better understanding of existing connecti
               delay: 0.2,
               ease: 'easeOut',
             }}
-            className='text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-primary font-serif tracking-wider leading-none select-none'
+            className='text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-black font-[family-name:var(--font-inter)] font-bold tracking-wider leading-none select-none'
           >
             DIRCK
           </motion.h1>
@@ -283,7 +283,7 @@ The system gives the internal office a better understanding of existing connecti
               delay: 0.4,
               ease: 'easeOut',
             }}
-            className='text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-primary font-serif tracking-wider leading-none select-none'
+            className='text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-black font-[family-name:var(--font-instrument-serif)] italic tracking-wider leading-none select-none'
           >
             MULDER
           </motion.h1>
@@ -361,7 +361,7 @@ The system gives the internal office a better understanding of existing connecti
             <VariableProximity
               label={'About Me'}
               className={
-                'variable-proximity-demo text-primary text-4xl font-bold tracking-wide leading-none'
+                'variable-proximity-demo text-black text-4xl font-bold tracking-wide leading-none'
               }
               fromFontVariationSettings="'wght' 400, 'opsz' 9"
               toFontVariationSettings="'wght' 1000, 'opsz' 40"
@@ -412,11 +412,8 @@ The system gives the internal office a better understanding of existing connecti
             className='hover:scale-110 transition-transform duration-300'
           >
             <Image
-              className='filter brightness-0 saturate-100'
-              style={{
-                filter:
-                  'brightness(0) saturate(100%) invert(27%) sepia(100%) saturate(2000%) hue-rotate(200deg) brightness(100%) contrast(100%)',
-              }}
+              className='filter brightness-0'
+              style={{ filter: 'brightness(0)' }}
               src='/socials/linkedin.png'
               alt='LinkedIn'
               width={80}
@@ -430,11 +427,8 @@ The system gives the internal office a better understanding of existing connecti
             className='hover:scale-110 transition-transform duration-300'
           >
             <Image
-              className='filter brightness-0 saturate-100'
-              style={{
-                filter:
-                  'brightness(0) saturate(100%) invert(17%) sepia(99%) saturate(7404%) hue-rotate(300deg) brightness(95%) contrast(101%)',
-              }}
+              className='filter brightness-0'
+              style={{ filter: 'brightness(0)' }}
               src='/socials/instagram.png'
               alt='Instagram'
               width={80}
@@ -448,11 +442,8 @@ The system gives the internal office a better understanding of existing connecti
             className='hover:scale-110 transition-transform duration-300'
           >
             <Image
-              className='filter brightness-0 saturate-100'
-              style={{
-                filter:
-                  'brightness(0) saturate(100%) invert(14%) sepia(100%) saturate(7500%) hue-rotate(0deg) brightness(100%) contrast(100%)',
-              }}
+              className='filter brightness-0'
+              style={{ filter: 'brightness(0)' }}
               src='/socials/youtube.png'
               alt='YouTube'
               width={100}

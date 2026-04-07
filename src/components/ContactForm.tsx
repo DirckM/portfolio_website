@@ -117,9 +117,7 @@ export default function ContactForm() {
           viewport={{ once: true }}
           className='text-center mb-12'
         >
-          <h2 className='text-4xl text-primary mb-4 font-roboto-flex'>
-            Get In Touch
-          </h2>
+          <h2 className='text-4xl text-black mb-4 font-bold'>Get In Touch</h2>
           <p className='text-lg text-text-muted max-w-2xl mx-auto'>
             Have a project in mind or just want to chat? I'd love to hear from
             you. Send me a message and I'll get back to you as soon as possible.
@@ -148,8 +146,8 @@ export default function ContactForm() {
                 name='name'
                 value={formData.name}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
-                  errors.name ? 'border-red-500' : 'border-neutral'
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 ${
+                  errors.name ? 'border-red-500' : 'border-library-border'
                 }`}
                 placeholder='Your full name'
                 disabled={isSubmitting}
@@ -173,8 +171,8 @@ export default function ContactForm() {
                 name='email'
                 value={formData.email}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
-                  errors.email ? 'border-red-500' : 'border-neutral'
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 ${
+                  errors.email ? 'border-red-500' : 'border-library-border'
                 }`}
                 placeholder='your.email@example.com'
                 disabled={isSubmitting}
@@ -198,8 +196,10 @@ export default function ContactForm() {
                 value={formData.description}
                 onChange={handleInputChange}
                 rows={6}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-vertical ${
-                  errors.description ? 'border-red-500' : 'border-neutral'
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 resize-vertical ${
+                  errors.description
+                    ? 'border-red-500'
+                    : 'border-library-border'
                 }`}
                 placeholder='Tell me about your project, ideas, or just say hello...'
                 disabled={isSubmitting}
@@ -219,8 +219,8 @@ export default function ContactForm() {
               whileTap={{ scale: 0.98 }}
               className={`w-full py-4 px-6 rounded-lg font-semibold text-white transition-all duration-200 ${
                 isSubmitting
-                  ? 'bg-neutral cursor-not-allowed'
-                  : 'bg-primary hover:bg-primary-dark'
+                  ? 'bg-library-gray cursor-not-allowed'
+                  : 'bg-black hover:bg-neutral-800'
               }`}
             >
               {isSubmitting ? (
