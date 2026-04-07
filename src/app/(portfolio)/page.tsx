@@ -64,6 +64,13 @@ export default function Home() {
   });
   const folderProgress = useTransform(scrollYProgress, [0.2, 0.8], [0, 1]);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
   useMotionValueEvent(folderProgress, 'change', v => {
     setScrollProgress(Math.max(0, Math.min(1, v)));
   });
@@ -525,6 +532,28 @@ export default function Home() {
               ((e.currentTarget as HTMLElement).style.animationPlayState =
                 'running')
             }
+            onTouchStart={e => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.animationPlayState = 'paused';
+              el.dataset.touchStartX = String(e.touches[0].clientX);
+              el.dataset.touchOffset = String(
+                parseFloat(getComputedStyle(el).transform.split(',')[4] || '0')
+              );
+            }}
+            onTouchMove={e => {
+              const el = e.currentTarget as HTMLElement;
+              const startX = parseFloat(el.dataset.touchStartX || '0');
+              const offset = parseFloat(el.dataset.touchOffset || '0');
+              const diff = e.touches[0].clientX - startX;
+              el.style.animation = 'none';
+              el.style.transform = `translateX(${offset + diff}px)`;
+            }}
+            onTouchEnd={e => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.animation = '';
+              el.style.transform = '';
+              el.style.animationPlayState = 'running';
+            }}
           >
             {[...projects, ...projects].map((project, idx) => (
               <figure
@@ -730,7 +759,7 @@ export default function Home() {
             </h2>
 
             <div className='flex flex-col items-center'>
-              <div ref={folderRef} className='py-20'>
+              <div ref={folderRef} className='py-20 scale-[0.55] md:scale-100 origin-center'>
                 <Folder
                   color='#000000'
                   size={3}
