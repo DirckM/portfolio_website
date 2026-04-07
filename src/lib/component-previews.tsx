@@ -1177,4 +1177,132 @@ export const fullDemos: Record<string, React.ReactNode> = {
       />
     </div>
   ),
+  'glare-hover': (
+    <div className='flex items-center justify-center gap-8 p-12'>
+      <GlareHover
+        width='240px'
+        height='160px'
+        background='#111'
+        borderRadius='16px'
+        glareColor='#ffffff'
+        glareOpacity={0.6}
+      >
+        <span className='text-white text-lg font-medium'>Light glare</span>
+      </GlareHover>
+      <GlareHover
+        width='240px'
+        height='160px'
+        background='#1a1a2e'
+        borderRadius='24px'
+        glareColor='#5227FF'
+        glareOpacity={0.8}
+      >
+        <span className='text-white text-lg font-medium'>Purple glare</span>
+      </GlareHover>
+    </div>
+  ),
+  antigravity: (
+    <div className='flex items-center gap-4 w-full h-full'>
+      <div className='w-1/2 h-full'>
+        <Antigravity count={200} color='#5227FF' autoAnimate={true} particleSize={2} />
+      </div>
+      <div className='w-1/2 h-full'>
+        <Antigravity count={200} color='#FF9FFC' autoAnimate={true} particleSize={1.5} particleShape='sphere' />
+      </div>
+    </div>
+  ),
+  'logo-loop': (
+    <div className='flex flex-col items-center justify-center gap-12 p-12 w-full'>
+      <LogoLoop
+        logos={[
+          { node: <span className='text-black font-bold text-2xl'>React</span> },
+          { node: <span className='text-black font-bold text-2xl'>Next.js</span> },
+          { node: <span className='text-black font-bold text-2xl'>TypeScript</span> },
+          { node: <span className='text-black font-bold text-2xl'>Tailwind</span> },
+          { node: <span className='text-black font-bold text-2xl'>Node.js</span> },
+        ]}
+        speed={100}
+        logoHeight={36}
+        pauseOnHover
+      />
+      <LogoLoop
+        logos={[
+          { node: <span className='text-[#6b6b6b] text-xl'>Figma</span> },
+          { node: <span className='text-[#6b6b6b] text-xl'>Vercel</span> },
+          { node: <span className='text-[#6b6b6b] text-xl'>GitHub</span> },
+          { node: <span className='text-[#6b6b6b] text-xl'>Docker</span> },
+        ]}
+        speed={60}
+        logoHeight={28}
+        direction='right'
+      />
+    </div>
+  ),
+  'target-cursor': (
+    <div className='relative w-full h-full bg-white overflow-hidden flex items-center justify-center'>
+      <TargetCursor hideDefaultCursor={false} />
+      <span className='text-black/30 text-xl pointer-events-none font-[family-name:var(--font-instrument-serif)]'>
+        Move your cursor around
+      </span>
+    </div>
+  ),
+  magnet: (
+    <div className='flex items-center justify-center gap-16 p-12'>
+      <Magnet padding={80} magnetStrength={2}>
+        <div className='w-28 h-28 bg-black rounded-full flex items-center justify-center'>
+          <span className='text-white text-sm'>Subtle</span>
+        </div>
+      </Magnet>
+      <Magnet padding={80} magnetStrength={5}>
+        <div className='w-28 h-28 bg-[#5227FF] rounded-full flex items-center justify-center'>
+          <span className='text-white text-sm'>Strong</span>
+        </div>
+      </Magnet>
+      <Magnet padding={80} magnetStrength={8}>
+        <div className='w-28 h-28 bg-[#FF9FFC] rounded-full flex items-center justify-center'>
+          <span className='text-black text-sm'>Very strong</span>
+        </div>
+      </Magnet>
+    </div>
+  ),
+  'pixel-trail': (
+    <div className='relative w-full h-full bg-black overflow-hidden'>
+      <PixelTrail gridSize={24} trailSize={0.15} color='#ffffff' />
+      <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
+        <span className='text-white/30 text-2xl font-[family-name:var(--font-instrument-serif)]'>
+          Move your cursor
+        </span>
+      </div>
+    </div>
+  ),
+  'metallic-paint': (
+    <div className='w-full h-full'>
+      <MetallicPaint imageSrc='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop' />
+    </div>
+  ),
+  'shape-blur': (
+    <div className='w-full h-full'>
+      <ShapeBlur variation={0} shapeSize={1.2} roundness={0.4} />
+    </div>
+  ),
+  crosshair: (
+    <div className='relative w-full h-full bg-black overflow-hidden'>
+      <Crosshair color='white' />
+      <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
+        <span className='text-white/20 text-2xl font-[family-name:var(--font-instrument-serif)]'>
+          Precision crosshair
+        </span>
+      </div>
+    </div>
+  ),
+  'meta-balls': (
+    <div className='flex items-center gap-4 w-full h-full'>
+      <div className='w-1/2 h-full'>
+        <MetaBalls color='#5227FF' ballCount={8} animationSize={20} enableMouseInteraction={true} enableTransparency={false} />
+      </div>
+      <div className='w-1/2 h-full'>
+        <MetaBalls color='#FF9FFC' ballCount={12} animationSize={15} enableMouseInteraction={true} enableTransparency={false} />
+      </div>
+    </div>
+  ),
 };
