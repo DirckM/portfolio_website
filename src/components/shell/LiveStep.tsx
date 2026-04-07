@@ -67,54 +67,54 @@ export default function LiveStep({
     []
   );
 
-  if (!mounted) {
-    return <div className='my-8 h-[300px] rounded-lg bg-[#282c34] animate-pulse' />;
-  }
-
   return (
-    <div className='my-8 rounded-lg overflow-hidden border border-white/10'>
-      <LiveProvider code={code} scope={scope} noInline={false}>
-        <div className='grid grid-cols-1 lg:grid-cols-2'>
-          <div className='bg-[#282c34] overflow-auto max-h-[400px]'>
-            <div className='px-4 py-2 border-b border-white/10'>
-              <span className='text-xs text-white/40 font-[family-name:var(--font-jetbrains-mono)]'>
-                Editable
-              </span>
+    <div className='my-8 rounded-lg overflow-hidden border border-white/10' suppressHydrationWarning>
+      {!mounted ? (
+        <div className='h-[300px] bg-[#282c34] animate-pulse' />
+      ) : (
+        <LiveProvider code={code} scope={scope} noInline={false}>
+          <div className='grid grid-cols-1 lg:grid-cols-2'>
+            <div className='bg-[#282c34] overflow-auto max-h-[400px]'>
+              <div className='px-4 py-2 border-b border-white/10'>
+                <span className='text-xs text-white/40 font-[family-name:var(--font-jetbrains-mono)]'>
+                  Editable
+                </span>
+              </div>
+              <LiveEditor
+                className='!font-[family-name:var(--font-jetbrains-mono)] !text-sm !leading-relaxed'
+                style={{
+                  fontFamily: 'var(--font-jetbrains-mono)',
+                  fontSize: '0.875rem',
+                  lineHeight: '1.625',
+                  background: 'transparent',
+                }}
+                onChange={setCode}
+              />
             </div>
-            <LiveEditor
-              className='!font-[family-name:var(--font-jetbrains-mono)] !text-sm !leading-relaxed'
-              style={{
-                fontFamily: 'var(--font-jetbrains-mono)',
-                fontSize: '0.875rem',
-                lineHeight: '1.625',
-                background: 'transparent',
-              }}
-              onChange={setCode}
-            />
-          </div>
-          <div
-            className={`${previewBg} min-h-[200px] flex items-center justify-center p-6 relative ${previewClassName}`}
-          >
-            <div key={replayKey} className='w-full flex items-center justify-center'>
-              <LivePreview />
-            </div>
-            <button
-              onClick={() => setReplayKey(k => k + 1)}
-              className='absolute top-3 right-3 text-xs px-3 py-1.5 rounded-md bg-black/10 hover:bg-black/20 text-black/50 hover:text-black/80 transition-colors'
+            <div
+              className={`${previewBg} min-h-[200px] flex items-center justify-center p-6 relative ${previewClassName}`}
             >
-              Replay
-            </button>
+              <div key={replayKey} className='w-full flex items-center justify-center'>
+                <LivePreview />
+              </div>
+              <button
+                onClick={() => setReplayKey(k => k + 1)}
+                className='absolute top-3 right-3 text-xs px-3 py-1.5 rounded-md bg-black/10 hover:bg-black/20 text-black/50 hover:text-black/80 transition-colors'
+              >
+                Replay
+              </button>
+            </div>
           </div>
-        </div>
-        <LiveError className='bg-red-900/50 text-red-200 text-xs p-3 font-[family-name:var(--font-jetbrains-mono)]' />
-        {controls.length > 0 && (
-          <PropControls
-            controls={controls}
-            values={controlValues}
-            onChange={handleControlChange}
-          />
-        )}
-      </LiveProvider>
+          <LiveError className='bg-red-900/50 text-red-200 text-xs p-3 font-[family-name:var(--font-jetbrains-mono)]' />
+          {controls.length > 0 && (
+            <PropControls
+              controls={controls}
+              values={controlValues}
+              onChange={handleControlChange}
+            />
+          )}
+        </LiveProvider>
+      )}
     </div>
   );
 }

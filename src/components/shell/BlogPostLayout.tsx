@@ -38,7 +38,7 @@ export default function BlogPostLayout({
         </section>
       )}
 
-      <div className='max-w-[720px] mx-auto px-6 prose prose-neutral prose-lg' suppressHydrationWarning>
+      <div className='max-w-[720px] mx-auto px-6 prose prose-neutral prose-lg'>
         {children}
       </div>
 
