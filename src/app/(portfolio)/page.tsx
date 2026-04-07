@@ -841,6 +841,12 @@ export default function Home() {
               alt: 'YouTube',
               size: 75,
             },
+            {
+              href: 'https://github.com/DirckM',
+              src: '/socials/github.svg',
+              alt: 'GitHub',
+              size: 60,
+            },
           ].map(social => (
             <Magnet key={social.alt} padding={60} magnetStrength={2}>
               <a
