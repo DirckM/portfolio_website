@@ -1,14 +1,30 @@
 'use client';
 
 import Image from 'next/image';
-import { motion } from 'motion/react';
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useMotionValueEvent,
+} from 'motion/react';
 import VariableProximity from '@/components/proximity-text/ProximityText';
 import ContactForm from '@/components/ContactForm';
 import Modal from '@/components/modal/Modal';
 import { RefObject, useRef, useState, useEffect } from 'react';
+import Link from 'next/link';
 import BlurText from '@/components/library/text-animations/BlurText';
 import Magnet from '@/components/library/animations/Magnet';
 import ScrollVelocity from '@/components/library/text-animations/ScrollVelocity';
+import Folder from '@/components/library/components/Folder';
+
+interface LatestPost {
+  slug: string;
+  title: string;
+  description: string;
+  date: string;
+  category: string;
+  readingTime: string;
+}
 
 interface Project {
   title: string;
@@ -36,6 +52,21 @@ export default function Home() {
   const [selectedJob, setSelectedJob] = useState<
     (typeof experienceData)[0] | null
   >(null);
+  const [latestPosts, setLatestPosts] = useState<LatestPost[]>([]);
+  const folderRef = useRef<HTMLDivElement>(null);
+  const [folderMounted, setFolderMounted] = useState(false);
+  useEffect(() => {
+    if (folderRef.current) setFolderMounted(true);
+  }, [latestPosts]);
+  const { scrollYProgress } = useScroll({
+    target: folderMounted ? folderRef : undefined,
+    offset: ['start end', 'center center'],
+  });
+  const folderProgress = useTransform(scrollYProgress, [0.2, 0.8], [0, 1]);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  useMotionValueEvent(folderProgress, 'change', v => {
+    setScrollProgress(Math.max(0, Math.min(1, v)));
+  });
 
   const experienceData = [
     {
@@ -76,10 +107,10 @@ export default function Home() {
       title: 'Founder',
       company: 'MarineNet',
       period: '2020 - 2022',
-      desc: 'Created a marketplace for marine equipment. My first real venture at 17.',
+      desc: 'Made bracelets from recycled fishing nets and sold them in 6 shops. My first real venture at 16.',
       fullDesc:
-        'At 17, I created MarineNet, a marketplace for marine equipment. I handled everything from building the platform to marketing and customer support. This was my first real business venture and taught me the fundamentals of entrepreneurship, customer validation, and building something from scratch.',
-      skills: ['React', 'Node.js', 'PostgreSQL', 'Business Development'],
+        'At 16, I started MarineNet, a small business making bracelets from recycled fishing nets. I did everything myself, from designing and crafting the bracelets to getting them into 6 local shops. This was my first real business venture and taught me the fundamentals of entrepreneurship, customer validation, and building something from scratch.',
+      skills: ['Entrepreneurship', 'Sales', 'Marketing', 'Product Design'],
     },
   ];
 
@@ -92,6 +123,13 @@ export default function Home() {
     setIsModalOpen(false);
     setSelectedProject(null);
   };
+
+  useEffect(() => {
+    fetch('/api/latest-blog-post')
+      .then(res => res.json())
+      .then(data => setLatestPosts(data))
+      .catch(() => {});
+  }, []);
 
   // ESC key closes experience modal
   useEffect(() => {
@@ -284,13 +322,13 @@ export default function Home() {
     },
     {
       title: 'Cash Out',
-      image: '/projects/wakeup-not-rounded.svg',
+      image: '/projects/cashout.svg',
       cardBg: 'linear-gradient(135deg, #0a8f08 0%, #064e06 100%)',
       cardTextColor: '#ffffff',
       description: 'Ghost betting app to fight gambling addiction',
       media: {
         type: 'image' as const,
-        src: '/projects/wakeup-not-rounded.svg',
+        src: '/projects/cashout.svg',
         alt: 'Cash Out app',
       },
       content: {
@@ -314,13 +352,13 @@ export default function Home() {
     },
     {
       title: 'Content Engine',
-      image: '/projects/teckit.svg',
+      image: '/projects/content-engine.svg',
       cardBg: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
       cardTextColor: '#000000',
       description: 'AI-driven content synthesis and video assembly SaaS',
       media: {
         type: 'image' as const,
-        src: '/projects/teckit.svg',
+        src: '/projects/content-engine.svg',
         alt: 'Content Engine',
       },
       content: {
@@ -344,13 +382,13 @@ export default function Home() {
     },
     {
       title: 'Financial Overview',
-      image: '/projects/earnit.svg',
+      image: '/projects/financial-overview.svg',
       cardBg: 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)',
       cardTextColor: '#000000',
       description: 'Bank transaction analyzer and categorizer',
       media: {
         type: 'image' as const,
-        src: '/projects/earnit.svg',
+        src: '/projects/financial-overview.svg',
         alt: 'Financial Overview',
       },
       content: {
@@ -374,13 +412,13 @@ export default function Home() {
     },
     {
       title: 'AI Learner',
-      image: '/projects/bird.svg',
+      image: '/projects/ai-learner.svg',
       cardBg: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
       cardTextColor: '#000000',
       description: 'Personalized AI-powered learning platform',
       media: {
         type: 'image' as const,
-        src: '/projects/bird.svg',
+        src: '/projects/ai-learner.svg',
         alt: 'AI Learner',
       },
       content: {
@@ -458,14 +496,14 @@ export default function Home() {
         <div className='max-w-5xl mx-auto px-6 md:px-16 mb-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
             Selected{' '}
-            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal text-gradient-primary'>
               Work
             </span>
           </h2>
         </div>
 
         <div
-          className='w-full flex items-center overflow-hidden h-[450px] py-10'
+          className='w-full flex items-center overflow-hidden h-[420px] py-8'
           style={{
             maskImage:
               'linear-gradient(to right, rgba(0,0,0,0) 0%, rgb(0,0,0) 12.5%, rgb(0,0,0) 87.5%, rgba(0,0,0,0) 100%)',
@@ -494,8 +532,8 @@ export default function Home() {
                 className='shrink-0 relative cursor-pointer group'
                 onClick={() => handleProjectClick(project)}
                 style={{
-                  width: '260px',
-                  height: '360px',
+                  width: '250px',
+                  height: '340px',
                   margin: '0',
                   transform: 'perspective(1143px) rotateY(-50deg) skewY(20deg)',
                   opacity: 0.85,
@@ -516,61 +554,13 @@ export default function Home() {
                   el.style.zIndex = '0';
                 }}
               >
-                <div
-                  className='relative w-full h-full overflow-hidden flex flex-col justify-between p-6'
-                  style={{ background: project.cardBg }}
-                >
-                  {/* Top: small tech pill */}
-                  <div className='flex gap-1.5 flex-wrap'>
-                    {project.content.technologies.slice(0, 2).map(tech => (
-                      <span
-                        key={tech}
-                        className='text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full border'
-                        style={{
-                          color: project.cardTextColor,
-                          borderColor:
-                            project.cardTextColor === '#ffffff'
-                              ? 'rgba(255,255,255,0.25)'
-                              : 'rgba(0,0,0,0.15)',
-                        }}
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Center: project image */}
-                  <div className='flex-1 relative flex items-center justify-center'>
-                    <div className='relative w-[70%] h-[60%]'>
-                      <Image
-                        src={project.image}
-                        alt={project.title}
-                        fill
-                        className='object-contain drop-shadow-lg'
-                      />
-                    </div>
-                  </div>
-
-                  {/* Bottom: title + description */}
-                  <div>
-                    <h3
-                      className='text-base font-[family-name:var(--font-instrument-serif)] italic'
-                      style={{ color: project.cardTextColor }}
-                    >
-                      {project.title}
-                    </h3>
-                    <p
-                      className='text-[10px] mt-1 leading-snug'
-                      style={{
-                        color:
-                          project.cardTextColor === '#ffffff'
-                            ? 'rgba(255,255,255,0.6)'
-                            : 'rgba(0,0,0,0.5)',
-                      }}
-                    >
-                      {project.description}
-                    </p>
-                  </div>
+                <div className='relative w-full h-full overflow-hidden bg-library-cream'>
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    className='object-contain p-6'
+                  />
                 </div>
               </figure>
             ))}
@@ -590,7 +580,7 @@ export default function Home() {
         <div className='max-w-5xl mx-auto px-6 md:px-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight mb-16'>
             My{' '}
-            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal text-gradient-primary'>
               Experience
             </span>
           </h2>
@@ -604,7 +594,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
                 onClick={() => setSelectedJob(job)}
-                className='group relative border border-library-border rounded-xl p-8 hover:border-black/20 transition-colors duration-300 cursor-pointer'
+                className='group relative border border-library-border rounded-xl p-8 hover:border-primary/30 transition-colors duration-300 cursor-pointer'
               >
                 <div className='flex justify-between items-start mb-6'>
                   <p className='text-[10px] uppercase tracking-widest text-library-gray'>
@@ -703,7 +693,7 @@ export default function Home() {
         <div className='max-w-5xl mx-auto px-6 md:px-16 mb-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
             My{' '}
-            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal text-gradient-primary'>
               Skills
             </span>
           </h2>
@@ -728,19 +718,83 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Latest Blog Posts */}
+      {latestPosts.length > 0 && (
+        <section id='blog' className='py-32'>
+          <div className='max-w-5xl mx-auto px-6 md:px-16'>
+            <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight mb-16 text-center'>
+              Latest{' '}
+              <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal text-gradient-primary'>
+                Posts
+              </span>
+            </h2>
+
+            <div className='flex flex-col items-center'>
+              <div ref={folderRef} className='py-20'>
+                <Folder
+                  color='#000000'
+                  size={3}
+                  progress={scrollProgress}
+                  items={latestPosts.map(post => (
+                    <Link
+                      key={post.slug}
+                      href={`/blog/${post.slug}`}
+                      onClick={e => e.stopPropagation()}
+                      className='no-underline w-full h-full flex flex-col justify-between p-[10px] overflow-hidden'
+                    >
+                      <div>
+                        <p className='text-[6px] uppercase tracking-widest text-library-gray leading-none m-0'>
+                          {post.category}
+                        </p>
+                        <p className='text-[8px] font-[family-name:var(--font-instrument-serif)] italic text-black leading-tight mt-[4px] m-0 line-clamp-2'>
+                          {post.title}
+                        </p>
+                      </div>
+                      <p className='text-[5px] text-library-gray m-0'>
+                        {post.date}
+                      </p>
+                    </Link>
+                  ))}
+                />
+              </div>
+
+              <Link
+                href='/blog'
+                className='group inline-flex items-center gap-2 text-sm text-black no-underline mt-4 hover:gap-3 transition-all duration-300'
+              >
+                View all posts
+                <svg
+                  className='w-4 h-4'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={1.5}
+                    d='M17 8l4 4m0 0l-4 4m4-4H3'
+                  />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* About */}
       <section id='about' className='py-32'>
         <div className='max-w-5xl mx-auto px-6 md:px-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight mb-12'>
             About{' '}
-            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal text-gradient-primary'>
               Me
             </span>
           </h2>
 
           <div ref={containerRef} className='max-w-3xl'>
             <VariableProximity
-              label="Hi, I'm Dirck. I've been creating things my whole life. When I was young, I got my first Arduino, and from that moment on, building and experimenting became my passion. I've always loved discovering new ideas, tools, and skills to unlock. At just 14 or 15, I started my first small business making recycled bracelets because I wanted to experience what it's like to make real business decisions and see an idea come to life. Right now, I'm finishing my bachelor's degree in Computer Science. Over the past few years, I've learned a lot, not only about technology, but also about problem-solving and persistence. The biggest lesson for me has been that with enough dedication, any problem can be solved. Sometimes the odds are against you, but it's up to you to turn that around. Now, I'm looking forward to new challenges that will help me grow, learn, and keep creating."
+              label="Hi, I'm Dirck. I've been creating things my whole life. When I was young, I got my first Arduino, and from that moment on, building and experimenting became my passion. I've always loved discovering new ideas, tools, and skills to unlock. At just 16, I started my first small business making bracelets from recycled fishing nets because I wanted to experience what it's like to make real business decisions and see an idea come to life. Right now, I'm finishing my bachelor's degree in Computer Science. Over the past few years, I've learned a lot, not only about technology, but also about problem-solving and persistence. The biggest lesson for me has been that with enough dedication, any problem can be solved. Sometimes the odds are against you, but it's up to you to turn that around. Now, I'm looking forward to new challenges that will help me grow, learn, and keep creating."
               className='variable-proximity-demo text-lg leading-relaxed'
               fromFontVariationSettings="'wght' 400, 'opsz' 9"
               toFontVariationSettings="'wght' 1000, 'opsz' 40"
@@ -757,7 +811,7 @@ export default function Home() {
         <div className='max-w-5xl mx-auto px-6 md:px-16 mb-12'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
             Get In{' '}
-            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal text-gradient-primary'>
               Touch
             </span>
           </h2>

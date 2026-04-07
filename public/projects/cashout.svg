@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <rect width="400" height="400" rx="0" fill="#0a8f08"/>
+  <text x="200" y="180" text-anchor="middle" font-family="system-ui" font-size="72" font-weight="bold" fill="white">Cash</text>
+  <text x="200" y="260" text-anchor="middle" font-family="system-ui" font-size="72" font-weight="bold" fill="white" font-style="italic">Out</text>
+  <circle cx="200" cy="320" r="20" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+  <text x="200" y="328" text-anchor="middle" font-family="system-ui" font-size="18" fill="rgba(255,255,255,0.5)">$</text>
+</svg>

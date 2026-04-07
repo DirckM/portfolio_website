@@ -145,9 +145,13 @@ export default function WorldMap({
       // Draw arcs
       arcs.forEach((_, i) => {
         const points = arcPaths[i];
+        if (!points || points.length < 2) return;
         const color = arcs[i].color || lineColor;
         const progress = animated ? progressRef.current[i] : 1;
-        const endIdx = Math.floor(progress * (points.length - 1));
+        const endIdx = Math.min(
+          Math.floor(progress * (points.length - 1)),
+          points.length - 1
+        );
 
         if (endIdx < 1) return;
 

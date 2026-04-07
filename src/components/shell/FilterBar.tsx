@@ -29,7 +29,7 @@ export default function FilterBar({ active, onChange }: FilterBarProps) {
             onClick={() => onChange(cat)}
             className={`text-sm transition-colors pb-1 border-b-2 ${
               active === cat
-                ? 'text-black border-black'
+                ? 'text-black border-primary'
                 : 'text-library-gray border-transparent hover:text-black'
             }`}
           >

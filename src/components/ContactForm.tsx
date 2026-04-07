@@ -151,7 +151,7 @@ export default function ContactForm() {
                 errors.name
                   ? 'border-red-400'
                   : focusedField === 'name'
-                    ? 'border-black'
+                    ? 'border-primary'
                     : 'border-library-border'
               }`}
               disabled={isSubmitting}
@@ -185,7 +185,7 @@ export default function ContactForm() {
                 errors.email
                   ? 'border-red-400'
                   : focusedField === 'email'
-                    ? 'border-black'
+                    ? 'border-primary'
                     : 'border-library-border'
               }`}
               disabled={isSubmitting}
@@ -219,7 +219,7 @@ export default function ContactForm() {
                 errors.description
                   ? 'border-red-400'
                   : focusedField === 'description'
-                    ? 'border-black'
+                    ? 'border-primary'
                     : 'border-library-border'
               }`}
               disabled={isSubmitting}
@@ -238,7 +238,7 @@ export default function ContactForm() {
             className={`w-full py-4 text-sm uppercase tracking-widest font-medium transition-all duration-200 ${
               isSubmitting
                 ? 'bg-library-gray text-white cursor-not-allowed'
-                : 'bg-black text-white hover:bg-neutral-800'
+                : 'bg-gradient-primary text-white'
             }`}
           >
             {isSubmitting ? 'Sending...' : 'Send Message'}

@@ -44,7 +44,7 @@ export default function ComponentCard({
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className='relative overflow-hidden rounded-xl border border-library-border bg-library-cream aspect-[4/3] cursor-pointer transition-shadow duration-300 hover:shadow-xl'
+        className='relative overflow-hidden rounded-xl border border-library-border bg-library-cream aspect-[4/3] cursor-pointer transition-all duration-300 hover:shadow-xl hover:border-primary/25'
         style={{
           transform: perspective
             ? `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
