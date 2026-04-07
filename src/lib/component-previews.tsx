@@ -1468,4 +1468,34 @@ export const fullDemos: Record<string, React.ReactNode> = {
       />
     </div>
   ),
+  'soft-aurora': (
+    <div className='w-full h-full'>
+      <SoftAurora speed={0.6} scale={1.5} brightness={1.0} />
+    </div>
+  ),
+  'color-bends': (
+    <div className='w-full h-full'>
+      <ColorBends speed={0.2} rotation={45} />
+    </div>
+  ),
+  'dark-veil': (
+    <div className='w-full h-full'>
+      <DarkVeil speed={0.5} />
+    </div>
+  ),
+  'light-pillar': (
+    <div className='w-full h-full bg-black'>
+      <LightPillar topColor='#5227FF' bottomColor='#FF9FFC' intensity={1.0} />
+    </div>
+  ),
+  'evil-eye': (
+    <div className='w-full h-full bg-black'>
+      <EvilEye eyeColor='#FF6F37' intensity={1.5} />
+    </div>
+  ),
+  radar: (
+    <div className='w-full h-full bg-black'>
+      <Radar color='#00ff88' backgroundColor='#000000' ringCount={10} sweepSpeed={1} />
+    </div>
+  ),
 };
