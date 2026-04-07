@@ -68,7 +68,10 @@ export default function LiveStep({
   );
 
   return (
-    <div className='my-8 rounded-lg overflow-hidden border border-white/10' suppressHydrationWarning>
+    <div
+      className='my-8 rounded-lg overflow-hidden border border-white/10'
+      suppressHydrationWarning
+    >
       {!mounted ? (
         <div className='h-[300px] bg-[#282c34] animate-pulse' />
       ) : (
@@ -94,7 +97,10 @@ export default function LiveStep({
             <div
               className={`${previewBg} min-h-[200px] flex items-center justify-center p-6 relative ${previewClassName}`}
             >
-              <div key={replayKey} className='w-full flex items-center justify-center'>
+              <div
+                key={replayKey}
+                className='w-full flex items-center justify-center'
+              >
                 <LivePreview />
               </div>
               <button

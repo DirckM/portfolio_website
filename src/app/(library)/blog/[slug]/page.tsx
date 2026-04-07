@@ -61,7 +61,9 @@ import InfiniteMenu from '@/components/library/components/InfiniteMenu';
 import Lanyard from '@/components/library/components/Lanyard';
 import MagicBento from '@/components/library/components/MagicBento';
 import ReflectiveCard from '@/components/library/components/ReflectiveCard';
-import ScrollStack, { ScrollStackItem } from '@/components/library/components/ScrollStack';
+import ScrollStack, {
+  ScrollStackItem,
+} from '@/components/library/components/ScrollStack';
 import TiltedCard from '@/components/library/components/TiltedCard';
 
 // Blocks
@@ -80,7 +82,9 @@ import EvilEye from '@/components/library/backgrounds/EvilEye';
 import LightPillar from '@/components/library/backgrounds/LightPillar';
 import Radar from '@/components/library/backgrounds/Radar';
 import PixelCard from '@/components/library/components/PixelCard';
-import ParallaxFloating, { FloatingElement } from '@/components/library/blocks/ParallaxFloating';
+import ParallaxFloating, {
+  FloatingElement,
+} from '@/components/library/blocks/ParallaxFloating';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -116,7 +120,10 @@ function extractCode(node: React.ReactNode): string {
   if (node == null || typeof node === 'boolean') return '';
   if (Array.isArray(node)) return node.map(extractCode).join('');
   if (typeof node === 'object' && 'props' in node) {
-    return extractCode((node as React.ReactElement<{ children?: React.ReactNode }>).props.children);
+    return extractCode(
+      (node as React.ReactElement<{ children?: React.ReactNode }>).props
+        .children
+    );
   }
   return '';
 }
@@ -145,7 +152,13 @@ async function HighlightedPre({
 
     const highlightedHtml = await highlightCode(code, lang);
 
-    return <CodeBlock code={code} language={lang} highlightedHtml={highlightedHtml} />;
+    return (
+      <CodeBlock
+        code={code}
+        language={lang}
+        highlightedHtml={highlightedHtml}
+      />
+    );
   } catch {
     return <pre {...props}>{children}</pre>;
   }
@@ -159,20 +172,69 @@ const mdxComponents = {
         {...props}
         code={code || ''}
         scope={{
-          BlurText, GlitchText, CircularText, CurvedLoop, DecryptedText,
-          FallingText, RotatingText, ScrambledText, ScrollFloat, ScrollReveal,
-          ScrollVelocity, ShinyText, Shuffle, SplitText, TextPressure,
-          TextType, TrueFocus, VariableProximity, ASCIIText,
-          Antigravity, Crosshair, ElectricBorder, GlareHover, LogoLoop,
-          MagicRings, Magnet, MetaBalls, MetallicPaint, PixelTrail,
-          ShapeBlur, TargetCursor,
-          LineWaves, SoftAurora, ColorBends, DarkVeil, EvilEye, LightPillar, Radar,
-          AnimatedList, BorderGlow, CircularGallery, Dock, DomeGallery,
-          ElasticSlider, FlowingMenu, FluidGlass, Folder, GlassSurface,
-          InfiniteMenu, Lanyard, MagicBento, PixelCard, ReflectiveCard,
-          ScrollStack, ScrollStackItem, TiltedCard,
-          CirclingElements, MacbookScroll, MarqueeAlongSvgPath, Terminal, WorldMap,
-          ParallaxFloating, FloatingElement,
+          BlurText,
+          GlitchText,
+          CircularText,
+          CurvedLoop,
+          DecryptedText,
+          FallingText,
+          RotatingText,
+          ScrambledText,
+          ScrollFloat,
+          ScrollReveal,
+          ScrollVelocity,
+          ShinyText,
+          Shuffle,
+          SplitText,
+          TextPressure,
+          TextType,
+          TrueFocus,
+          VariableProximity,
+          ASCIIText,
+          Antigravity,
+          Crosshair,
+          ElectricBorder,
+          GlareHover,
+          LogoLoop,
+          MagicRings,
+          Magnet,
+          MetaBalls,
+          MetallicPaint,
+          PixelTrail,
+          ShapeBlur,
+          TargetCursor,
+          LineWaves,
+          SoftAurora,
+          ColorBends,
+          DarkVeil,
+          EvilEye,
+          LightPillar,
+          Radar,
+          AnimatedList,
+          BorderGlow,
+          CircularGallery,
+          Dock,
+          DomeGallery,
+          ElasticSlider,
+          FlowingMenu,
+          FluidGlass,
+          Folder,
+          GlassSurface,
+          InfiniteMenu,
+          Lanyard,
+          MagicBento,
+          PixelCard,
+          ReflectiveCard,
+          ScrollStack,
+          ScrollStackItem,
+          TiltedCard,
+          CirclingElements,
+          MacbookScroll,
+          MarqueeAlongSvgPath,
+          Terminal,
+          WorldMap,
+          ParallaxFloating,
+          FloatingElement,
           ...props.scope,
         }}
       />
