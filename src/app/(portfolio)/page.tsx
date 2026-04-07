@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import TiltedCard from '@/components/tilted-card/TiltedCard';
 import { motion } from 'motion/react';
 import VariableProximity from '@/components/proximity-text/ProximityText';
 import ContactForm from '@/components/ContactForm';
@@ -9,6 +8,9 @@ import Carousel from '@/components/Carousel';
 import Modal from '@/components/modal/Modal';
 import { RefObject, useRef, useState } from 'react';
 import CollapseStack from '@/components/collapse-stack/CollapseStack';
+import BlurText from '@/components/library/text-animations/BlurText';
+import GlareHover from '@/components/library/animations/GlareHover';
+import Magnet from '@/components/library/animations/Magnet';
 
 interface Project {
   title: string;
@@ -236,13 +238,12 @@ The system gives the internal office a better understanding of existing connecti
       },
     },
   ];
+
   return (
-    <div className='flex flex-col gap-20'>
+    <div className='flex flex-col gap-32'>
       {/* Hero section */}
       <section className='relative flex flex-col justify-center items-center h-screen overflow-hidden'>
-        {/* Container for name and image */}
         <div className='relative flex flex-col items-center text-center'>
-          {/* Image overlapping in the center */}
           <motion.div
             initial={{ opacity: 0, y: -100, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -262,7 +263,6 @@ The system gives the internal office a better understanding of existing connecti
             />
           </motion.div>
 
-          {/* Large serif text */}
           <motion.h1
             initial={{ opacity: 0, x: 100, filter: 'blur(10px)' }}
             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
@@ -288,168 +288,265 @@ The system gives the internal office a better understanding of existing connecti
             MULDER
           </motion.h1>
         </div>
+
+        <div className='mt-8'>
+          <BlurText
+            text='Designer & Developer'
+            delay={0.08}
+            className='text-lg sm:text-xl md:text-2xl text-neutral-500 font-[family-name:var(--font-inter)] tracking-[0.3em] uppercase justify-center'
+            animateBy='characters'
+            direction='bottom'
+          />
+        </div>
       </section>
 
       {/* Projects section */}
-      <section
-        id='projects'
-        className='px-16 w-full flex justify-center items-center'
-      >
-        <div className='grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 justify-center gap-18 items-center'>
+      <section id='projects' className='px-6 md:px-16 w-full'>
+        <div className='max-w-6xl mx-auto mb-16'>
+          <h2 className='text-4xl md:text-5xl lg:text-6xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
+            Selected{' '}
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
+              Work
+            </span>
+          </h2>
+          <div className='mt-4'>
+            <BlurText
+              text="A curated collection of projects I've poured my heart into."
+              delay={0.03}
+              className='text-neutral-500 text-lg md:text-xl'
+              animateBy='words'
+              direction='bottom'
+            />
+          </div>
+        </div>
+
+        <div className='max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8'>
           {projects.map(project => (
-            <TiltedCard
+            <motion.div
               key={project.title}
-              imageSrc={project.image}
-              altText={project.title}
-              captionText={'click me'}
-              rotateAmplitude={15}
-              scaleOnHover={1.1}
-              showMobileWarning={false}
-              showTooltip={true}
-              displayOverlayContent={true}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
               onClick={() => handleProjectClick(project)}
-              overlayContent={
-                <div className='p-6'>
-                  <div className='bg-black/20 px-4 py-2 text-xl rounded-md backdrop-blur-sm'>
-                    <p className='tilted-card-demo-text !text-white'>
+            >
+              <GlareHover
+                width='100%'
+                height='auto'
+                background='#f5f5f5'
+                borderRadius='16px'
+                borderColor='#e5e5e5'
+                glareColor='#ffffff'
+                glareOpacity={0.35}
+                glareSize={300}
+                transitionDuration={800}
+                className='group'
+                style={{ height: 'auto' }}
+              >
+                <div className='relative w-full p-6 md:p-8 flex flex-col gap-6'>
+                  <div className='relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-neutral-200'>
+                    <Image
+                      src={project.image}
+                      alt={project.title}
+                      fill
+                      className='object-contain p-4 transition-transform duration-500 group-hover:scale-105'
+                    />
+                  </div>
+                  <div className='flex flex-col gap-2'>
+                    <h3 className='text-2xl md:text-3xl font-[family-name:var(--font-inter)] font-semibold text-black tracking-tight'>
                       {project.title}
+                    </h3>
+                    <p className='text-neutral-500 text-base md:text-lg font-[family-name:var(--font-inter)]'>
+                      {project.description}
                     </p>
+                    <div className='flex flex-wrap gap-2 mt-2'>
+                      {project.content.technologies.slice(0, 4).map(tech => (
+                        <span
+                          key={tech}
+                          className='px-3 py-1 text-xs font-medium bg-neutral-200 text-neutral-600 rounded-full font-[family-name:var(--font-inter)]'
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                      {project.content.technologies.length > 4 && (
+                        <span className='px-3 py-1 text-xs font-medium bg-neutral-200 text-neutral-600 rounded-full font-[family-name:var(--font-inter)]'>
+                          +{project.content.technologies.length - 4}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              }
-            />
+              </GlareHover>
+            </motion.div>
           ))}
         </div>
       </section>
 
+      {/* Experience section */}
       <section id='experience' className='w-full'>
+        <div className='max-w-6xl mx-auto px-6 md:px-16 mb-8'>
+          <h2 className='text-4xl md:text-5xl lg:text-6xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
+            My{' '}
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
+              Experience
+            </span>
+          </h2>
+          <div className='mt-4'>
+            <BlurText
+              text="Where I've worked and what I've learned along the way."
+              delay={0.03}
+              className='text-neutral-500 text-lg md:text-xl'
+              animateBy='words'
+              direction='bottom'
+            />
+          </div>
+        </div>
         <CollapseStack />
       </section>
+
       {/* Skills section with 3D model carousel */}
       <section id='skills' className='w-full'>
         <div className='w-full mx-auto'>
           <Carousel speed={1} className='h-64 -mt-10' />
         </div>
       </section>
-      {/* <section id='image-trail' className='w-full h-40 pb-20 relative'>
-        <ImageTrail
-          key={1}
-          items={[
-            '/projects/wakeup-not-rounded.svg',
-            '/projects/othello.png',
-            '/projects/teckit.svg',
-            '/wakeup.svg',
-            '/dirck_mulder_organge_light.jpg',
-            '/next.svg',
-            '/vercel.svg',
-            '/file.svg',
-            '/globe.svg',
-            '/window.svg',
-          ]}
-          variant={2}
-        />
-      </section> */}
+
+      {/* About section */}
       <section
         id='about'
-        className='flex justify-center items-start px-8 md:px-20 py-10'
+        className='flex justify-center items-start px-6 md:px-16 py-16'
       >
-        <div className='flex flex-col md:flex-row gap-4 md:gap-10 max-w-4xl'>
-          <div
-            ref={containerRef}
-            className='flex flex-col gap-10 justify-start items-start'
-          >
-            <VariableProximity
-              label={'About Me'}
-              className={
-                'variable-proximity-demo text-black text-4xl font-bold tracking-wide leading-none'
-              }
-              fromFontVariationSettings="'wght' 400, 'opsz' 9"
-              toFontVariationSettings="'wght' 1000, 'opsz' 40"
-              containerRef={containerRef as RefObject<HTMLElement>}
-              radius={100}
-              falloff='linear'
-            />
-            {/* <Image
-                src='/boot_bouwen.jpg'
-                alt='Dirck Mulder'
-                fill
-                className='object-cover'
-              /> */}
+        <div className='flex flex-col gap-12 max-w-5xl w-full'>
+          <div>
+            <h2 className='text-4xl md:text-5xl lg:text-6xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
+              About{' '}
+              <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
+                Me
+              </span>
+            </h2>
+            <div className='mt-4'>
+              <BlurText
+                text='The person behind the pixels.'
+                delay={0.03}
+                className='text-neutral-500 text-lg md:text-xl'
+                animateBy='words'
+                direction='bottom'
+              />
+            </div>
           </div>
-          <div ref={containerRef} className='h-full'>
-            <VariableProximity
-              label='
-              Hi, I’m Dirck. I’ve been creating things my whole life. When I was young, I got my first Arduino, and from that moment on, building and experimenting became my passion. I’ve always loved discovering new ideas, tools, and skills to unlock. At just 14 or 15, I started my first small business making recycled bracelets because I wanted to experience what it’s like to make real business decisions and see an idea come to life. Right now, I’m finishing my bachelor’s degree in Computer Science. Over the past few years, I’ve learned a lot—not only about technology, but also about problem-solving and persistence. The biggest lesson for me has been that with enough dedication, any problem can be solved. Sometimes the odds are against you, but it’s up to you to turn that around. Now, I’m looking forward to new challenges that will help me grow, learn, and keep creating.'
-              className='variable-proximity-demo text-lg h-full'
-              fromFontVariationSettings="'wght' 400, 'opsz' 9"
-              toFontVariationSettings="'wght' 1000, 'opsz' 40"
-              containerRef={containerRef as RefObject<HTMLElement>}
-              radius={100}
-              falloff='linear'
-            />
+
+          <div className='flex flex-col md:flex-row gap-8 md:gap-16'>
+            <div
+              ref={containerRef}
+              className='flex flex-col gap-10 justify-start items-start md:w-1/3'
+            >
+              <VariableProximity
+                label={'About Me'}
+                className={
+                  'variable-proximity-demo text-black text-4xl font-bold tracking-wide leading-none'
+                }
+                fromFontVariationSettings="'wght' 400, 'opsz' 9"
+                toFontVariationSettings="'wght' 1000, 'opsz' 40"
+                containerRef={containerRef as RefObject<HTMLElement>}
+                radius={100}
+                falloff='linear'
+              />
+            </div>
+            <div ref={containerRef} className='h-full md:w-2/3'>
+              <VariableProximity
+                label="
+              Hi, I'm Dirck. I've been creating things my whole life. When I was young, I got my first Arduino, and from that moment on, building and experimenting became my passion. I've always loved discovering new ideas, tools, and skills to unlock. At just 14 or 15, I started my first small business making recycled bracelets because I wanted to experience what it's like to make real business decisions and see an idea come to life. Right now, I'm finishing my bachelor's degree in Computer Science. Over the past few years, I've learned a lot—not only about technology, but also about problem-solving and persistence. The biggest lesson for me has been that with enough dedication, any problem can be solved. Sometimes the odds are against you, but it's up to you to turn that around. Now, I'm looking forward to new challenges that will help me grow, learn, and keep creating."
+                className='variable-proximity-demo text-lg h-full leading-relaxed'
+                fromFontVariationSettings="'wght' 400, 'opsz' 9"
+                toFontVariationSettings="'wght' 1000, 'opsz' 40"
+                containerRef={containerRef as RefObject<HTMLElement>}
+                radius={100}
+                falloff='linear'
+              />
+            </div>
           </div>
         </div>
       </section>
-      {/* Music section
-      <section id='music' className='w-full'>
-        <div className='relative isolate overflow-hidden'>
-          <ThreeDCarousel />
-        </div>
-      </section> */}
 
       {/* Contact Form */}
-      <ContactForm />
+      <section id='contact' className='w-full'>
+        <div className='max-w-6xl mx-auto px-6 md:px-16 mb-8'>
+          <h2 className='text-4xl md:text-5xl lg:text-6xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
+            Get In{' '}
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
+              Touch
+            </span>
+          </h2>
+          <div className='mt-4'>
+            <BlurText
+              text="Have an idea? Let's make something together."
+              delay={0.03}
+              className='text-neutral-500 text-lg md:text-xl'
+              animateBy='words'
+              direction='bottom'
+            />
+          </div>
+        </div>
+        <ContactForm />
+      </section>
 
+      {/* Social icons */}
       <section
         id='socials'
-        className='flex justify-center items-center w-full pb-20 px-10'
+        className='flex justify-center items-center w-full pb-24 px-10'
       >
-        <div className='flex flex-row gap-20 justify-around items-center'>
-          <a
-            href='https://www.linkedin.com/in/dirck-mulder-1b2716222/'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='hover:scale-110 transition-transform duration-300'
-          >
-            <Image
-              className='filter brightness-0'
-              style={{ filter: 'brightness(0)' }}
-              src='/socials/linkedin.png'
-              alt='LinkedIn'
-              width={80}
-              height={80}
-            />
-          </a>
-          <a
-            href='https://www.instagram.com/dirckmulder/'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='hover:scale-110 transition-transform duration-300'
-          >
-            <Image
-              className='filter brightness-0'
-              style={{ filter: 'brightness(0)' }}
-              src='/socials/instagram.png'
-              alt='Instagram'
-              width={80}
-              height={80}
-            />
-          </a>
-          <a
-            href='https://www.youtube.com/@DirckMulder'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='hover:scale-110 transition-transform duration-300'
-          >
-            <Image
-              className='filter brightness-0'
-              style={{ filter: 'brightness(0)' }}
-              src='/socials/youtube.png'
-              alt='YouTube'
-              width={100}
-              height={80}
-            />
-          </a>
+        <div className='flex flex-row gap-16 md:gap-20 justify-around items-center'>
+          <Magnet padding={80} magnetStrength={2}>
+            <a
+              href='https://www.linkedin.com/in/dirck-mulder-1b2716222/'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='block hover:scale-110 transition-transform duration-300'
+            >
+              <Image
+                className='filter brightness-0'
+                style={{ filter: 'brightness(0)' }}
+                src='/socials/linkedin.png'
+                alt='LinkedIn'
+                width={80}
+                height={80}
+              />
+            </a>
+          </Magnet>
+          <Magnet padding={80} magnetStrength={2}>
+            <a
+              href='https://www.instagram.com/dirckmulder/'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='block hover:scale-110 transition-transform duration-300'
+            >
+              <Image
+                className='filter brightness-0'
+                style={{ filter: 'brightness(0)' }}
+                src='/socials/instagram.png'
+                alt='Instagram'
+                width={80}
+                height={80}
+              />
+            </a>
+          </Magnet>
+          <Magnet padding={80} magnetStrength={2}>
+            <a
+              href='https://www.youtube.com/@DirckMulder'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='block hover:scale-110 transition-transform duration-300'
+            >
+              <Image
+                className='filter brightness-0'
+                style={{ filter: 'brightness(0)' }}
+                src='/socials/youtube.png'
+                alt='YouTube'
+                width={100}
+                height={80}
+              />
+            </a>
+          </Magnet>
         </div>
       </section>
 
