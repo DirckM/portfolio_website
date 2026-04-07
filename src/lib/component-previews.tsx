@@ -525,7 +525,7 @@ export const cardPreviews: Record<string, React.ReactNode> = {
       </div>
     </div>
   ),
-  'marquee-along-svg-path': (
+  'marquee-svg-path': (
     <div className='w-full h-full overflow-hidden'>
       <MarqueeAlongSvgPath
         path='M 50,150 Q 250,50 450,150 Q 650,250 850,150'
@@ -1496,6 +1496,73 @@ export const fullDemos: Record<string, React.ReactNode> = {
   radar: (
     <div className='w-full h-full bg-black'>
       <Radar color='#00ff88' backgroundColor='#000000' ringCount={10} sweepSpeed={1} />
+    </div>
+  ),
+  'circling-elements': (
+    <div className='flex items-center justify-center w-full h-full'>
+      <CirclingElements radius={120} duration={8} pauseOnHover>
+        <div className='w-14 h-14 rounded-full bg-black flex items-center justify-center text-white font-bold'>1</div>
+        <div className='w-14 h-14 rounded-full bg-[#5227FF] flex items-center justify-center text-white font-bold'>2</div>
+        <div className='w-14 h-14 rounded-full bg-[#FF9FFC] flex items-center justify-center text-black font-bold'>3</div>
+        <div className='w-14 h-14 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold'>4</div>
+        <div className='w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold'>5</div>
+      </CirclingElements>
+    </div>
+  ),
+  'marquee-svg-path': (
+    <div className='w-full h-full flex items-center justify-center overflow-hidden'>
+      <MarqueeAlongSvgPath
+        path='M 50,150 Q 250,50 450,150 Q 650,250 850,150'
+        viewBox='0 0 900 300'
+        width='100%'
+        height='100%'
+        baseVelocity={40}
+      >
+        <span className='text-black font-bold text-lg mx-6'>Design</span>
+        <span className='text-[#6b6b6b] text-lg mx-6'>Build</span>
+        <span className='text-black font-bold text-lg mx-6'>Ship</span>
+        <span className='text-[#6b6b6b] text-lg mx-6'>Iterate</span>
+      </MarqueeAlongSvgPath>
+    </div>
+  ),
+  'parallax-floating': (
+    <div className='w-full h-full overflow-hidden bg-gray-50 relative'>
+      <ParallaxFloating sensitivity={0.5} className='w-full h-full'>
+        <FloatingElement depth={0.5} className='absolute top-[10%] left-[10%]'>
+          <div className='w-24 h-24 bg-black rounded-2xl' />
+        </FloatingElement>
+        <FloatingElement depth={1.5} className='absolute top-[15%] right-[20%]'>
+          <div className='w-16 h-16 bg-[#5227FF] rounded-full' />
+        </FloatingElement>
+        <FloatingElement depth={2} className='absolute top-[50%] left-[25%]'>
+          <div className='w-32 h-20 bg-gray-300 rounded-xl' />
+        </FloatingElement>
+        <FloatingElement depth={1} className='absolute top-[60%] right-[15%]'>
+          <div className='w-20 h-20 bg-[#FF9FFC] rounded-lg' />
+        </FloatingElement>
+        <FloatingElement depth={0.8} className='absolute bottom-[15%] left-[45%]'>
+          <div className='w-28 h-14 bg-gray-700 rounded-xl' />
+        </FloatingElement>
+      </ParallaxFloating>
+    </div>
+  ),
+  'world-map': (
+    <div className='w-full h-full'>
+      <WorldMap
+        dots={[
+          { lat: 52.3676, lng: 4.9041, label: 'Amsterdam' },
+          { lat: 51.5074, lng: -0.1278, label: 'London' },
+          { lat: 40.7128, lng: -74.006, label: 'New York' },
+          { lat: 35.6762, lng: 139.6503, label: 'Tokyo' },
+          { lat: -33.8688, lng: 151.2093, label: 'Sydney' },
+        ]}
+        arcs={[
+          { from: { lat: 52.3676, lng: 4.9041 }, to: { lat: 51.5074, lng: -0.1278 } },
+          { from: { lat: 52.3676, lng: 4.9041 }, to: { lat: 40.7128, lng: -74.006 } },
+          { from: { lat: 40.7128, lng: -74.006 }, to: { lat: 35.6762, lng: 139.6503 } },
+          { from: { lat: 35.6762, lng: 139.6503 }, to: { lat: -33.8688, lng: 151.2093 } },
+        ]}
+      />
     </div>
   ),
 };
