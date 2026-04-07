@@ -1373,4 +1373,99 @@ export const fullDemos: Record<string, React.ReactNode> = {
       </GlassSurface>
     </div>
   ),
+  'dome-gallery': (
+    <div className='w-full h-full'>
+      <DomeGallery
+        images={[
+          'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600',
+          'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600',
+          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600',
+          'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600',
+          'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600',
+          'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600',
+        ]}
+        fit={1.2}
+        grayscale={false}
+      />
+    </div>
+  ),
+  lanyard: (
+    <div className='w-full h-full bg-[#060010]'>
+      <Lanyard />
+    </div>
+  ),
+  dock: (
+    <div className='flex items-end justify-center w-full h-full pb-12 bg-gradient-to-b from-transparent to-gray-100'>
+      <Dock
+        items={[
+          { icon: <span className='text-2xl'>H</span>, label: 'Home', onClick: () => {} },
+          { icon: <span className='text-2xl'>S</span>, label: 'Search', onClick: () => {} },
+          { icon: <span className='text-2xl'>P</span>, label: 'Projects', onClick: () => {} },
+          { icon: <span className='text-2xl'>M</span>, label: 'Mail', onClick: () => {} },
+          { icon: <span className='text-2xl'>C</span>, label: 'Code', onClick: () => {} },
+        ]}
+        baseItemSize={56}
+        magnification={80}
+        panelHeight={68}
+      />
+    </div>
+  ),
+  'pixel-card': (
+    <div className='flex items-center justify-center gap-8 p-12'>
+      <PixelCard variant='default' className='w-48 h-64'>
+        <span className='text-black text-lg font-medium relative z-10'>Default</span>
+      </PixelCard>
+      <PixelCard variant='blue' className='w-48 h-64'>
+        <span className='text-black text-lg font-medium relative z-10'>Blue</span>
+      </PixelCard>
+      <PixelCard variant='pink' className='w-48 h-64'>
+        <span className='text-black text-lg font-medium relative z-10'>Pink</span>
+      </PixelCard>
+    </div>
+  ),
+  'border-glow': (
+    <div className='flex items-center justify-center gap-8 p-12'>
+      <BorderGlow
+        glowColor='40 80 60'
+        className='w-56 h-36 flex items-center justify-center'
+        borderRadius={20}
+      >
+        <span className='text-white text-lg font-medium'>Default glow</span>
+      </BorderGlow>
+      <BorderGlow
+        glowColor='270 80 60'
+        className='w-56 h-36 flex items-center justify-center'
+        borderRadius={20}
+        colors={['#5227FF', '#FF9FFC', '#38bdf8']}
+      >
+        <span className='text-white text-lg font-medium'>Purple glow</span>
+      </BorderGlow>
+    </div>
+  ),
+  'flowing-menu': (
+    <div className='w-full h-full'>
+      <FlowingMenu
+        items={[
+          { link: '#', text: 'Design', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600' },
+          { link: '#', text: 'Develop', image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600' },
+          { link: '#', text: 'Deploy', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600' },
+          { link: '#', text: 'Iterate', image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600' },
+        ]}
+      />
+    </div>
+  ),
+  'infinite-menu': (
+    <div className='w-full h-full'>
+      <InfiniteMenu
+        items={[
+          { image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400', link: '#', title: 'Mountains', description: 'Alpine views' },
+          { image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400', link: '#', title: 'Forest', description: 'Into the woods' },
+          { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400', link: '#', title: 'Beach', description: 'Coastal escape' },
+          { image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=400', link: '#', title: 'Hiking', description: 'Trail ahead' },
+          { image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400', link: '#', title: 'Woods', description: 'Deep forest' },
+          { image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400', link: '#', title: 'Sunset', description: 'Golden hour' },
+        ]}
+      />
+    </div>
+  ),
 };
