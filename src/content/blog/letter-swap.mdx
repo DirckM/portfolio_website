@@ -8,26 +8,96 @@ componentSlug: "letter-swap"
 
 Hover over the text and watch the letters roll through to a new word. Letter Swap is the kind of interaction that makes people hover again just to see it happen a second time. It is smooth, satisfying, and works especially well when the two words share letters.
 
-## What it does
+## What we are building
 
-Letter Swap animates individual characters from an initial string to a target string on hover. Each letter flips or slides to its new value with a staggered delay, so the transition cascades across the word rather than switching all at once.
+Letter Swap animates each character position from an initial string to a target string on hover. Each letter slides vertically to its new value with a staggered delay, so the transition cascades across the word. On hover-out, it reverses back to the original.
 
-## How it works
+## Setting up
 
-The component holds two strings: the default and the hovered state. Each character position is animated using Framer Motion's `AnimatePresence`, exiting the old character upward (or downward) while the new one enters from the opposite direction. The stagger offset means each character transitions slightly after the one before it.
+This effect works well with Motion's `AnimatePresence` for the enter and exit of each character.
 
-When the hover ends, the animation reverses back to the original string.
+```tsx
+import { motion, AnimatePresence } from 'motion/react';
+import { useState } from 'react';
+```
 
-## Key properties
+## Building the component
 
-- **defaultText** - The string shown at rest
-- **activeText** - The string shown on hover (should match character count)
-- **stagger** - Delay between each letter transition
-- **direction** - Whether letters swap upward or downward
-- **duration** - Speed of each individual letter's animation
+The component holds two strings: the default text and the hover text. We split both into character arrays and track which state is active.
 
-## When to use it
+```tsx
+interface LetterSwapProps {
+  defaultText: string;
+  activeText: string;
+  stagger?: number;
+  direction?: 'up' | 'down';
+  duration?: number;
+  className?: string;
+}
 
-Navigation links are a perfect fit. "About" to "Hello" or "Work" to "Projects" on hover adds a layer of interaction that makes navigation feel crafted. Button labels and CTAs also work well, especially when the two strings have a semantic relationship.
+const LetterSwap = ({ defaultText, activeText, stagger = 0.03, direction = 'up', duration = 0.2 }: LetterSwapProps) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const current = isHovered ? activeText : defaultText;
+  const yExit = direction === 'up' ? '-100%' : '100%';
+  const yEnter = direction === 'up' ? '100%' : '-100%';
+```
 
-Match character counts between both strings for the cleanest look. If they differ, you can pad with spaces or let extra characters fade in and out.
+Each character position renders a wrapper span with `overflow-hidden`, which clips the entering and exiting characters to give the slot effect.
+
+```tsx
+return (
+  <span
+    onMouseEnter={() => setIsHovered(true)}
+    onMouseLeave={() => setIsHovered(false)}
+    className={`inline-flex ${className}`}
+  >
+    {current.split('').map((char, i) => (
+      <span key={i} className='inline-block overflow-hidden relative' style={{ height: '1em' }}>
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={`${isHovered ? 'active' : 'default'}-${i}`}
+            initial={{ y: yEnter, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: yExit, opacity: 0 }}
+            transition={{ duration, delay: i * stagger, ease: 'easeOut' }}
+            className='inline-block'
+          >
+            {char === ' ' ? '\u00A0' : char}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    ))}
+  </span>
+);
+```
+
+The `key` prop on the `motion.span` includes the hover state so `AnimatePresence` knows to animate out the old character and animate in the new one when the hover state changes.
+
+For the stagger, we multiply the character index by the `stagger` delay. This creates a left-to-right cascade where each character transitions slightly after the one before it.
+
+```tsx
+transition={{ duration, delay: i * stagger, ease: 'easeOut' }}
+```
+
+On hover-out, the reverse happens automatically because `AnimatePresence` applies the `exit` animation before removing the old character from the DOM.
+
+## How to use it
+
+```tsx
+<LetterSwap
+  defaultText="About"
+  activeText="Hello"
+  stagger={0.03}
+  direction="up"
+  duration={0.2}
+  className="text-2xl font-semibold"
+/>
+```
+
+Works best when both strings have the same character count. If they differ, pad the shorter one with spaces or let extra characters fade in without a slot to exit from.
+
+## Key takeaways
+
+- The `overflow-hidden` on each character's wrapper is what creates the slot machine effect. Without it, characters would slide freely across the full text rather than appearing to swap in place.
+- Using `AnimatePresence mode="popLayout"` means the entering character takes its place in the layout while the exiting one animates out, which prevents text-width jumps when the two strings have different character widths.
+- Keeping stagger tight, around 0.02-0.04 seconds per character, makes the cascade feel like a single unified animation rather than a sequence of individual events.
