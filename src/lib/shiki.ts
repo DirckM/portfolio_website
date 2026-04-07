@@ -1,15 +1,17 @@
 import { createHighlighter, type Highlighter } from 'shiki';
 
-let highlighter: Highlighter | null = null;
+const globalForShiki = globalThis as typeof globalThis & {
+  __shikiHighlighter?: Promise<Highlighter>;
+};
 
 export async function getHighlighter(): Promise<Highlighter> {
-  if (!highlighter) {
-    highlighter = await createHighlighter({
+  if (!globalForShiki.__shikiHighlighter) {
+    globalForShiki.__shikiHighlighter = createHighlighter({
       themes: ['one-dark-pro'],
       langs: ['tsx', 'typescript', 'bash', 'css', 'json', 'html'],
     });
   }
-  return highlighter;
+  return globalForShiki.__shikiHighlighter;
 }
 
 export async function highlightCode(

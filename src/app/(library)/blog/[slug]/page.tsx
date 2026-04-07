@@ -40,32 +40,45 @@ export async function generateMetadata({
   };
 }
 
+function extractCode(node: React.ReactNode): string {
+  if (typeof node === 'string') return node;
+  if (typeof node === 'number') return String(node);
+  if (node == null || typeof node === 'boolean') return '';
+  if (Array.isArray(node)) return node.map(extractCode).join('');
+  if (typeof node === 'object' && 'props' in node) {
+    return extractCode((node as React.ReactElement<{ children?: React.ReactNode }>).props.children);
+  }
+  return '';
+}
+
 async function HighlightedPre({
   children,
   ...props
 }: React.HTMLAttributes<HTMLPreElement> & { children?: React.ReactNode }) {
-  const codeElement = children as React.ReactElement<{
-    className?: string;
-    children?: string;
-  }>;
+  try {
+    const codeElement = children as React.ReactElement<{
+      className?: string;
+      children?: React.ReactNode;
+    }>;
 
-  if (!codeElement?.props) {
+    if (!codeElement?.props) {
+      return <pre {...props}>{children}</pre>;
+    }
+
+    const className = codeElement.props.className || '';
+    const lang = className.replace('language-', '') || 'tsx';
+    const code = extractCode(codeElement.props.children).trim();
+
+    if (!code) {
+      return <pre {...props}>{children}</pre>;
+    }
+
+    const highlightedHtml = await highlightCode(code, lang);
+
+    return <CodeBlock code={code} language={lang} highlightedHtml={highlightedHtml} />;
+  } catch {
     return <pre {...props}>{children}</pre>;
   }
-
-  const className = codeElement.props.className || '';
-  const lang = className.replace('language-', '') || 'tsx';
-  const code = typeof codeElement.props.children === 'string'
-    ? codeElement.props.children.trim()
-    : '';
-
-  if (!code) {
-    return <pre {...props}>{children}</pre>;
-  }
-
-  const highlightedHtml = await highlightCode(code, lang);
-
-  return <CodeBlock code={code} language={lang} highlightedHtml={highlightedHtml} />;
 }
 
 const mdxComponents = {

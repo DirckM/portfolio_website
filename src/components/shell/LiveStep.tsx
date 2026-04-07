@@ -50,7 +50,7 @@ export default function LiveStep({
   }, [controls]);
 
   const [controlValues, setControlValues] = useState(defaultValues);
-  const [code, setCode] = useState(initialCode.trim());
+  const [code, setCode] = useState((initialCode || '').trim());
 
   const handleControlChange = useCallback(
     (prop: string, value: string | number | boolean) => {
