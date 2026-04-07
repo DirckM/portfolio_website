@@ -1,0 +1,33 @@
+---
+title: "Build a Letter Swap Animation in React"
+description: "Animate individual letters swapping to new characters on hover, creating a playful and fluid text transition effect."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "letter-swap"
+---
+
+Hover over the text and watch the letters roll through to a new word. Letter Swap is the kind of interaction that makes people hover again just to see it happen a second time. It is smooth, satisfying, and works especially well when the two words share letters.
+
+## What it does
+
+Letter Swap animates individual characters from an initial string to a target string on hover. Each letter flips or slides to its new value with a staggered delay, so the transition cascades across the word rather than switching all at once.
+
+## How it works
+
+The component holds two strings: the default and the hovered state. Each character position is animated using Framer Motion's `AnimatePresence`, exiting the old character upward (or downward) while the new one enters from the opposite direction. The stagger offset means each character transitions slightly after the one before it.
+
+When the hover ends, the animation reverses back to the original string.
+
+## Key properties
+
+- **defaultText** - The string shown at rest
+- **activeText** - The string shown on hover (should match character count)
+- **stagger** - Delay between each letter transition
+- **direction** - Whether letters swap upward or downward
+- **duration** - Speed of each individual letter's animation
+
+## When to use it
+
+Navigation links are a perfect fit. "About" to "Hello" or "Work" to "Projects" on hover adds a layer of interaction that makes navigation feel crafted. Button labels and CTAs also work well, especially when the two strings have a semantic relationship.
+
+Match character counts between both strings for the cleanest look. If they differ, you can pad with spaces or let extra characters fade in and out.

@@ -1,0 +1,33 @@
+---
+title: "Create a Glitch Text Effect in React"
+description: "Apply a digital distortion glitch effect to text using CSS clip-path layers and keyframe animation, no external library needed."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "glitch-text"
+---
+
+Glitch effects tap into something visceral. They look like a system failing, a reality breaking, a signal corrupting. That visual tension is exactly why they work so well in design: controlled chaos is compelling in a way that perfect polish cannot always match.
+
+## What it does
+
+Glitch Text renders text with multiple stacked copies, each clipped to a different horizontal band. The copies are offset in opposite horizontal directions and shift colors (typically red and cyan), then the clipping bands shift rapidly through a CSS keyframe to simulate a scan-line glitch.
+
+## How it works
+
+Three copies of the text are layered using absolute positioning. Each uses `clip-path: inset()` to show only a slice of the full text. CSS `@keyframes` animate the clip boundaries and `translate` values on a loop, shifting at irregular intervals to feel unpredictable rather than mechanical.
+
+Everything is CSS. No JavaScript, no Framer Motion. This means near-zero runtime overhead.
+
+## Key properties
+
+- **text** - The string to glitch
+- **intensity** - How far the offset layers shift (px)
+- **speed** - Animation duration (lower = more frantic)
+- **colors** - The two color channels for the offset layers (default: red and cyan)
+- **continuous** - Whether it glitches constantly or only on hover
+
+## When to use it
+
+Error pages, cyberpunk or dark-themed UIs, loading screens, and any design that intentionally leans into a broken or distorted aesthetic. Use it sparingly. One glitching headline is powerful. Three on the same page is noise.
+
+A continuous glitch on hover with a calm resting state is often the best balance between effect and usability.

@@ -1,0 +1,34 @@
+---
+title: "Build a Variable Font Proximity Effect in React"
+description: "Change variable font weight based on cursor distance from each character, creating a fluid typographic interaction effect."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "variable-proximity"
+---
+
+Variable fonts unlocked something that was never really possible before: continuous, smooth changes to type weight in the browser. Variable Proximity turns that capability into an interaction. Your cursor becomes the force that shapes the letterforms. Move close and they grow heavy; step back and they thin out.
+
+## What it does
+
+Variable Proximity maps each character's font weight to the distance between the cursor and that character's center. Characters under or near the cursor get maximum weight, while distant ones stay light. The effect ripples across the text as the cursor moves.
+
+## How it works
+
+Each character is split into its own `span` with an inline style for `font-variation-settings`. A `mousemove` listener on the document updates cursor position in state. A `useLayoutEffect` reads each span's bounding rect and calculates the Euclidean distance to the cursor. That distance is clamped and mapped to a font weight value between the configured min and max.
+
+This only works with a variable font that exposes the `wght` axis.
+
+## Key properties
+
+- **text** - The string to render
+- **fontFamily** - A variable font with `wght` axis support
+- **minWeight** - Resting font weight (e.g., 100 or 300)
+- **maxWeight** - Maximum weight at cursor position (e.g., 700 or 900)
+- **falloff** - How quickly weight drops off with distance
+- **radius** - Maximum distance at which the effect applies
+
+## When to use it
+
+This is a showpiece interaction for portfolios and experimental UI work. It makes typography itself feel interactive, which is rare. Use it on large display text where the weight variation is visually obvious. Small body text will not show the effect clearly enough.
+
+Pick a font like Inter, Roboto Flex, or Archivo that has a wide weight range (100-900) for the most dramatic result.

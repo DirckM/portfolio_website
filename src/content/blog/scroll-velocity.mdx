@@ -1,0 +1,33 @@
+---
+title: "Create a Scroll Velocity Marquee in React"
+description: "Build a marquee that speeds up and slows down based on scroll velocity, creating a dynamic connection between scrolling and motion."
+date: "2026-04-07"
+category: "Text Animations"
+componentSlug: "scroll-velocity"
+---
+
+Most marquees scroll at a fixed pace regardless of what you do. That feels mechanical. A scroll velocity marquee responds to you: scroll fast and it races, slow down and it coasts. That responsiveness makes it feel alive in a way a static ticker never does.
+
+## What it does
+
+Scroll Velocity renders a looping text marquee that ties its playback speed to the user's scroll velocity. Faster scrolling accelerates the marquee; stopping or reversing slows it back to the base speed. Scroll up and it can even reverse direction.
+
+## How it works
+
+Framer Motion's `useScroll` and `useVelocity` hooks capture the scroll position and its derivative. The velocity value feeds into `useTransform` to produce an offset multiplier, which is applied to the marquee's `x` translation. `useSpring` smooths the velocity so the marquee does not snap erratically.
+
+The marquee itself duplicates the text string enough times to fill the viewport width and then loops the translation seamlessly.
+
+## Key properties
+
+- **text** - The string to repeat in the marquee
+- **baseVelocity** - Default scroll speed when not actively scrolling
+- **velocityFactor** - How strongly scroll speed affects marquee speed
+- **direction** - Default direction (1 for left, -1 for right)
+- **className** - For font size, color, and spacing overrides
+
+## When to use it
+
+This works beautifully as a separator between sections on a long scroll page. It is also great in hero sections where it runs beneath or around the main content. Keep the text short and repeating, like a brand name, a tagline, or a list of services.
+
+A `baseVelocity` of 2-4 combined with a `velocityFactor` of 3-5 gives a satisfying snap when scrolling fast.
