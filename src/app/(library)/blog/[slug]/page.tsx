@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog-utils';
 import { highlightCode } from '@/lib/shiki';
@@ -8,10 +9,80 @@ import CodeBlock from '@/components/shell/CodeBlock';
 import { fullDemos } from '@/lib/component-previews';
 import { liveStepCodes } from '@/lib/live-step-codes';
 import LiveStep from '@/components/shell/LiveStep';
+
+// Text animations
 import BlurText from '@/components/library/text-animations/BlurText';
-import TiltedCard from '@/components/library/components/TiltedCard';
+import GlitchText from '@/components/library/text-animations/GlitchText';
+import CircularText from '@/components/library/text-animations/CircularText';
+import CurvedLoop from '@/components/library/text-animations/CurvedLoop';
+import DecryptedText from '@/components/library/text-animations/DecryptedText';
+import FallingText from '@/components/library/text-animations/FallingText';
+import RotatingText from '@/components/library/text-animations/RotatingText';
+import ScrambledText from '@/components/library/text-animations/ScrambledText';
+import ScrollFloat from '@/components/library/text-animations/ScrollFloat';
+import ScrollReveal from '@/components/library/text-animations/ScrollReveal';
+import { ScrollVelocity } from '@/components/library/text-animations/ScrollVelocity';
+import ShinyText from '@/components/library/text-animations/ShinyText';
+import Shuffle from '@/components/library/text-animations/Shuffle';
+import SplitText from '@/components/library/text-animations/SplitText';
+import TextPressure from '@/components/library/text-animations/TextPressure';
+import TextType from '@/components/library/text-animations/TextType';
+import TrueFocus from '@/components/library/text-animations/TrueFocus';
+import VariableProximity from '@/components/library/text-animations/VariableProximity';
+
+// Animations
+import Antigravity from '@/components/library/animations/Antigravity';
+import Crosshair from '@/components/library/animations/Crosshair';
 import ElectricBorder from '@/components/library/animations/ElectricBorder';
+import GlareHover from '@/components/library/animations/GlareHover';
+import LogoLoop from '@/components/library/animations/LogoLoop';
+import MagicRings from '@/components/library/animations/MagicRings';
+import Magnet from '@/components/library/animations/Magnet';
+import MetaBalls from '@/components/library/animations/MetaBalls';
+import MetallicPaint from '@/components/library/animations/MetallicPaint';
+import PixelTrail from '@/components/library/animations/PixelTrail';
+import ShapeBlur from '@/components/library/animations/ShapeBlur';
+import TargetCursor from '@/components/library/animations/TargetCursor';
+
+// Backgrounds
 import LineWaves from '@/components/library/backgrounds/LineWaves';
+
+// Components
+import AnimatedList from '@/components/library/components/AnimatedList';
+import BorderGlow from '@/components/library/components/BorderGlow';
+import CircularGallery from '@/components/library/components/CircularGallery';
+import Dock from '@/components/library/components/Dock';
+import DomeGallery from '@/components/library/components/DomeGallery';
+import ElasticSlider from '@/components/library/components/ElasticSlider';
+import FlowingMenu from '@/components/library/components/FlowingMenu';
+import FluidGlass from '@/components/library/components/FluidGlass';
+import Folder from '@/components/library/components/Folder';
+import GlassSurface from '@/components/library/components/GlassSurface';
+import InfiniteMenu from '@/components/library/components/InfiniteMenu';
+import Lanyard from '@/components/library/components/Lanyard';
+import MagicBento from '@/components/library/components/MagicBento';
+import ReflectiveCard from '@/components/library/components/ReflectiveCard';
+import ScrollStack, { ScrollStackItem } from '@/components/library/components/ScrollStack';
+import TiltedCard from '@/components/library/components/TiltedCard';
+
+// Blocks
+import CirclingElements from '@/components/library/blocks/CirclingElements';
+import MacbookScroll from '@/components/library/blocks/MacbookScroll';
+import MarqueeAlongSvgPath from '@/components/library/blocks/MarqueeAlongSvgPath';
+import Terminal from '@/components/library/blocks/Terminal';
+import WorldMap from '@/components/library/blocks/WorldMap';
+
+// Dynamic (WebGL / heavy)
+const ASCIIText = dynamic(() => import('@/components/library/text-animations/ASCIIText'), { ssr: false });
+const SoftAurora = dynamic(() => import('@/components/library/backgrounds/SoftAurora'), { ssr: false });
+const ColorBends = dynamic(() => import('@/components/library/backgrounds/ColorBends'), { ssr: false });
+const DarkVeil = dynamic(() => import('@/components/library/backgrounds/DarkVeil'), { ssr: false });
+const EvilEye = dynamic(() => import('@/components/library/backgrounds/EvilEye'), { ssr: false });
+const LightPillar = dynamic(() => import('@/components/library/backgrounds/LightPillar'), { ssr: false });
+const Radar = dynamic(() => import('@/components/library/backgrounds/Radar'), { ssr: false });
+const PixelCard = dynamic(() => import('@/components/library/components/PixelCard'), { ssr: false });
+const ParallaxFloating = dynamic(() => import('@/components/library/blocks/ParallaxFloating').then(m => ({ default: m.default })), { ssr: false });
+const FloatingElement = dynamic(() => import('@/components/library/blocks/ParallaxFloating').then(m => ({ default: m.FloatingElement })), { ssr: false });
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -90,10 +161,20 @@ const mdxComponents = {
         {...props}
         code={code || ''}
         scope={{
-          BlurText,
-          TiltedCard,
-          ElectricBorder,
-          LineWaves,
+          BlurText, GlitchText, CircularText, CurvedLoop, DecryptedText,
+          FallingText, RotatingText, ScrambledText, ScrollFloat, ScrollReveal,
+          ScrollVelocity, ShinyText, Shuffle, SplitText, TextPressure,
+          TextType, TrueFocus, VariableProximity, ASCIIText,
+          Antigravity, Crosshair, ElectricBorder, GlareHover, LogoLoop,
+          MagicRings, Magnet, MetaBalls, MetallicPaint, PixelTrail,
+          ShapeBlur, TargetCursor,
+          LineWaves, SoftAurora, ColorBends, DarkVeil, EvilEye, LightPillar, Radar,
+          AnimatedList, BorderGlow, CircularGallery, Dock, DomeGallery,
+          ElasticSlider, FlowingMenu, FluidGlass, Folder, GlassSurface,
+          InfiniteMenu, Lanyard, MagicBento, PixelCard, ReflectiveCard,
+          ScrollStack, ScrollStackItem, TiltedCard,
+          CirclingElements, MacbookScroll, MarqueeAlongSvgPath, Terminal, WorldMap,
+          ParallaxFloating, FloatingElement,
           ...props.scope,
         }}
       />
