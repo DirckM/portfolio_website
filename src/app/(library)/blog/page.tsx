@@ -36,15 +36,13 @@ export default function BlogPage() {
                   {latest.category}
                 </span>
                 <span className='text-library-border'>|</span>
-                <time className='text-xs text-library-gray'>
-                  {latest.date}
-                </time>
+                <time className='text-xs text-library-gray'>{latest.date}</time>
                 <span className='text-library-border'>|</span>
                 <span className='text-xs text-library-gray'>
                   {latest.readingTime}
                 </span>
               </div>
-              <h2 className="text-3xl font-[family-name:var(--font-instrument-serif)] text-black group-hover:underline underline-offset-4 leading-tight">
+              <h2 className='text-3xl font-[family-name:var(--font-instrument-serif)] text-black group-hover:underline underline-offset-4 leading-tight'>
                 {latest.title}
               </h2>
               <p className='text-library-gray mt-3 text-base leading-relaxed'>
@@ -56,7 +54,7 @@ export default function BlogPage() {
           {/* All posts list */}
           {rest.length > 0 && (
             <div className='flex flex-col'>
-              <h2 className="text-lg font-[family-name:var(--font-instrument-serif)] mb-8 text-library-gray">
+              <h2 className='text-lg font-[family-name:var(--font-instrument-serif)] mb-8 text-library-gray'>
                 All posts
               </h2>
               {rest.map(post => (
@@ -78,7 +76,7 @@ export default function BlogPage() {
                       {post.readingTime}
                     </span>
                   </div>
-                  <h3 className="text-lg font-[family-name:var(--font-instrument-serif)] text-black group-hover:underline underline-offset-4">
+                  <h3 className='text-lg font-[family-name:var(--font-instrument-serif)] text-black group-hover:underline underline-offset-4'>
                     {post.title}
                   </h3>
                   <p className='text-sm text-library-gray mt-1'>
