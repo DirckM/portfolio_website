@@ -1,0 +1,34 @@
+---
+title: "Create a Shape Blur Effect in React with Three.js"
+description: "Organic shapes morph and blur continuously in the background using a Three.js scene with post-processing."
+date: "2026-04-07"
+category: "Animations"
+componentSlug: "shape-blur"
+---
+
+The best backgrounds don't compete with your content. They breathe beneath it. Shape Blur creates slow-moving, heavily blurred organic shapes that shift and morph, giving any section a sense of ambient depth without ever grabbing focus.
+
+## What it does
+
+Soft, rounded shapes drift across the canvas, morphing between forms. Everything is rendered with a heavy blur pass, so the result is closer to a painted wash of color than recognizable geometry. The motion is slow and continuous, never repeating exactly.
+
+## How it works
+
+Three.js renders a small set of mesh objects using morph target animation to shift their geometry over time. A custom post-processing pass applies a large-radius Gaussian blur to the entire scene output.
+
+Each shape has its own randomized velocity and morph speed. The camera is fixed and orthographic so the shapes feel 2D despite being 3D geometry.
+
+## Key properties
+
+- **shapeCount** - Number of shapes in the scene (default: 5)
+- **blurRadius** - Size of the Gaussian blur kernel (default: 80px)
+- **speed** - Base drift speed (default: 0.3)
+- **colors** - Array of colors assigned randomly to shapes
+- **opacity** - Global opacity of the canvas (default: 0.6)
+- **morphSpeed** - How fast shapes change form (default: 0.5)
+
+## When to use it
+
+This is a background treatment, not a foreground element. Layer it behind hero text, feature sections, or pricing cards to add warmth and motion without distraction.
+
+Limit colors to two or three from a cohesive palette. Too many colors start to look chaotic once blurred together.

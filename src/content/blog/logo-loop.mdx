@@ -1,0 +1,33 @@
+---
+title: "Create a Logo Loop Animation in React"
+description: "Scroll a row of logos in an infinite horizontal loop with smooth, gap-free motion that pauses on hover."
+date: "2026-04-07"
+category: "Animations"
+componentSlug: "logo-loop"
+---
+
+Social proof is most effective when it feels effortless. A static grid of client logos takes up space and demands the user to actively read it. A smooth, scrolling loop presents the same information passively, and it looks polished doing it.
+
+## What it does
+
+A row of logos scrolls horizontally in a continuous loop. The items repeat seamlessly so there is never a gap or jump. Hovering pauses the animation so users can read a specific logo without chasing it.
+
+## How it works
+
+The logo list is duplicated in the DOM, and both copies animate with a CSS translate transform moving left by exactly one set's width. When the first copy has moved fully off screen, it snaps back to the start, creating a seamless loop.
+
+The animation is driven by a CSS keyframe rather than JavaScript, keeping it smooth and off the main thread. A CSS variable controls the duration so speed is easy to adjust.
+
+## Key properties
+
+- **items** - Array of logo image sources or React nodes
+- **speed** - Duration of one full loop in seconds (default: 20s)
+- **gap** - Spacing between each logo item
+- **direction** - Scroll left or right (default: left)
+- **pauseOnHover** - Whether to pause on hover (default: true)
+
+## When to use it
+
+This is the standard treatment for social proof sections, tech stack displays, and partner logo rows. It saves vertical space and adds motion where there would otherwise be none.
+
+Balance the speed with how many logos you have. More logos need a longer duration so each one is visible long enough to register.

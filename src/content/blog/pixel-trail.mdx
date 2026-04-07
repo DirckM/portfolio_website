@@ -1,0 +1,33 @@
+---
+title: "Create a Pixel Trail Effect in React"
+description: "Leave a pixelated trail of colored blocks behind the cursor that fades out over time."
+date: "2026-04-07"
+category: "Animations"
+componentSlug: "pixel-trail"
+---
+
+Cursor trails are a classic web effect that never quite gets old when done right. The Pixel Trail takes that idea and gives it a retro twist: instead of smooth particles, you get chunky pixel blocks that stamp down as you move and fade out behind you.
+
+## What it does
+
+As the cursor moves, square pixel blocks appear along the path. Each block fades out independently after a short delay, leaving a decaying trail of color that follows the mouse's history across the screen.
+
+## How it works
+
+Mouse position is sampled on a `mousemove` listener. Each position is snapped to a grid by rounding to the nearest pixel size, which creates the chunky pixel look. New blocks are added to a state array, and each block has a timestamp.
+
+A `requestAnimationFrame` loop runs continuously, filtering out blocks older than the configured lifetime and updating the canvas or DOM element positions and opacities.
+
+## Key properties
+
+- **pixelSize** - Size of each pixel block in pixels (default: 20px)
+- **trailLength** - How many pixels stay visible at once (default: 20)
+- **fadeTime** - Milliseconds before a pixel fully fades (default: 600ms)
+- **color** - Block color, can be a function for rainbow variation
+- **snapToGrid** - Whether to snap positions to pixel grid (default: true)
+
+## When to use it
+
+This works on portfolio landing pages, creative agency sites, and anywhere you want a distinctly handcrafted, retro vibe. It turns cursor movement into an expressive act.
+
+Use a fixed color for a clean, branded look. Use a hue-shifting function to get a rainbow trail that's harder to ignore.

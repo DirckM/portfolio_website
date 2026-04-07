@@ -1,0 +1,33 @@
+---
+title: "Build a Magnet Effect in React"
+description: "Make elements attract toward the cursor within a defined radius, creating a tactile, physics-driven hover interaction."
+date: "2026-04-07"
+category: "Animations"
+componentSlug: "magnet"
+---
+
+Most hover effects are binary. On or off. The cursor is either over the element or it isn't. The Magnet effect breaks that rule by starting the interaction before the cursor even arrives, pulling the element toward the mouse as it gets close.
+
+## What it does
+
+As the cursor approaches the element within a configurable radius, the element begins moving toward the cursor. The pull strengthens as the cursor gets closer, peaks when directly over the element, and releases with a spring snap when the cursor moves away.
+
+## How it works
+
+A `mousemove` listener computes the distance between the cursor and the element's center. If that distance is within the activation radius, a pull force is calculated using the inverse of the distance, clamped to a maximum offset.
+
+The element's transform is updated via Framer Motion's `useSpring`, which handles the smooth approach and the elastic return to the original position.
+
+## Key properties
+
+- **radius** - Distance in pixels at which the effect activates (default: 100px)
+- **strength** - How far the element moves at maximum pull (default: 0.4)
+- **stiffness** - Spring stiffness for the return snap (default: 150)
+- **damping** - Spring damping (default: 15)
+- **scale** - Scale applied when the cursor is directly over the element
+
+## When to use it
+
+Perfect for navigation items, call-to-action buttons, and social icons. It turns passive UI into something the user wants to interact with just to feel the pull.
+
+Keep the strength value between 0.3 and 0.5. Too strong and the element leaps around unpredictably. Too weak and users won't notice the effect.

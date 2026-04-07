@@ -1,0 +1,33 @@
+---
+title: "Build a Crosshair Cursor in React with GSAP"
+description: "A precision crosshair cursor with extending lines and a targeting animation, driven by GSAP for buttery-smooth motion."
+date: "2026-04-07"
+category: "Animations"
+componentSlug: "crosshair"
+---
+
+GSAP has been the gold standard for animation on the web for years, and for good reason. When it comes to a cursor effect that needs to feel precise and immediate, GSAP's rendering pipeline delivers a smoothness that spring physics libraries struggle to match at high refresh rates.
+
+## What it does
+
+The default cursor is replaced with a crosshair made of four extending lines and a center dot. The crosshair follows the mouse with a tight lag. When hovering over interactive elements, the lines contract inward in a targeting animation, then expand back out when the cursor leaves.
+
+## How it works
+
+GSAP's `quickTo` function creates optimized setters for the x and y properties of the crosshair element, minimizing layout recalculation on every frame. Mouse position updates call these setters directly.
+
+The extending lines are absolutely positioned elements whose scaleX and scaleY are animated with GSAP timelines on hover state changes. The targeting animation uses a short ease-out tween for contraction and a bounce ease for expansion.
+
+## Key properties
+
+- **lineLength** - Length of each crosshair line in pixels (default: 20px)
+- **lineThickness** - Stroke width in pixels (default: 1px)
+- **color** - Crosshair color (default: white)
+- **lag** - How much the crosshair trails the cursor (default: 0.1s)
+- **targetingScale** - How far lines contract on hover (default: 0.4)
+
+## When to use it
+
+This suits high-craft portfolios, interactive installations, and any creative site where every pixel signals intention. The targeting animation rewards users who hover over buttons and links.
+
+Keep the lag value between 0.08s and 0.15s. Lower than that and it feels like a normal cursor. Higher and it starts to feel laggy.

@@ -1,0 +1,34 @@
+---
+title: "Build a Metallic Paint Shader in React"
+description: "A WebGL fragment shader renders a fluid metallic surface with light streaks and oil-slick color gradients."
+date: "2026-04-07"
+category: "Animations"
+componentSlug: "metallic-paint"
+---
+
+Metal doesn't have one color. It reflects everything around it: streaks of light, distorted reflections, color shifts as the angle changes. Capturing that in a browser used to be a design compromise. Now, with a well-tuned WebGL shader, you can get genuinely convincing metallic surfaces.
+
+## What it does
+
+The component renders a animated metallic surface using a fragment shader. Light streaks travel across the surface, and the color shifts between hues as the angle of simulated light changes over time, like an oil slick or brushed chrome.
+
+## How it works
+
+A GLSL fragment shader runs on a full-canvas quad. The shader uses layered noise functions (simplex or fbm) to generate surface irregularities, then applies a specular highlight calculation based on a simulated light position that moves with time.
+
+Color is determined by mapping surface normals to a hue rotation, creating the iridescent shift. The whole calculation runs per-pixel on the GPU.
+
+## Key properties
+
+- **colorA** - Base color at one angle extreme
+- **colorB** - Color at the opposing angle
+- **metalness** - How sharp and reflective the highlights appear (default: 0.8)
+- **speed** - Speed of light movement across the surface (default: 0.5)
+- **roughness** - Surface noise intensity (default: 0.3)
+- **iridescence** - Amount of color shift with viewing angle (default: 0.6)
+
+## When to use it
+
+Use this for hero sections, product feature backgrounds, or anywhere you want a premium material feel. It pairs well with dark color schemes where the metallic sheen really pops.
+
+Increase roughness for a brushed metal look. Decrease it for a mirror finish that feels almost liquid.

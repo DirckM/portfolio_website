@@ -1,0 +1,34 @@
+---
+title: "Create Magic Rings in React with WebGL"
+description: "Render animated concentric rings with a WebGL shader that ripples outward in a continuous, hypnotic loop."
+date: "2026-04-07"
+category: "Animations"
+componentSlug: "magic-rings"
+---
+
+Concentric circles have a meditative quality. Water ripples, signal waves, sonar pings. There's something satisfying about watching rings expand outward, and with a WebGL shader you can make them glow with a depth that CSS simply can't match.
+
+## What it does
+
+Multiple concentric rings pulse outward from the center in a continuous loop. Each ring has a slight color variation and phase offset, creating a layered, organic rhythm. The whole thing runs at 60fps on the GPU.
+
+## How it works
+
+The component renders a full-canvas WebGL shader via a single quad. The fragment shader computes the distance from the fragment's UV coordinates to the center, then uses a sine function modulated by time to create the rippling pattern.
+
+Each ring's brightness is calculated with a smooth step around specific distance thresholds. Color is interpolated across the rings using the distance as the input.
+
+## Key properties
+
+- **ringCount** - Number of visible rings (default: 6)
+- **speed** - Animation speed multiplier (default: 1.0)
+- **colorA** - Inner ring color as an RGB triplet
+- **colorB** - Outer ring color as an RGB triplet
+- **thickness** - Width of each ring relative to total radius
+- **glow** - Amount of bloom applied around each ring
+
+## When to use it
+
+Ideal for loading overlays, hero backgrounds, or animated section dividers. The circular geometry draws the eye to the center, making it a natural frame for a logo or headline.
+
+Pair complementary colors for a vibrant look, or use two shades of the same hue for something more restrained and atmospheric.

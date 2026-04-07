@@ -1,0 +1,34 @@
+---
+title: "Create Meta Balls in React with WebGL"
+description: "Render organic, merging blob shapes using a WebGL marching squares algorithm that reacts to cursor position."
+date: "2026-04-07"
+category: "Animations"
+componentSlug: "meta-balls"
+---
+
+Meta balls are one of those effects that look impossibly satisfying. Two blobs approach each other, develop a neck, then merge into one continuous shape. It's organic, tactile, and just unsettling enough to be interesting. And yes, you can do it in a browser at full speed.
+
+## What it does
+
+Circular blobs move around the canvas and merge smoothly when they get close, forming organic compound shapes. The cursor influences the field, attracting or repelling the nearest ball. The merging is physically convincing because of how the underlying math works.
+
+## How it works
+
+Each ball contributes an influence value at every point in space, calculated as the inverse square of the distance from the ball's center. The fragment shader sums all influence values at each pixel. Where the total exceeds a threshold, the pixel is filled, creating a smooth boundary that naturally blends between overlapping balls.
+
+The cursor position is fed to the shader as a uniform, adding an extra influence point that shifts the field in real time.
+
+## Key properties
+
+- **ballCount** - Number of meta balls (default: 4)
+- **threshold** - Merge sensitivity, higher means earlier merging (default: 1.0)
+- **speed** - Base movement speed of the balls (default: 0.8)
+- **color** - Fill color of the combined shape
+- **cursorInfluence** - Strength of cursor attraction (default: 0.5)
+- **glowAmount** - Soft glow applied around the shape boundary
+
+## When to use it
+
+Use this as a hero decoration, a loading indicator with personality, or a playful interactive element in an otherwise structured layout. It signals creativity and technical depth immediately.
+
+A single solid color with a strong glow reads as premium. Multiple colors that blend at merge points feel more experimental and expressive.

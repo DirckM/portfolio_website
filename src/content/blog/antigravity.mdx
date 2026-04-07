@@ -1,0 +1,33 @@
+---
+title: "Build an Antigravity Effect in React with Three.js"
+description: "Make elements float upward in a continuous drift, powered by a Three.js particle simulation with custom velocity fields."
+date: "2026-04-07"
+category: "Animations"
+componentSlug: "antigravity"
+---
+
+Gravity pulls everything down. Flip that, and you immediately create a sense of lightness, magic, or otherworldliness. The Antigravity component does exactly that: elements drift upward as if they've forgotten which way is down.
+
+## What it does
+
+A collection of elements rises continuously from the bottom of the canvas, drifting upward with subtle horizontal sway. Each element has its own velocity, making the motion feel organic rather than mechanical.
+
+## How it works
+
+Three.js manages a particle system where each particle is assigned an initial position along the bottom edge and a randomized upward velocity. On every frame, position is updated by velocity, and a small sinusoidal offset on the x-axis creates the sway.
+
+When a particle reaches the top of the canvas, it resets to the bottom with fresh random values so the effect loops forever. The renderer uses an orthographic camera for a clean 2D-like look.
+
+## Key properties
+
+- **count** - Number of floating elements (default: 40)
+- **speed** - Base upward velocity (default: 0.5)
+- **spread** - Horizontal distribution across the canvas
+- **swayAmount** - Amplitude of the left-right drift
+- **elementSize** - Radius of each floating element
+
+## When to use it
+
+Great for atmospheric backgrounds, loading screens, or ambient section decoration. It creates energy without demanding attention.
+
+Don't overload the count. Forty to sixty elements is usually plenty. Beyond that, the canvas starts to feel cluttered and performance drops on mobile.

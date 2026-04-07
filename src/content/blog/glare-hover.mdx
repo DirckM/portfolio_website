@@ -1,0 +1,33 @@
+---
+title: "Create a Glare Hover Effect in React"
+description: "A specular glare follows the cursor across a card surface, giving flat UI elements a physical, reflective quality."
+date: "2026-04-07"
+category: "Animations"
+componentSlug: "glare-hover"
+---
+
+Physical objects reflect light. Flat UI doesn't, and that's why so much of it feels lifeless. Add a glare that moves with the cursor and your card suddenly behaves like a real surface, catching and bouncing light as the user moves around.
+
+## What it does
+
+A radial gradient highlight follows the cursor across the component. As the mouse moves, the glare repositions smoothly, simulating specular reflection on a slightly tilted surface. The effect disappears when the cursor leaves.
+
+## How it works
+
+Mouse position is tracked relative to the component's bounding rectangle. Those coordinates are normalized to a 0-1 range and mapped to CSS custom properties that control the gradient's center point.
+
+A radial gradient goes from a semi-transparent white at the cursor position to transparent at the edges. The tilt effect is achieved with a CSS transform that applies a subtle perspective rotation based on the same mouse coordinates.
+
+## Key properties
+
+- **glareOpacity** - Maximum opacity of the highlight (default: 0.2)
+- **glareColor** - Color of the glare, usually white
+- **tiltAmount** - Degrees of 3D tilt applied on hover (default: 10)
+- **scale** - How much the card scales up on hover (default: 1.02)
+- **borderRadius** - Should match the container's border radius
+
+## When to use it
+
+This is perfect for product cards, testimonial tiles, and profile cards where you want tactile feedback without a click. It rewards users who explore the UI with a mouse.
+
+Keep glare opacity between 0.1 and 0.25. Any higher and it starts to look like a bug rather than a feature.
