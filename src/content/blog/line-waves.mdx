@@ -6,126 +6,103 @@ category: "Backgrounds"
 componentSlug: "line-waves"
 ---
 
-Static backgrounds feel static. Softly undulating lines of color feel alive. The LineWaves component draws a set of sine curves on a canvas element and animates them frame by frame, giving any page a subtle pulse without a single animation library.
+Static backgrounds feel static. Softly undulating lines of color feel alive. This component draws sine curves on a canvas and animates them frame by frame.
 
-## What we are building
+## The final result
 
-A canvas-based background that renders multiple horizontal sine waves. Each line oscillates at a slightly different phase and amplitude, so they never perfectly overlap. The result is a layered breathing effect that runs continuously at 60fps.
+Adjust the number of lines, amplitude, and color to see how different configurations feel:
+
+<LiveStep
+  code={`<div style={{ width: '100%', height: '300px' }}>
+  <LineWaves lineCount={8} lineColor="#000" amplitude={40} frequency={0.02} speed={0.02} />
+</div>`}
+  controls={[
+    { prop: 'lineCount', type: 'slider', min: 2, max: 20, step: 1, default: 8, label: 'lines' },
+    { prop: 'amplitude', type: 'slider', min: 10, max: 100, step: 5, default: 40, label: 'amplitude' },
+    { prop: 'lineColor', type: 'color', default: '#000000', label: 'color' },
+  ]}
+/>
 
 ## Setting up
 
-No external dependencies. The component uses the browser's `Canvas2D` API and `requestAnimationFrame`.
+No external dependencies. Just canvas and requestAnimationFrame.
 
 ```tsx
 import { useRef, useEffect } from 'react';
 ```
 
-## Building the component
+## Step 1: Canvas setup with retina support
 
-Start with the props interface and defaults:
-
-```tsx
-interface LineWavesProps {
-  lineCount?: number;
-  lineColor?: string;
-  lineWidth?: number;
-  amplitude?: number;
-  frequency?: number;
-  speed?: number;
-  className?: string;
-}
-```
-
-The canvas needs to respect the device pixel ratio so lines stay sharp on retina screens. Inside the `useEffect`, set this up before drawing anything:
+The canvas needs to respect device pixel ratio so lines stay sharp on retina screens:
 
 ```tsx
 function resize() {
-  if (!canvas) return;
   canvas.width = canvas.offsetWidth * window.devicePixelRatio;
   canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-  ctx!.scale(window.devicePixelRatio, window.devicePixelRatio);
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
 ```
 
-The drawing function calculates evenly spaced base positions, then draws each wave with a sine offset that varies per line:
+## Step 2: The sine wave drawing loop
+
+Each line is positioned at an even vertical spacing. The sine function offsets each point, and each line gets a different phase so they oscillate out of sync:
 
 ```tsx
-function draw() {
-  if (!canvas || !ctx) return;
-  const w = canvas.offsetWidth;
-  const h = canvas.offsetHeight;
-
-  ctx.clearRect(0, 0, w, h);
-  ctx.strokeStyle = lineColor;
-  ctx.lineWidth = lineWidth;
-
-  const spacing = h / (lineCount + 1);
-
-  for (let i = 1; i <= lineCount; i++) {
-    const baseY = spacing * i;
-    ctx.beginPath();
-
-    for (let x = 0; x <= w; x++) {
-      const y =
-        baseY +
-        Math.sin(x * frequency + offsetRef.current + i * 0.8) *
-          amplitude *
-          (1 - Math.abs(i - lineCount / 2) / lineCount);
-      if (x === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    }
-
-    ctx.stroke();
+for (let i = 1; i <= lineCount; i++) {
+  const baseY = spacing * i;
+  for (let x = 0; x <= w; x++) {
+    const y = baseY +
+      Math.sin(x * frequency + offset + i * 0.8) *
+        amplitude *
+        (1 - Math.abs(i - lineCount / 2) / lineCount);
   }
-
-  offsetRef.current += speed;
-  animationRef.current = requestAnimationFrame(draw);
 }
 ```
 
-The key part is `i * 0.8` added to the phase. Each line gets its own phase offset, so they oscillate out of sync. The amplitude modifier `(1 - Math.abs(i - lineCount / 2) / lineCount)` scales waves down toward the edges, making the center lines more dramatic.
+The `i * 0.8` phase offset is what makes the waves look organic. The amplitude modifier scales waves down at the edges.
 
-The `offsetRef` accumulates each frame and moves the whole wave field horizontally over time. Advance it by `speed` per frame rather than using a timestamp for simplicity.
+Try different line counts and amplitudes:
 
-Kick off the loop and clean up:
+<LiveStep
+  code={`<div style={{ width: '100%', height: '250px' }}>
+  <LineWaves lineCount={5} lineColor="#e5e5e5" amplitude={30} />
+</div>`}
+  controls={[
+    { prop: 'lineCount', type: 'slider', min: 2, max: 20, step: 1, default: 5, label: 'lines' },
+    { prop: 'amplitude', type: 'slider', min: 10, max: 100, step: 5, default: 30, label: 'amplitude' },
+    { prop: 'lineColor', type: 'color', default: '#e5e5e5', label: 'color' },
+  ]}
+/>
 
-```tsx
-draw();
+## Step 3: Animation loop
 
-return () => {
-  window.removeEventListener('resize', resize);
-  cancelAnimationFrame(animationRef.current);
-};
-```
-
-The full component renders a single canvas that fills its parent:
-
-```tsx
-return <canvas ref={canvasRef} className={`w-full h-full ${className}`} />;
-```
-
-## How to use it
-
-Drop it inside any positioned container and set a background color on the parent:
+The offset advances each frame, creating continuous horizontal motion:
 
 ```tsx
-<div className="relative h-screen bg-neutral-950">
-  <LineWaves
-    lineCount={8}
-    lineColor="#e5e5e5"
-    amplitude={40}
-    frequency={0.02}
-    speed={0.02}
-  />
-  <div className="relative z-10">Your content here</div>
-</div>
+offsetRef.current += speed;
+animationRef.current = requestAnimationFrame(draw);
 ```
+
+Keep speed low (0.01 to 0.03) for a calm feel behind content.
+
+## Step 4: Put it together
+
+Drop it inside any positioned container:
+
+<LiveStep
+  code={`<div style={{ width: '100%', height: '300px', background: '#000' }}>
+  <LineWaves lineCount={12} lineColor="#333" amplitude={60} speed={0.02} />
+</div>`}
+  previewBg="bg-black"
+  controls={[
+    { prop: 'lineCount', type: 'slider', min: 2, max: 20, step: 1, default: 12, label: 'lines' },
+    { prop: 'amplitude', type: 'slider', min: 10, max: 100, step: 5, default: 60, label: 'amplitude' },
+    { prop: 'lineColor', type: 'color', default: '#333333', label: 'color' },
+  ]}
+/>
 
 ## Key takeaways
 
-- The `devicePixelRatio` scale call is essential for crisp lines on high-DPI screens. Skip it and everything looks blurry.
-- Varying the phase offset per line (`i * 0.8`) is what makes the waves look organic rather than synchronized.
-- Keeping speed low (0.01 to 0.03) keeps the motion calm and readable behind content.
+- The `devicePixelRatio` scale call is essential for crisp lines on high-DPI screens.
+- Varying the phase offset per line (`i * 0.8`) makes the waves look organic.
+- Keeping speed low keeps the motion calm and readable behind content.
