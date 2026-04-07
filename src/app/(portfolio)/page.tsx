@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { motion } from 'motion/react';
 import VariableProximity from '@/components/proximity-text/ProximityText';
 import ContactForm from '@/components/ContactForm';
-import Carousel from '@/components/Carousel';
 import Modal from '@/components/modal/Modal';
 import { RefObject, useRef, useState } from 'react';
 import BlurText from '@/components/library/text-animations/BlurText';
@@ -259,149 +258,209 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Selected Work */}
-      <section id='projects' className='px-6 md:px-16 py-32'>
-        <div className='max-w-5xl mx-auto'>
-          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight mb-20'>
+      {/* Selected Work - 3D perspective cards like hero carousel */}
+      <section id='projects' className='py-32 overflow-hidden'>
+        <div className='max-w-5xl mx-auto px-6 md:px-16 mb-16'>
+          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
             Selected{' '}
             <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
               Work
             </span>
           </h2>
+        </div>
 
-          <div className='flex flex-col gap-1'>
-            {projects.map((project, i) => (
-              <motion.div
+        <div
+          className='w-full flex items-center overflow-hidden'
+          style={{
+            maskImage:
+              'linear-gradient(to right, rgba(0,0,0,0) 0%, rgb(0,0,0) 10%, rgb(0,0,0) 90%, rgba(0,0,0,0) 100%)',
+            WebkitMaskImage:
+              'linear-gradient(to right, rgba(0,0,0,0) 0%, rgb(0,0,0) 10%, rgb(0,0,0) 90%, rgba(0,0,0,0) 100%)',
+          }}
+        >
+          <div className='flex items-center gap-0 justify-center w-full px-[5vw]'>
+            {projects.map((project, _i) => (
+              <figure
                 key={project.title}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.5, delay: i * 0.05 }}
+                className='shrink-0 relative cursor-pointer'
                 onClick={() => handleProjectClick(project)}
-                className='group cursor-pointer border-b border-library-border'
+                style={{
+                  width: '240px',
+                  height: '340px',
+                  margin: '0',
+                  transform: 'perspective(1143px) rotateY(-50deg) skewY(20deg)',
+                  transition: 'opacity 0.3s ease, transform 0.4s ease',
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.transform =
+                    'perspective(1143px) rotateY(-30deg) skewY(12deg) scale(1.08) translateY(-15px)';
+                  (e.currentTarget as HTMLElement).style.opacity = '1';
+                  (e.currentTarget as HTMLElement).style.zIndex = '10';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.transform =
+                    'perspective(1143px) rotateY(-50deg) skewY(20deg)';
+                  (e.currentTarget as HTMLElement).style.opacity = '0.85';
+                  (e.currentTarget as HTMLElement).style.zIndex = '0';
+                }}
               >
-                <div className='flex items-center justify-between py-6 md:py-8'>
-                  <div className='flex items-center gap-6 md:gap-10'>
-                    <span className='text-library-gray text-sm font-mono w-6'>
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <div>
-                      <h3 className='text-xl md:text-2xl font-[family-name:var(--font-instrument-serif)] italic text-black group-hover:text-library-gray transition-colors'>
-                        {project.title}
-                      </h3>
-                      <p className='text-sm text-library-gray mt-1 hidden md:block'>
-                        {project.description}
-                      </p>
-                    </div>
-                  </div>
-                  <div className='flex items-center gap-4'>
-                    <div className='hidden md:flex gap-2'>
-                      {project.content.technologies.slice(0, 3).map(tech => (
-                        <span
-                          key={tech}
-                          className='px-2 py-0.5 text-[10px] uppercase tracking-wider text-library-gray border border-library-border rounded-full'
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                    <svg
-                      className='w-4 h-4 text-library-gray group-hover:text-black group-hover:translate-x-1 transition-all'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={1.5}
-                        d='M9 5l7 7-7 7'
-                      />
-                    </svg>
+                <div className='relative w-full h-full overflow-hidden bg-library-cream'>
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    className='object-contain p-8'
+                  />
+                  {/* Hover overlay with project info */}
+                  <div className='absolute inset-0 bg-black/0 hover:bg-black/60 transition-colors duration-300 flex flex-col justify-end p-5 opacity-0 hover:opacity-100'>
+                    <h3 className='text-white text-lg font-semibold'>
+                      {project.title}
+                    </h3>
+                    <p className='text-white/60 text-xs mt-1'>
+                      {project.description}
+                    </p>
                   </div>
                 </div>
-              </motion.div>
+              </figure>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Experience */}
+      {/* Experience - centered grid */}
       <section id='experience' className='py-32'>
-        <div className='max-w-5xl mx-auto px-6 md:px-16 mb-8'>
-          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
+        <div className='max-w-5xl mx-auto px-6 md:px-16'>
+          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight mb-16'>
             My{' '}
             <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
               Experience
             </span>
           </h2>
-        </div>
 
-        {/* Horizontal scrolling job cards */}
-        <div className='relative'>
-          <div
-            className='flex gap-6 overflow-x-auto px-6 md:px-16 pb-4 snap-x snap-mandatory'
-            style={{ scrollbarWidth: 'none' }}
-          >
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             {[
               {
                 title: 'Full-Stack Developer',
                 company: 'Freelance',
                 period: 'Jan 2023 - Present',
-                desc: 'Building digital products for clients across Europe.',
+                desc: 'Building digital products for clients across Europe. From concept to deployment.',
               },
               {
                 title: 'Co-Founder',
                 company: 'Teckit',
                 period: '2022 - 2024',
-                desc: 'Built an all-in-one event management platform from scratch.',
+                desc: 'Built an all-in-one event management platform with a team of four.',
               },
               {
                 title: 'Course Assistant',
                 company: 'Co-Teach',
                 period: 'Sep 2022 - Jun 2023',
-                desc: 'Guided students through web development fundamentals.',
+                desc: 'Guided students through web development fundamentals at university.',
               },
               {
                 title: 'Founder',
                 company: 'MarineNet',
                 period: '2020 - 2022',
-                desc: 'Created a marketplace for marine equipment at 17.',
+                desc: 'Created a marketplace for marine equipment. My first real venture at 17.',
               },
             ].map((job, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className='shrink-0 w-[320px] snap-start'
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                className='group relative border border-library-border rounded-xl p-8 hover:border-black/20 transition-colors duration-300'
               >
-                <div className='border border-library-border rounded-xl p-6 h-full flex flex-col justify-between gap-6 hover:shadow-lg transition-shadow'>
-                  <div>
-                    <p className='text-[10px] uppercase tracking-widest text-library-gray mb-3'>
-                      {job.period}
-                    </p>
-                    <h3 className='text-lg font-[family-name:var(--font-instrument-serif)] italic text-black'>
-                      {job.title}
-                    </h3>
-                    <p className='text-sm text-library-gray mt-1'>
-                      {job.company}
-                    </p>
-                  </div>
-                  <p className='text-sm text-library-gray leading-relaxed'>
-                    {job.desc}
+                <div className='flex justify-between items-start mb-6'>
+                  <p className='text-[10px] uppercase tracking-widest text-library-gray'>
+                    {job.period}
                   </p>
+                  <div className='w-2 h-2 rounded-full bg-library-border group-hover:bg-black transition-colors' />
                 </div>
+                <h3 className='text-xl font-[family-name:var(--font-instrument-serif)] italic text-black mb-1'>
+                  {job.title}
+                </h3>
+                <p className='text-sm text-library-gray mb-4'>{job.company}</p>
+                <p className='text-sm text-library-gray leading-relaxed'>
+                  {job.desc}
+                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Skills carousel */}
-      <section id='skills' className='w-full'>
-        <Carousel speed={1} className='h-64' />
+      {/* Skills */}
+      <section id='skills' className='py-32'>
+        <div className='max-w-5xl mx-auto px-6 md:px-16 mb-16'>
+          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
+            My{' '}
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal'>
+              Skills
+            </span>
+          </h2>
+        </div>
+        <div
+          className='relative h-[300px] overflow-hidden'
+          style={{
+            maskImage:
+              'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
+            WebkitMaskImage:
+              'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
+          }}
+        >
+          <div className='absolute inset-0 flex flex-col items-center animate-[skillScroll_20s_linear_infinite]'>
+            {[
+              'React',
+              'TypeScript',
+              'Next.js',
+              'Tailwind CSS',
+              'Node.js',
+              'Figma',
+              'React Native',
+              'PostgreSQL',
+              'Three.js',
+              'Framer Motion',
+              'Java',
+              'Python',
+              'Git',
+              'Supabase',
+              'REST APIs',
+              'UI/UX Design',
+              'React',
+              'TypeScript',
+              'Next.js',
+              'Tailwind CSS',
+              'Node.js',
+              'Figma',
+              'React Native',
+              'PostgreSQL',
+              'Three.js',
+              'Framer Motion',
+              'Java',
+              'Python',
+              'Git',
+              'Supabase',
+              'REST APIs',
+              'UI/UX Design',
+            ].map((skill, idx) => (
+              <span
+                key={idx}
+                className='text-2xl md:text-4xl font-[family-name:var(--font-instrument-serif)] italic text-black/80 py-3 leading-relaxed'
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <style>{`
+          @keyframes skillScroll {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+          }
+        `}</style>
       </section>
 
       {/* About */}
