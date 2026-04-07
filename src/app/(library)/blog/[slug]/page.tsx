@@ -6,6 +6,11 @@ import BlogPostLayout from '@/components/shell/BlogPostLayout';
 import CodeBlock from '@/components/shell/CodeBlock';
 
 import { fullDemos } from '@/lib/component-previews';
+import LiveStep from '@/components/shell/LiveStep';
+import BlurText from '@/components/library/text-animations/BlurText';
+import TiltedCard from '@/components/library/components/TiltedCard';
+import ElectricBorder from '@/components/library/animations/ElectricBorder';
+import LineWaves from '@/components/library/backgrounds/LineWaves';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -64,6 +69,18 @@ async function HighlightedPre({
 }
 
 const mdxComponents = {
+  LiveStep: (props: any) => (
+    <LiveStep
+      {...props}
+      scope={{
+        BlurText,
+        TiltedCard,
+        ElectricBorder,
+        LineWaves,
+        ...props.scope,
+      }}
+    />
+  ),
   pre: HighlightedPre,
   h2: ({ children }: { children: React.ReactNode }) => (
     <h2 className='text-2xl font-[family-name:var(--font-instrument-serif)] mt-12 mb-4'>
