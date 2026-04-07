@@ -1,0 +1,33 @@
+---
+title: "Create an Animated Terminal in React"
+description: "Build a realistic typing terminal component that plays back a sequence of commands and output, ideal for developer-focused landing pages."
+date: "2026-04-07"
+category: "Blocks"
+componentSlug: "terminal"
+---
+
+Developer tools live and die by their first impression, and nothing communicates "this is built for engineers" faster than a terminal. The Animated Terminal component lets you script a realistic command-line sequence that plays back automatically, making your product demo itself.
+
+## What it does
+
+The Terminal component renders a styled terminal window with a title bar, blinking cursor, and a configurable sequence of commands and responses. Each command types out character by character, then the output appears line by line. The whole sequence loops or stops at the end, depending on your configuration.
+
+## How it works
+
+The component works through a steps array, where each step is either a command or a block of output. Commands are typed using a character-by-character interval that simulates human typing speed. Output lines are printed with a shorter delay, giving the impression the terminal is responding.
+
+A `useEffect` with cleanup handles the timing chain, clearing all intervals when the component unmounts so there are no memory leaks.
+
+## Key properties
+
+- **steps** - Array of step objects with type (`command` or `output`) and content
+- **typingSpeed** - Milliseconds per character for command typing (default: 50)
+- **outputDelay** - Milliseconds between each output line (default: 80)
+- **loop** - Whether to restart the sequence after it completes
+- **theme** - Color scheme preset (`dark`, `light`, or `dracula`)
+
+## When to use it
+
+The Animated Terminal works well on CLI tool landing pages, developer API documentation, or any product where the target audience is technical. Seeing a command run and produce output is more convincing than reading about what the tool does.
+
+Keep the scripted sequence short, three to five commands is enough to make the point without losing attention.

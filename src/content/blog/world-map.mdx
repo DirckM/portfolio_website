@@ -1,0 +1,33 @@
+---
+title: "Build an Interactive World Map in React"
+description: "Render a dotted world map with animated arcs connecting locations, built with a dot-grid projection and SVG curve drawing."
+date: "2026-04-07"
+category: "Blocks"
+componentSlug: "world-map"
+---
+
+Global reach is a story that is hard to tell with words alone. Showing it on a map, with live arcs flying between cities, makes the point instantly. The World Map component gives you a stylish dotted projection with animated connection arcs that you configure with just coordinate pairs.
+
+## What it does
+
+World Map renders a world map as a grid of dots that follow the coastlines and landmasses of the globe. You supply pairs of geographic coordinates and the component draws animated curved arcs between them. The arcs travel from source to destination with a draw-on animation, then repeat or hold in place.
+
+## How it works
+
+The map is built from a precomputed dataset of dot positions that correspond to land areas in an equirectangular projection. Each dot is rendered as a small circle on an SVG canvas scaled to its container.
+
+Arcs are drawn as SVG `path` elements using a quadratic bezier curve between the projected source and destination coordinates. The draw-on effect uses `stroke-dashoffset` animation, starting with the path fully hidden and animating the offset to zero so the line appears to travel across the map.
+
+## Key properties
+
+- **arcs** - Array of objects with `from` and `to` as `[lat, lng]` pairs
+- **arcColor** - Stroke color for the animated arcs
+- **dotColor** - Fill color for the land-area dots
+- **dotSize** - Radius of each dot in pixels (default: 1.5)
+- **animationDuration** - Time in milliseconds for each arc to complete its draw-on
+
+## When to use it
+
+World Map is ideal for company landing pages that want to show customer distribution, infrastructure coverage, or office locations. It is a strong "social proof through geography" tool.
+
+Limit arcs to the genuinely interesting connections. A map with 50 arcs crisscrossing everywhere looks busy and loses the impact of the visualization.
