@@ -5,8 +5,12 @@ import { highlightCode } from '@/lib/shiki';
 import BlogPostLayout from '@/components/shell/BlogPostLayout';
 import CodeBlock from '@/components/shell/CodeBlock';
 
+import dynamic from 'next/dynamic';
 import { fullDemos } from '@/lib/component-previews';
-import LiveStep from '@/components/shell/LiveStep';
+const LiveStep = dynamic(() => import('@/components/shell/LiveStep'), {
+  ssr: false,
+  loading: () => <div className='my-8 h-[300px] rounded-lg bg-[#282c34] animate-pulse' />,
+});
 import BlurText from '@/components/library/text-animations/BlurText';
 import TiltedCard from '@/components/library/components/TiltedCard';
 import ElectricBorder from '@/components/library/animations/ElectricBorder';
