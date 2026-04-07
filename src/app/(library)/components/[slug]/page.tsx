@@ -7,7 +7,7 @@ import {
   CATEGORY_LABELS,
 } from '@/lib/components-registry';
 import ComponentCard from '@/components/shell/ComponentCard';
-import { fullDemos, cardPreviews } from '@/lib/component-previews';
+import { FullDemo, CardPreview } from '@/components/shell/ComponentDemo';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -51,9 +51,7 @@ export default async function ComponentDetailPage({ params }: PageProps) {
   return (
     <div className='pt-24'>
       <section className='w-full min-h-[60vh] flex items-center justify-center bg-library-cream border-b border-library-border'>
-        {fullDemos[slug] || (
-          <div className='text-library-gray'>Live demo: {component.name}</div>
-        )}
+        <FullDemo slug={slug} name={component.name} />
       </section>
 
       <section className='max-w-[1200px] mx-auto px-6 py-16'>
@@ -89,9 +87,7 @@ export default async function ComponentDetailPage({ params }: PageProps) {
                 slug={r.slug}
                 category={r.category}
               >
-                {cardPreviews[r.slug] || (
-                  <div className='text-library-gray text-sm'>{r.name}</div>
-                )}
+                <CardPreview slug={r.slug} name={r.name} />
               </ComponentCard>
             ))}
           </div>
