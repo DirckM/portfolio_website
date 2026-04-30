@@ -63,28 +63,19 @@ export default function ContactForm() {
     setSubmitStatus('idle');
 
     try {
-      const emailjs = (await import('@emailjs/browser')).default;
-      const serviceId =
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'service_8utycsy';
-      const templateId =
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'your_template_id';
-      const publicKey =
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'your_public_key';
-
-      await emailjs.send(
-        serviceId,
-        templateId,
-        {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          title: 'Portfolio contact form',
           message: formData.description,
-          time: new Date().toLocaleString('en-GB', {
-            timeZone: 'Europe/Amsterdam',
-          }),
-        },
-        publicKey
-      );
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
+      }
 
       setSubmitStatus('success');
       setFormData({ name: '', email: '', description: '' });
