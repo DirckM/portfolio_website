@@ -65,7 +65,7 @@ export default function ContactForm() {
     try {
       const emailjs = (await import('@emailjs/browser')).default;
       const serviceId =
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'service_senkn2a';
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'service_8utycsy';
       const templateId =
         process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'your_template_id';
       const publicKey =
@@ -75,10 +75,13 @@ export default function ContactForm() {
         serviceId,
         templateId,
         {
-          from_name: formData.name,
-          from_email: formData.email,
-          message: formData.description + ' - ' + formData.email,
-          to_email: 'dirckmulder20@gmail.com',
+          name: formData.name,
+          email: formData.email,
+          title: 'Portfolio contact form',
+          message: formData.description,
+          time: new Date().toLocaleString('en-GB', {
+            timeZone: 'Europe/Amsterdam',
+          }),
         },
         publicKey
       );
