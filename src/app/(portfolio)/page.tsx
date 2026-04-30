@@ -418,6 +418,36 @@ export default function Home() {
       },
     },
     {
+      title: 'Hiram Project',
+      image: '/projects/hiram-hero.png',
+      cardBg: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a0a 100%)',
+      cardTextColor: '#d4ff00',
+      description: 'A website built in under 10 minutes with AI',
+      media: {
+        type: 'image' as const,
+        src: '/projects/hiram-hero.png',
+        alt: 'Hiram project website',
+      },
+      content: {
+        description:
+          'My friend Hiram didn\'t believe I could build him a website in under <strong>10 minutes</strong>. Using an <strong>AI pipeline</strong> powered by Claude with curated skills, I shipped a full single-page site with animated charts, interactive sections, and a data-science themed design -- all before his coffee got cold.',
+        technologies: [
+          'Next.js',
+          'TypeScript',
+          'Tailwind CSS',
+          'Claude AI',
+          'Vercel',
+        ],
+        features: [
+          'Built in under 10 minutes',
+          'AI-powered development pipeline',
+          'Interactive regression chart',
+          'Data science themed design',
+        ],
+        link: null,
+      },
+    },
+    {
       title: 'AI Learner',
       image: '/projects/ai-learner.svg',
       cardBg: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',

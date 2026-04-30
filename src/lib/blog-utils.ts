@@ -44,7 +44,7 @@ export function getBlogPost(slug: string): BlogPost | null {
     description: data.description || '',
     date: data.date || new Date().toISOString(),
     category: data.category || 'components',
-    componentSlug: data.componentSlug || slug,
+    componentSlug: data.componentSlug || '',
     readingTime: stats.text,
     content,
   };

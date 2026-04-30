@@ -43,12 +43,21 @@ export default function BlogPostLayout({
       </div>
 
       <footer className='max-w-[720px] mx-auto px-6 mt-16 pt-8 border-t border-library-border'>
-        <Link
-          href={`/components/${post.componentSlug}`}
-          className='text-sm text-black underline underline-offset-4 hover:no-underline'
-        >
-          View {post.title} component
-        </Link>
+        {post.componentSlug ? (
+          <Link
+            href={`/components/${post.componentSlug}`}
+            className='text-sm text-black underline underline-offset-4 hover:no-underline'
+          >
+            View {post.title} component
+          </Link>
+        ) : (
+          <Link
+            href='/blog'
+            className='text-sm text-black underline underline-offset-4 hover:no-underline'
+          >
+            Back to all posts
+          </Link>
+        )}
       </footer>
     </article>
   );
