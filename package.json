@@ -37,6 +37,7 @@
     "next": "16.2.2",
     "next-mdx-remote": "^6.0.0",
     "ogl": "^1.0.11",
+    "posthog-js": "^1.373.2",
     "react": "19.1.0",
     "react-bootstrap": "^2.10.10",
     "react-dom": "19.1.0",
