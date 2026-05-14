@@ -499,8 +499,8 @@ export default function Home() {
       </section>
 
       {/* Selected Work - auto-scrolling 3D carousel */}
-      <section id='projects' className='py-32 overflow-x-clip'>
-        <div className='max-w-5xl mx-auto px-6 md:px-16 mb-16'>
+      <section id='projects' className='pt-6 sm:pt-8 md:pt-12 lg:pt-16 xl:pt-20 pb-32 overflow-x-clip'>
+        <div className='max-w-5xl mx-auto px-6 md:px-16 mb-10 md:mb-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
             Selected{' '}
             <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal text-gradient-primary'>

@@ -63,25 +63,16 @@ export default function ContactForm() {
     setSubmitStatus('idle');
 
     try {
-      const emailjs = (await import('@emailjs/browser')).default;
-      const serviceId =
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'service_senkn2a';
-      const templateId =
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'your_template_id';
-      const publicKey =
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'your_public_key';
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
-      await emailjs.send(
-        serviceId,
-        templateId,
-        {
-          from_name: formData.name,
-          from_email: formData.email,
-          message: formData.description + ' - ' + formData.email,
-          to_email: 'dirckmulder20@gmail.com',
-        },
-        publicKey
-      );
+      if (!res.ok) {
+        const { error } = await res.json().catch(() => ({ error: null }));
+        throw new Error(error || `Request failed (${res.status})`);
+      }
 
       setSubmitStatus('success');
       setFormData({ name: '', email: '', description: '' });
