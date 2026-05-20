@@ -225,7 +225,7 @@ We built both the <strong>client</strong> and <strong>server</strong> from scrat
       content: {
         description: `
 We developed a Relationship Management System for the University of Twente to help manage partnerships with external universities. The platform allows staff to register and track contact moments between individuals from different institutions, creating a clear overview of ongoing collaborations.
-The system gives the internal office a better understanding of existing connections — who is involved, how they are linked, and the nature of each relationship. This project provided valuable insight into building structured data systems that improve transparency and coordination across organizations.
+The system gives the internal office a better understanding of existing connections - who is involved, how they are linked, and the nature of each relationship. This project provided valuable insight into building structured data systems that improve transparency and coordination across organizations.
 `,
         technologies: [
           'React',
@@ -385,7 +385,7 @@ The system gives the internal office a better understanding of existing connecti
           <div ref={containerRef} className='h-full'>
             <VariableProximity
               label='
-              Hi, I’m Dirck. I’ve been creating things my whole life. When I was young, I got my first Arduino, and from that moment on, building and experimenting became my passion. I’ve always loved discovering new ideas, tools, and skills to unlock. At just 14 or 15, I started my first small business making recycled bracelets because I wanted to experience what it’s like to make real business decisions and see an idea come to life. Right now, I’m finishing my bachelor’s degree in Computer Science. Over the past few years, I’ve learned a lot—not only about technology, but also about problem-solving and persistence. The biggest lesson for me has been that with enough dedication, any problem can be solved. Sometimes the odds are against you, but it’s up to you to turn that around. Now, I’m looking forward to new challenges that will help me grow, learn, and keep creating.'
+              Hi, I’m Dirck. I’ve been creating things my whole life. When I was young, I got my first Arduino, and from that moment on, building and experimenting became my passion. I’ve always loved discovering new ideas, tools, and skills to unlock. At just 14 or 15, I started my first small business making recycled bracelets because I wanted to experience what it’s like to make real business decisions and see an idea come to life. Right now, I’m finishing my bachelor’s degree in Computer Science. Over the past few years, I’ve learned a lot-not only about technology, but also about problem-solving and persistence. The biggest lesson for me has been that with enough dedication, any problem can be solved. Sometimes the odds are against you, but it’s up to you to turn that around. Now, I’m looking forward to new challenges that will help me grow, learn, and keep creating.'
               className='variable-proximity-demo text-lg h-full'
               fromFontVariationSettings="'wght' 400, 'opsz' 9"
               toFontVariationSettings="'wght' 1000, 'opsz' 40"

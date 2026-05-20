@@ -73,7 +73,7 @@ import MarqueeAlongSvgPath from '@/components/library/blocks/MarqueeAlongSvgPath
 import Terminal from '@/components/library/blocks/Terminal';
 import WorldMap from '@/components/library/blocks/WorldMap';
 
-// WebGL / heavy — imported normally since they're only passed into LiveStep scope (client component)
+// WebGL / heavy - imported normally since they're only passed into LiveStep scope (client component)
 import ASCIIText from '@/components/library/text-animations/ASCIIText';
 import SoftAurora from '@/components/library/backgrounds/SoftAurora';
 import ColorBends from '@/components/library/backgrounds/ColorBends';

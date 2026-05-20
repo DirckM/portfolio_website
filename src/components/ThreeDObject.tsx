@@ -66,7 +66,7 @@ function Model3DInner({
 }
 
 /**
- * The full Canvas wrapper — easy plug-and-play
+ * The full Canvas wrapper - easy plug-and-play
  */
 export default function Model3DCanvas(props: Model3DProps) {
   return (

@@ -10,7 +10,7 @@
 
 ---
 
-### Task 1: Text Animation Demos (Part 1 — 7 components)
+### Task 1: Text Animation Demos (Part 1 - 7 components)
 
 **Files:**
 - Modify: `src/lib/component-previews.tsx` (add entries to `fullDemos` object, starting at line ~960)
@@ -182,7 +182,7 @@ git commit -m "Add full demos for text animations part 1: split-text, circular-t
 
 ---
 
-### Task 2: Text Animation Demos (Part 2 — 7 components)
+### Task 2: Text Animation Demos (Part 2 - 7 components)
 
 **Files:**
 - Modify: `src/lib/component-previews.tsx` (add entries to `fullDemos` object)
@@ -450,7 +450,7 @@ git commit -m "Add full demos for all 10 animation components: glare-hover, anti
 
 ---
 
-### Task 4: Component Demos (Part 1 — 7 components)
+### Task 4: Component Demos (Part 1 - 7 components)
 
 **Files:**
 - Modify: `src/lib/component-previews.tsx` (add entries to `fullDemos` object)
@@ -546,7 +546,7 @@ git commit -m "Add full demos for components part 1: animated-list, scroll-stack
 
 ---
 
-### Task 5: Component Demos (Part 2 — 7 components)
+### Task 5: Component Demos (Part 2 - 7 components)
 
 **Files:**
 - Modify: `src/lib/component-previews.tsx` (add entries to `fullDemos` object)
