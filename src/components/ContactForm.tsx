@@ -100,10 +100,10 @@ export default function ContactForm() {
                   Email
                 </p>
                 <a
-                  href='mailto:dirckmulder20@gmail.com'
+                  href='mailto:contact@dirckmulder.com'
                   className='text-black hover:text-library-gray transition-colors text-sm'
                 >
-                  dirckmulder20@gmail.com
+                  contact@dirckmulder.com
                 </a>
               </div>
               <div>

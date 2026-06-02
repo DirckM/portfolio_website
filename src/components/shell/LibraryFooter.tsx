@@ -23,6 +23,18 @@ export default function LibraryFooter() {
         >
           Blog
         </Link>
+        <Link
+          href='/privacy'
+          className='no-underline text-library-gray hover:text-black transition-colors'
+        >
+          Privacy
+        </Link>
+        <Link
+          href='/terms'
+          className='no-underline text-library-gray hover:text-black transition-colors'
+        >
+          Terms
+        </Link>
       </div>
     </footer>
   );

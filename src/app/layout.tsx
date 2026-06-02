@@ -30,6 +30,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
+      <head>
+        <script
+          src='https://analytics.ahrefs.com/analytics.js'
+          data-key='38pJfQgXckFxiE4n3PZqUQ'
+          async
+        />
+      </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >

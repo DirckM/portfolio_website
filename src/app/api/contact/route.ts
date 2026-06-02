@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Message too short' }, { status: 400 });
   }
 
-  const to = process.env.CONTACT_TO_EMAIL || 'dirckmulder20@gmail.com';
+  const to = process.env.CONTACT_TO_EMAIL || 'contact@dirckmulder.com';
   const from = process.env.CONTACT_FROM_EMAIL || 'onboarding@resend.dev';
 
   const resend = new Resend(apiKey);

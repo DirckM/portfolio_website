@@ -54,6 +54,18 @@ const Footer = () => {
               >
                 Blog
               </Link>
+              <Link
+                href='/privacy'
+                className='block text-library-gray hover:text-black transition-colors'
+              >
+                Privacy
+              </Link>
+              <Link
+                href='/terms'
+                className='block text-library-gray hover:text-black transition-colors'
+              >
+                Terms
+              </Link>
             </div>
           </div>
 
@@ -62,9 +74,14 @@ const Footer = () => {
             <h4 className='text-lg font-semibold text-black'>Get In Touch</h4>
             <div className='space-y-2'>
               <p className='text-library-gray'>
-                Email: dirckmulder20@gmail.com
+                Email:{' '}
+                <a
+                  href='mailto:contact@dirckmulder.com'
+                  className='underline hover:text-black'
+                >
+                  contact@dirckmulder.com
+                </a>
               </p>
-              <p className='text-library-gray'>Phone: +31 6 250 217 55</p>
             </div>
           </div>
         </div>
