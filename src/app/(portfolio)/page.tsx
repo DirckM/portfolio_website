@@ -151,6 +151,38 @@ export default function Home() {
 
   const projects: Project[] = [
     {
+      title: 'Website Rebuilds',
+      image: '/projects/website-rebuilds.png',
+      cardBg: 'linear-gradient(135deg, #0a0a0f 0%, #241246 100%)',
+      cardTextColor: '#ffffff',
+      description: 'Polished web and mobile designs rebuilt as live, animated pages',
+      media: {
+        type: 'image' as const,
+        src: '/projects/website-rebuilds.png',
+        alt: 'Website Rebuilds gallery of recreated designs',
+      },
+      content: {
+        description:
+          '<strong>Website Rebuilds</strong> is a growing gallery where I recreate the most polished web and mobile designs I can find, cut frame-by-frame from reels and posts, as real live pages. Every rebuild gets a proper <strong>WebGL</strong> or <strong>Framer Motion</strong> hero instead of a flat screenshot, from iridescent 3D cans to a pixel-art hero that morphs on scroll.',
+        technologies: [
+          'Next.js',
+          'React',
+          'TypeScript',
+          'Tailwind CSS',
+          'Framer Motion',
+          'react-three-fiber',
+          'Three.js',
+        ],
+        features: [
+          'Real 3D product heroes with react-three-fiber',
+          'Scroll-driven WebGL scenes',
+          'Pixel-faithful recreations from reference media',
+          'A single gallery routing to every rebuild',
+        ],
+        link: 'https://github.com/DirckM/website-rebuilds',
+      },
+    },
+    {
       title: 'Wakeup',
       image: '/projects/wakeup-not-rounded.svg',
       cardBg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
