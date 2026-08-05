@@ -14,6 +14,7 @@ import RotatingText from '@/components/library/text-animations/RotatingText';
 import ScrambledText from '@/components/library/text-animations/ScrambledText';
 import ScrollFloat from '@/components/library/text-animations/ScrollFloat';
 import ScrollReveal from '@/components/library/text-animations/ScrollReveal';
+import ScrollRevealCSS from '@/components/library/text-animations/ScrollRevealCSS';
 import { ScrollVelocity } from '@/components/library/text-animations/ScrollVelocity';
 import ShinyText from '@/components/library/text-animations/ShinyText';
 import Shuffle from '@/components/library/text-animations/Shuffle';
@@ -167,6 +168,15 @@ function VariableProximityFullDemo() {
 
 export const cardPreviews: Record<string, React.ReactNode> = {
   // Text animations
+  'scroll-reveal-css': (
+    <div className='h-full w-full overflow-y-auto px-4'>
+      <div aria-hidden className='h-[70%]' />
+      <ScrollRevealCSS textClassName='!text-lg text-black' rangeStart={10}>
+        Reveal on scroll, no JavaScript
+      </ScrollRevealCSS>
+      <div aria-hidden className='h-[70%]' />
+    </div>
+  ),
   'ascii-text': (
     <div className='w-full h-full bg-black'>
       <ASCIIText
@@ -821,6 +831,20 @@ export const cardPreviews: Record<string, React.ReactNode> = {
 };
 
 export const fullDemos: Record<string, React.ReactNode> = {
+  // view() resolves against the nearest scroll container, so the demo brings
+  // its own instead of animating on the reader's page scroll.
+  'scroll-reveal-css': (
+    <div className='flex flex-col items-center gap-3 p-8 w-full'>
+      <div className='h-[360px] w-full max-w-[720px] overflow-y-auto rounded-xl border border-library-border px-8'>
+        <div aria-hidden className='h-[300px]' />
+        <ScrollRevealCSS textClassName='text-black'>
+          Every word here is revealed by the scrollbar, not by JavaScript
+        </ScrollRevealCSS>
+        <div aria-hidden className='h-[300px]' />
+      </div>
+      <p className='text-xs text-library-gray'>Scroll inside the box</p>
+    </div>
+  ),
   'blur-text': (
     <div className='flex flex-col items-center gap-8 p-12'>
       <BlurText

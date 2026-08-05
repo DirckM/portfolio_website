@@ -118,7 +118,15 @@ export default function LiveStep({
                   // scrollport, which is what a view() timeline animates on.
                 >
                   <div aria-hidden className='h-[320px]' />
-                  <div className='w-full flex items-center justify-center'>
+                  {/* Same data-live-preview hook as the branch below, so
+                      scripts/check-post.mjs can see scroll-driven demos too.
+                      It goes on the wrapper around <LivePreview /> and not on
+                      the scrollport, whose spacer divs would make the empty-box
+                      check pass no matter what rendered. */}
+                  <div
+                    data-live-preview
+                    className='w-full flex items-center justify-center'
+                  >
                     <LivePreview />
                   </div>
                   <div aria-hidden className='h-[320px]' />

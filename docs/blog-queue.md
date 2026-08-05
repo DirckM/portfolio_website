@@ -24,7 +24,6 @@ cross-link in both directions.
 
 ## Queued
 
-- [ ] `scroll-reveal-css` — Scroll Reveal Text with Zero JavaScript — twin: `scroll-reveal` — `animation-timeline: view()`, the flagship case. Needs `previewScroll`.
 - [ ] `scroll-progress-css` — A Scroll Progress Bar with animation-timeline: scroll() — twin: none — simplest entry point to the API. Needs `previewScroll`.
 - [ ] `gradient-border-css` — Animated Gradient Borders with @property — twin: `border-glow` — `@property` is the other 2026 win, and this one needs no scrollport.
 - [ ] `blur-text-css` — Blur-to-Sharp Text Reveal, CSS only — twin: `blur-text` — direct swap of a framer-motion post. Needs `previewScroll`.
@@ -44,6 +43,8 @@ cross-link in both directions.
 ## Published
 
 <!-- The generator moves items here with the date it shipped them. -->
+
+- [x] 2026-08-05 — `scroll-reveal-css` — Scroll Reveal Text with Zero JavaScript — twin: `scroll-reveal` — `animation-timeline: view()`, the flagship case. Needs `previewScroll`.
 
 ## Parked veins
 
@@ -74,11 +75,26 @@ the gate. Expect them until they are fixed by hand:
   which returns **404**. The variable-font effect that the whole post is about
   does not work in production. Self-host the woff2 in `public/fonts/` to fix it.
 
-Separately, 11 posts have no `fullDemos` entry, so they render without a hero
-demo: antigravity, crosshair, dock, folder, lanyard, letter-swap, magnet,
-pixel-trail-block, radar, shuffle, terminal. `antigravity` is the #2 post by
-traffic and `lanyard` is #4, so those two are worth fixing first.
-`node scripts/check-post.mjs <slug>` warns about this and `--strict` fails on it.
+The "11 posts have no `fullDemos` entry" note that used to sit here was wrong on
+both halves, corrected 2026-08-05 while writing `scroll-reveal-css`:
+
+- **No post rendered a hero, not 11.** `blog/[slug]/page.tsx` is a server
+  component and it read `fullDemos` straight out of `component-previews.tsx`,
+  which is `'use client'`. A server component importing a client module gets a
+  client reference proxy, so every lookup came back undefined and the
+  `{demo && ...}` guard in `BlogPostLayout` was never true. `/components/[slug]`
+  was unaffected because it goes through the client `<FullDemo>` wrapper. Fixed
+  by reading the map from `<BlogHeroDemo>`, same trick. 62 of 64 posts now show
+  a hero.
+- **Only 2 posts genuinely lack an entry**: `letter-swap` and
+  `pixel-trail-block`. The other 9 on the old list have entries all along,
+  written with unquoted keys (`antigravity:` rather than `'antigravity':`).
+
+That second point is still a live gate bug. `check-post.mjs` looks for the
+fullDemos entry with `demosBlock.includes("'<slug>'")`, quotes included, so any
+slug that is a valid JS identifier and was written unquoted reads as missing and
+fails `--strict`. Hyphenated slugs are unaffected, which is why it has not bitten
+a new post yet.
 
 Re-run the sweep any time with:
 
