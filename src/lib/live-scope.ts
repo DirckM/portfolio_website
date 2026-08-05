@@ -55,6 +55,7 @@ import RotatingText from '@/components/library/text-animations/RotatingText';
 import ScrambledText from '@/components/library/text-animations/ScrambledText';
 import ScrollFloat from '@/components/library/text-animations/ScrollFloat';
 import ScrollReveal from '@/components/library/text-animations/ScrollReveal';
+import ScrollRevealCSS from '@/components/library/text-animations/ScrollRevealCSS';
 import ScrollVelocity from '@/components/library/text-animations/ScrollVelocity';
 import ShinyText from '@/components/library/text-animations/ShinyText';
 import Shuffle from '@/components/library/text-animations/Shuffle';
@@ -114,6 +115,7 @@ export const liveScope: Record<string, unknown> = {
   ScrambledText,
   ScrollFloat,
   ScrollReveal,
+  ScrollRevealCSS,
   ScrollStack,
   ScrollStackItem,
   ScrollVelocity,

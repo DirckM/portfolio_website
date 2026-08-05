@@ -5,7 +5,7 @@ import { highlightCode } from '@/lib/shiki';
 import BlogPostLayout from '@/components/shell/BlogPostLayout';
 import CodeBlock from '@/components/shell/CodeBlock';
 
-import { fullDemos } from '@/lib/component-previews';
+import BlogHeroDemo from '@/components/shell/BlogHeroDemo';
 import { liveStepCodes } from '@/lib/live-step-codes';
 import { liveScope } from '@/lib/live-scope';
 import LiveStep from '@/components/shell/LiveStep';
@@ -134,7 +134,10 @@ export default async function BlogPostPage({ params }: PageProps) {
   }
 
   return (
-    <BlogPostLayout post={post} demo={fullDemos[post.componentSlug]}>
+    <BlogPostLayout
+      post={post}
+      demo={<BlogHeroDemo slug={post.componentSlug} />}
+    >
       <MDXRemote source={post.content} components={mdxComponents} />
     </BlogPostLayout>
   );

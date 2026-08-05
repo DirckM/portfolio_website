@@ -130,6 +130,15 @@ export const componentRegistry: ComponentEntry[] = [
     featured: false,
   },
   {
+    name: 'Scroll Reveal CSS',
+    slug: 'scroll-reveal-css',
+    category: 'text',
+    description:
+      'Words revealed on scroll with animation-timeline, no JavaScript',
+    sourceRef: '',
+    featured: false,
+  },
+  {
     name: 'ASCII Text',
     slug: 'ascii-text',
     category: 'text',

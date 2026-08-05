@@ -1,0 +1,100 @@
+---
+title: "Scroll Reveal Text with Zero JavaScript"
+description: "Reveal text word by word as it scrolls into view using animation-timeline: view(), with no observer, no scrub loop and no animation library."
+date: "2026-08-05"
+category: "Text Animations"
+componentSlug: "scroll-reveal-css"
+---
+
+Text that fades up word by word as a section enters the viewport is the most copied effect on the web. The usual build is an IntersectionObserver, or GSAP with a scrubbed ScrollTrigger, and a stagger you tune by hand. CSS does the whole thing now. One property points the animation at the scrollbar instead of at a clock, and the script goes away.
+
+## The final result
+
+Every word runs the same two keyframes. What makes it cascade is that each word carries its own timeline and its own slice of it, so a word on the third line is still waiting while the first line is already sharp. Scroll inside the preview, the words are tracking the scrollbar rather than a duration.
+
+<LiveStep
+  codeId="scroll-reveal-css-final"
+  previewScroll
+  controls={[
+    { prop: 'stagger', type: 'slider', min: 0, max: 8, step: 0.5, default: 3, label: 'stagger' },
+    { prop: 'blurStrength', type: 'slider', min: 0, max: 16, step: 1, default: 6, label: 'blur' },
+    { prop: 'rangeStart', type: 'slider', min: 0, max: 60, step: 5, default: 20, label: 'start' },
+  ]}
+/>
+
+## What we are building
+
+`animation-timeline: view()` hands an element a timeline that runs from the moment it enters the scrollport to the moment it leaves. Progress sits at 0 while the element is below the fold and reaches 1 once it has passed out of the top. `animation-range` then picks which part of that trip the animation occupies, so `cover 20% cover 48%` means the reveal starts a fifth of the way through the crossing and is finished just before halfway.
+
+Putting the timeline on each word rather than on the paragraph does most of the work for free. Words further down the block enter later, so they reveal later. A custom property called `--i` shifts the range a little further along for each word, which is what staggers the words sitting on the same line.
+
+The [GSAP version of this effect](/blog/scroll-reveal) reaches the same picture through a scrubbed ScrollTrigger and a stagger on a word list. It is worth reading the two side by side, because the CSS one is shorter but gives up something real, covered at the bottom.
+
+## Setting up
+
+Nothing to install and nothing to import. No provider, no ref, no cleanup function. The only setup is deciding what happens in a browser that does not do scroll-driven animations yet, which as of mid 2026 is roughly one visitor in six (Chrome and Edge 115+, Firefox 132+, Safari 18+).
+
+```css
+@supports not (animation-timeline: view()) {
+  .srcss-word { opacity: 1; }
+}
+```
+
+That block is insurance rather than the thing keeping your text readable. When `animation-timeline` is dropped the animation falls back to a time based one with no duration, so it lands on its end state immediately and the words are simply there. The reveal is the enhancement, the text is never the thing at risk.
+
+## Step 1: Give every word an index
+
+Split on whitespace with a capturing group so the spaces survive as tokens, then count only the real words.
+
+```tsx
+let wordIndex = -1;
+const tokens = text.split(/(\s+)/).map((token, i) => {
+  if (/^\s+$/.test(token)) return token;
+  wordIndex += 1;
+  return (
+    <span
+      key={i}
+      className='srcss-word'
+      style={{ '--i': String(wordIndex) } as React.CSSProperties}
+    >
+      {token}
+    </span>
+  );
+});
+```
+
+The separate counter matters. Using the map index would step by two on every word, because half the tokens are the whitespace between them.
+
+## Step 2: Point the animation at the scrollbar
+
+```css
+.srcss-word {
+  display: inline-block;
+  animation-name: srcss-reveal;
+  animation-fill-mode: both;
+  animation-timing-function: linear;
+  animation-timeline: view();
+  animation-range: cover 20% cover 48%;
+}
+```
+
+Use the longhands. The `animation` shorthand resets `animation-timeline` to `auto`, so writing the shorthand underneath your timeline silently converts the whole thing back into a zero length time based animation, and you get text that is already revealed with no error anywhere to explain it.
+
+<LiveStep codeId="scroll-reveal-css-step3" previewScroll />
+
+Every word shares one range there, so the block arrives in a single sheet. The stagger is one edit, because `--i` is a plain number and calc is happy to multiply a number by a percentage.
+
+```css
+animation-range: cover calc(20% + var(--i) * 3%)
+                 cover calc(48% + var(--i) * 3%);
+```
+
+<LiveStep codeId="scroll-reveal-css-step4" previewScroll />
+
+Keeping the knobs in custom properties rather than in the rule has a second benefit. The stylesheet is then identical for every instance, so two demos with different props on one page cannot overwrite each other's `.srcss-word` rule.
+
+## Where this runs out
+
+The honest limit is that a scroll-driven animation is invisible to your code. There is no progress value to read, no update callback, no completion event. The moment the reveal has to do anything besides look good, fire an analytics event, start a video, load the next page of results, you are back to an IntersectionObserver, and the GSAP twin stops looking expensive.
+
+Two directions from here. Move `animation-timeline` up to the paragraph if you want the whole block on one timeline and the `--i` offsets doing all of the staggering, which reads more evenly on short blocks. Or give the scroller a `view-timeline-name` and reach it from elsewhere with `timeline-scope`, which is how you drive one element's animation from a completely different element's scroll.

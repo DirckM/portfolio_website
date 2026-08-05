@@ -96,6 +96,17 @@ export const liveStepCodes: Record<string, string> = {
   Words reveal progressively as you scroll through the page
 </ScrollReveal>`,
 
+  // scroll-reveal-css
+  'scroll-reveal-css-final': `<ScrollRevealCSS textClassName="!text-2xl text-black" stagger={3} blurStrength={6} rangeStart={20}>
+  Every word here is revealed by the scrollbar, not by JavaScript
+</ScrollRevealCSS>`,
+  'scroll-reveal-css-step3': `<ScrollRevealCSS textClassName="!text-2xl text-black" stagger={0} blurStrength={0} lift={0}>
+  One range, every word at once
+</ScrollRevealCSS>`,
+  'scroll-reveal-css-step4': `<ScrollRevealCSS textClassName="!text-2xl text-black" stagger={4} blurStrength={6} lift={14}>
+  Now each word waits its turn
+</ScrollRevealCSS>`,
+
   // scroll-velocity
   'scroll-velocity-final': `<ScrollVelocity texts={["Scroll Velocity", "Speed Changes"]} velocity={80} className="text-black text-3xl font-bold" />`,
 

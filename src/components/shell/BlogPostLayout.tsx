@@ -30,13 +30,9 @@ export default function BlogPostLayout({
         <p className='mt-4 text-library-gray text-lg'>{post.description}</p>
       </header>
 
-      {demo && (
-        <section className='w-full bg-library-cream border-y border-library-border mb-12'>
-          <div className='max-w-[1200px] mx-auto min-h-[300px] flex items-center justify-center py-12'>
-            {demo}
-          </div>
-        </section>
-      )}
+      {/* The demo brings its own <section> chrome, because only a client
+          component can read the fullDemos map. See BlogHeroDemo. */}
+      {demo}
 
       <div className='max-w-[720px] mx-auto px-6 prose prose-neutral prose-lg'>
         {children}
