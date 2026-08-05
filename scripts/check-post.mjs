@@ -77,7 +77,13 @@ if (!registrySource.includes(`'${frontmatter.componentSlug}'`)) {
 
 const previewsSource = readFileSync(join(ROOT, 'src/lib/component-previews.tsx'), 'utf-8');
 const demosBlock = previewsSource.slice(previewsSource.indexOf('export const fullDemos'));
-if (!demosBlock.includes(`'${frontmatter.componentSlug}'`)) {
+// Keys are quoted only when the slug is not a valid JS identifier, so
+// 'scroll-reveal-css' is quoted but antigravity is not. Match both, or every
+// single-word slug reads as missing.
+const demoKeys = new Set(
+  [...demosBlock.matchAll(/^ {2}'?([a-zA-Z][a-zA-Z0-9-]*)'?:/gm)].map(m => m[1])
+);
+if (!demoKeys.has(frontmatter.componentSlug)) {
   requireForNew(
     `componentSlug "${frontmatter.componentSlug}" has no entry in fullDemos, so the post renders without its hero demo`
   );

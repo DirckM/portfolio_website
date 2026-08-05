@@ -90,11 +90,10 @@ both halves, corrected 2026-08-05 while writing `scroll-reveal-css`:
   `pixel-trail-block`. The other 9 on the old list have entries all along,
   written with unquoted keys (`antigravity:` rather than `'antigravity':`).
 
-That second point is still a live gate bug. `check-post.mjs` looks for the
-fullDemos entry with `demosBlock.includes("'<slug>'")`, quotes included, so any
-slug that is a valid JS identifier and was written unquoted reads as missing and
-fails `--strict`. Hyphenated slugs are unaffected, which is why it has not bitten
-a new post yet.
+That second point was a gate bug, **fixed 2026-08-05**. `check-post.mjs` looked
+for the fullDemos entry with `demosBlock.includes("'<slug>'")`, quotes included,
+so any slug that is a valid JS identifier and was written unquoted read as
+missing and failed `--strict`. It now parses the keys and accepts both forms.
 
 Re-run the sweep any time with:
 
