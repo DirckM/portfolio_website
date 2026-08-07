@@ -16,6 +16,7 @@ import BlurText from '@/components/library/text-animations/BlurText';
 import Magnet from '@/components/library/animations/Magnet';
 import ScrollVelocity from '@/components/library/text-animations/ScrollVelocity';
 import Folder from '@/components/library/components/Folder';
+import FavouriteBars from '@/components/favourites/FavouriteBars';
 
 interface LatestPost {
   slug: string;
@@ -747,6 +748,26 @@ export default function Home() {
             </motion.div>
           </motion.div>
         )}
+      </section>
+
+      {/* My Favourites - curated interactive website work */}
+      <section id='favourites' className='py-32'>
+        <div className='max-w-5xl mx-auto px-6 md:px-16 mb-10 md:mb-14'>
+          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
+            My{' '}
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal text-gradient-primary'>
+              Favourites
+            </span>
+          </h2>
+          <p className='mt-4 text-sm text-library-gray max-w-xl leading-relaxed'>
+            The designs I enjoyed rebuilding most these past months, all live as
+            real pages. Hover or tap a bar to open it up, then click through to
+            visit it.
+          </p>
+        </div>
+        <div className='max-w-5xl mx-auto px-6 md:px-16'>
+          <FavouriteBars />
+        </div>
       </section>
 
       {/* Skills - Scroll Velocity Marquee */}
