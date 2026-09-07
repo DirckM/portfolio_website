@@ -30,7 +30,7 @@ This is the shallow end of the scroll-driven animations API and the best place t
 
 ## Setting up
 
-Nothing to install and nothing to import. No ref, no effect, no cleanup. The only decision is what a browser without scroll-driven animations does, which as of late 2026 is roughly one visitor in six (Chrome and Edge 115+, Firefox 132+, Safari 18+).
+Nothing to install and nothing to import. No ref, no effect, no cleanup. The only decision is what a browser without scroll-driven animations does. Chrome and Edge have shipped it unflagged since Chrome 115 and Safari since 26, but Firefox still hides it behind the `layout.css.scroll-driven-animations.enabled` flag in stable as of Firefox 152, so every Firefox visitor takes the fallback. That makes the block below load-bearing rather than decoration.
 
 ```css
 @supports not (animation-timeline: scroll()) {
