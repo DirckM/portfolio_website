@@ -1,0 +1,92 @@
+---
+title: "A Reading Progress Bar with Zero JavaScript"
+description: "Fill a progress bar straight from the scroll position with animation-timeline: scroll(), no scroll listener, no rAF loop and no state."
+date: "2026-09-07"
+category: "Components"
+componentSlug: "scroll-progress-css"
+---
+
+A line across the top of an article that fills as you read is the smallest useful piece of scroll UI there is. The usual build is a scroll listener, a division, a throttle you bolt on after the profiler complains, and a state update on every frame. Two keyframes and one property replace the whole thing.
+
+## The final result
+
+The fill is a single animation from `scaleX(0)` to `scaleX(1)`. What makes it a progress bar rather than a loading bar is that its timeline is the scrollbar of the box it sits in, so its position is the scroll offset and nothing else. Scroll inside the preview, then scroll back up and watch it run in reverse for free.
+
+<LiveStep
+  codeId="scroll-progress-css-final"
+  previewScroll
+  controls={[
+    { prop: 'variant', type: 'select', options: ['bar', 'ring'], default: 'bar', label: 'shape' },
+    { prop: 'thickness', type: 'slider', min: 2, max: 16, step: 1, default: 6, label: 'thickness' },
+    { prop: 'color', type: 'color', default: '#000000', label: 'colour' },
+  ]}
+/>
+
+## What we are building
+
+`animation-timeline: scroll()` gives an animation a timeline made out of a scroll container instead of a clock. Progress is 0 when that container is scrolled to the top and 1 when it has reached the bottom, and every position in between maps linearly onto the animation. There is no duration, no start and no end, because the reader is the one moving the playhead.
+
+This is the shallow end of the scroll-driven animations API and the best place to start with it. Its sibling `view()`, which times an animation against one element crossing the scrollport, is the harder one to reason about and is covered in [the scroll reveal post](/blog/scroll-reveal-css). `scroll()` only has to answer one question, how far down are we.
+
+## Setting up
+
+Nothing to install and nothing to import. No ref, no effect, no cleanup. The only decision is what a browser without scroll-driven animations does, which as of late 2026 is roughly one visitor in six (Chrome and Edge 115+, Firefox 132+, Safari 18+).
+
+```css
+@supports not (animation-timeline: scroll()) {
+  .spcss-track { display: none; }
+}
+```
+
+Hiding it is the right fallback here. A bar frozen at zero reads as broken, no bar at all just reads as no bar, and nothing else on the page depends on it.
+
+## Step 1: Point two keyframes at the scrollbar
+
+```css
+.spcss-fill {
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  animation-name: spcss-fill;
+  animation-fill-mode: both;
+  animation-timing-function: linear;
+  animation-timeline: scroll();
+}
+
+@keyframes spcss-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+```
+
+Three details in there earn their place. Use the longhands, because the `animation` shorthand resets `animation-timeline` back to `auto` and turns your work into a zero length time based animation with no error to explain it. Animate `scaleX` rather than `width`, so the fill stays on the compositor and never touches layout. Keep the timing function linear, since anything else distorts the mapping between scroll position and fill, and a progress bar that lies about position is worse than none.
+
+`scroll()` is shorthand for `scroll(nearest block)`, so the timeline is the nearest scrolling ancestor. For a bar on a real page that means `position: fixed` at the top and `animation-timeline: scroll(root)`, which names the document explicitly and survives someone wrapping your layout in an overflow container later.
+
+One trap comes with that word nearest. Any ancestor counts as a scroll container the moment it has `overflow: hidden`, including a six pixel track that will never scroll, and the timeline then resolves to that instead of your article. The fill sits dead at zero and nothing appears in the console to tell you why. Reach for `overflow: clip` when clipping is all you wanted, since it trims the same corner without creating a scroll container.
+
+<LiveStep codeId="scroll-progress-css-step3" previewScroll />
+
+That one is correct and useless. The fill tracks the scroll exactly, and then the bar leaves with the text it is measuring.
+
+## Step 2: Pin it, then change its shape
+
+`position: sticky` and `top: 0` on the wrapper is the entire fix, and it does not disturb the timeline, because sticky changes where a box paints and not where it sits in the tree.
+
+The timeline itself does not care what it drives. Swap the keyframes for `stroke-dashoffset` on a circle with `pathLength="1"` and the same scroll position turns a ring instead.
+
+```css
+@keyframes spcss-ring {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+```
+
+<LiveStep codeId="scroll-progress-css-step4" previewScroll />
+
+Normalising the circumference with `pathLength` is what keeps that to two lines. Without it the offset values depend on the radius and you are back to computing `2 * PI * r` somewhere.
+
+## Where this runs out
+
+Two real limits. The progress value is invisible to your code, so there is no number to print next to the bar and no callback at 50%, and the moment the bar has to do anything besides fill you are writing the scroll listener after all. The second is that the mapping is rigid. A JavaScript bar usually eases toward its target, which is what gives those a soft trailing feel, and you cannot get that here, because a timing function bends the scroll to fill relationship rather than smoothing it in time.
+
+Both are fine trades for the common case. From here, look at `scroll-timeline-name` with `timeline-scope`, which lets a bar in your header report on a scroll container somewhere else entirely in the page.

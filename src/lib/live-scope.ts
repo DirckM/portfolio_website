@@ -42,6 +42,7 @@ import LanyardImpl from '@/components/library/components/LanyardImpl';
 import MagicBento from '@/components/library/components/MagicBento';
 import PixelCard from '@/components/library/components/PixelCard';
 import ReflectiveCard from '@/components/library/components/ReflectiveCard';
+import ScrollProgressCSS from '@/components/library/components/ScrollProgressCSS';
 import ScrollStack, { ScrollStackItem } from '@/components/library/components/ScrollStack';
 import TiltedCard from '@/components/library/components/TiltedCard';
 import ASCIIText from '@/components/library/text-animations/ASCIIText';
@@ -114,6 +115,7 @@ export const liveScope: Record<string, unknown> = {
   RotatingText,
   ScrambledText,
   ScrollFloat,
+  ScrollProgressCSS,
   ScrollReveal,
   ScrollRevealCSS,
   ScrollStack,

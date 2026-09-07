@@ -299,6 +299,11 @@ export const liveStepCodes: Record<string, string> = {
   <ReflectiveCard className="w-64 h-80 rounded-2xl" />
 </div>`,
 
+  // scroll-progress-css
+  'scroll-progress-css-final': `<ScrollProgressCSS className="w-full" variant="bar" thickness={6} color="#000000" height={260} />`,
+  'scroll-progress-css-step3': `<ScrollProgressCSS className="w-full" sticky={false} thickness={6} height={220} />`,
+  'scroll-progress-css-step4': `<ScrollProgressCSS className="w-full" variant="ring" thickness={5} ringSize={44} height={220} />`,
+
   // scroll-stack
   'scroll-stack-final': `<div style={{ width: "100%", height: "400px", overflow: "auto" }}>
   <ScrollStack useWindowScroll={false}>
