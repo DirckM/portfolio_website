@@ -112,17 +112,44 @@ export function pgSelect<T>(table: string, query = ''): Promise<DbResult<T[]>> {
   return request<T[]>(`${table}${query ? `?${query}` : ''}`, { method: 'GET' });
 }
 
-/** INSERT rows, returning what was written. */
+/**
+ * INSERT rows, optionally as an upsert.
+ *
+ * `upsertOn` names the unique constraint columns and turns this into
+ * `ON CONFLICT ... DO UPDATE`. PostgREST needs both the `resolution=merge-duplicates`
+ * preference and an `on_conflict` query parameter, and silently plain-inserts
+ * if you give it only one of them.
+ */
 export function pgInsert<T>(
   table: string,
   rows: Record<string, unknown> | Record<string, unknown>[],
-  { returning = true }: { returning?: boolean } = {}
+  {
+    returning = true,
+    upsertOn,
+  }: { returning?: boolean; upsertOn?: string } = {}
 ): Promise<DbResult<T[]>> {
-  return request<T[]>(table, {
+  const prefer = [
+    returning ? 'return=representation' : 'return=minimal',
+    ...(upsertOn ? ['resolution=merge-duplicates'] : []),
+  ].join(',');
+  const path = upsertOn ? `${table}?on_conflict=${encodeURIComponent(upsertOn)}` : table;
+  return request<T[]>(path, {
     method: 'POST',
     write: true,
-    headers: { Prefer: returning ? 'return=representation' : 'return=minimal' },
+    headers: { Prefer: prefer },
     body: JSON.stringify(rows),
+  });
+}
+
+/** Call a Postgres function exposed through PostgREST. */
+export function pgRpc<T>(
+  fn: string,
+  args: Record<string, unknown>
+): Promise<DbResult<T>> {
+  return request<T>(`rpc/${fn}`, {
+    method: 'POST',
+    write: true,
+    body: JSON.stringify(args),
   });
 }
 
