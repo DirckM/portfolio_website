@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { BlogPost } from '@/lib/blog-utils';
+import NewsletterSignup from './NewsletterSignup';
 
 interface BlogPostLayoutProps {
   post: BlogPost;
@@ -38,13 +39,17 @@ export default function BlogPostLayout({
         {children}
       </div>
 
-      <footer className='max-w-[720px] mx-auto px-6 mt-16 pt-8 border-t border-library-border'>
+      <footer className='max-w-[720px] mx-auto px-6 mt-16 pt-8 border-t border-black/10'>
         <Link
           href={`/components/${post.componentSlug}`}
           className='text-sm text-black underline underline-offset-4 hover:no-underline'
         >
           View {post.title} component
         </Link>
+
+        <div className='mt-12 pt-8 border-t border-black/10'>
+          <NewsletterSignup source={`post:${post.slug}`} />
+        </div>
       </footer>
     </article>
   );

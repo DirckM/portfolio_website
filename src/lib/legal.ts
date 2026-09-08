@@ -13,7 +13,8 @@ export const LEGAL = {
   lastUpdated: "2026-05-24",
   subprocessors: [
     { name: "PostHog", purpose: "Product analytics (EU-hosted)", region: "EU", url: "https://posthog.com/privacy" },
-    { name: "Resend", purpose: "Contact form email delivery", region: "EU/US (SCC)", url: "https://resend.com/legal/privacy-policy" },
+    { name: "Resend", purpose: "Contact form and newsletter email delivery", region: "EU/US (SCC)", url: "https://resend.com/legal/privacy-policy" },
+    { name: "Supabase", purpose: "Newsletter subscriber storage", region: "EU", url: "https://supabase.com/privacy" },
     { name: "Vercel", purpose: "Website hosting and edge delivery", region: "EU/US (SCC)", url: "https://vercel.com/legal/privacy-policy" },
   ],
 } as const;
