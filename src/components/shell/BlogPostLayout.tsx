@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { BlogPost } from '@/lib/blog-utils';
-import NewsletterSignup from './NewsletterSignup';
+import PostFeedback from './PostFeedback';
 
 interface BlogPostLayoutProps {
   post: BlogPost;
@@ -47,9 +47,9 @@ export default function BlogPostLayout({
           View {post.title} component
         </Link>
 
-        <div className='mt-12 pt-8 border-t border-black/10'>
-          <NewsletterSignup source={`post:${post.slug}`} />
-        </div>
+        {/* The widget asks first and wraps the signup, so the email ask arrives
+            after a micro-commitment rather than cold. */}
+        <PostFeedback slug={post.slug} category={post.category} />
       </footer>
     </article>
   );

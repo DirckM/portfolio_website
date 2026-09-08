@@ -32,7 +32,7 @@ export default async function UnsubscribedPage({ searchParams }: Props) {
         changes it.
       </p>
       <p className='mt-4 text-sm text-black/60'>
-        Signed up by mistake, or changed your mind?{' '}
+        Unsubscribed by mistake, or changed your mind?{' '}
         <Link href='/newsletter' className='text-black underline underline-offset-4 hover:no-underline'>
           Come back any time
         </Link>
