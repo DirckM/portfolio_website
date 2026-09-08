@@ -26,9 +26,17 @@ export async function GET(request: Request) {
 
   if (token) await unsubscribeByToken(token);
 
+  // The token rides along to the survey page so a reason can be attached
+  // without that page ever holding an email address. The unsubscribe is
+  // ALREADY COMMITTED by this point: the survey can only add information, it
+  // can never gate or reverse leaving.
+  const to = token
+    ? `${site}/newsletter/unsubscribed?t=${encodeURIComponent(token)}`
+    : `${site}/newsletter/unsubscribed`;
+
   // Always the same page. An unsubscribe that reports failure is worse than one
   // that quietly succeeded, and the person has no way to act on the difference.
-  return NextResponse.redirect(`${site}/newsletter/unsubscribed`, 302);
+  return NextResponse.redirect(to, 302);
 }
 
 export async function POST(request: Request) {

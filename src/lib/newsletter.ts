@@ -200,8 +200,8 @@ export async function confirmByToken(
 
 export async function unsubscribeByToken(
   token: string
-): Promise<DbResult<boolean>> {
-  const patched = await pgPatch<{ email: string }>(
+): Promise<DbResult<{ subscriberId: string | null }>> {
+  const patched = await pgPatch<{ id: string; email: string }>(
     'subscribers',
     `unsubscribe_token_hash=eq.${sha256hex(token)}&status=neq.unsubscribed`,
     {
@@ -211,12 +211,72 @@ export async function unsubscribeByToken(
     }
   );
   if (!patched.ok) return patched;
+
   if (patched.data.length > 0) {
-    await logEvent(null, patched.data[0].email, 'unsubscribed');
+    await logEvent(patched.data[0].id, patched.data[0].email, 'unsubscribed');
+    return { ok: true, data: { subscriberId: patched.data[0].id } };
   }
-  // An already-unsubscribed token still reports success. Telling someone their
-  // unsubscribe "failed" because it already worked is the worst possible
-  // moment to show an error.
+
+  // Already unsubscribed, or an unknown token. Either way this reports success:
+  // telling someone their unsubscribe "failed" because it already worked is the
+  // worst possible moment to show an error. Resolve the id anyway so a repeat
+  // visitor can still leave a reason.
+  const existing = await pgSelect<{ id: string }>(
+    'subscribers',
+    `unsubscribe_token_hash=eq.${sha256hex(token)}&select=id&limit=1`
+  );
+  return {
+    ok: true,
+    data: { subscriberId: existing.ok ? (existing.data[0]?.id ?? null) : null },
+  };
+}
+
+export type UnsubscribeReason =
+  | 'too_many'
+  | 'not_relevant'
+  | 'got_what_i_came_for'
+  | 'dont_remember'
+  | 'other';
+
+export const UNSUBSCRIBE_REASONS: ReadonlyArray<{ value: UnsubscribeReason; label: string }> = [
+  { value: 'too_many', label: 'Too many emails' },
+  { value: 'not_relevant', label: 'Not relevant to me' },
+  // A success for a portfolio newsletter, and it would otherwise hide inside
+  // "not relevant" and read as a failure.
+  { value: 'got_what_i_came_for', label: 'I got what I came for' },
+  // The list-hygiene alarm. If people pick this, the signup flow is
+  // misrepresenting itself and that is worth knowing immediately.
+  { value: 'dont_remember', label: 'I do not remember signing up' },
+];
+
+/**
+ * Record why someone left.
+ *
+ * Runs strictly after the unsubscribe is already committed. Both fields are
+ * optional: a visitor who closes the tab has still successfully unsubscribed,
+ * and the survey must never be able to change that.
+ */
+export async function recordUnsubscribeReason(
+  token: string,
+  reason: UnsubscribeReason | null,
+  note: string | null
+): Promise<DbResult<boolean>> {
+  const found = await pgSelect<{ id: string; email: string }>(
+    'subscribers',
+    `unsubscribe_token_hash=eq.${sha256hex(token)}&select=id,email&limit=1`
+  );
+  if (!found.ok) return found;
+  const row = found.data[0];
+  if (!row) return { ok: true, data: false };
+
+  const inserted = await pgInsert(
+    'unsubscribe_reasons',
+    { subscriber_id: row.id, reason, note: note?.slice(0, 2000) ?? null },
+    { returning: false }
+  );
+  if (!inserted.ok) return inserted;
+
+  await logEvent(row.id, row.email, 'unsubscribe_reason', { reason });
   return { ok: true, data: true };
 }
 
