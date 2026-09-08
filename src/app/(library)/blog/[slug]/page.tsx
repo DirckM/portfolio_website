@@ -9,6 +9,11 @@ import BlogHeroDemo from '@/components/shell/BlogHeroDemo';
 import { liveStepCodes } from '@/lib/live-step-codes';
 import { liveScope } from '@/lib/live-scope';
 import LiveStep from '@/components/shell/LiveStep';
+import {
+  JsonLd,
+  articleJsonLd,
+  breadcrumbJsonLd,
+} from '@/lib/structured-data';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -29,11 +34,24 @@ export async function generateMetadata({
   return {
     title: `${post.title} | Dirck Mulder`,
     description: post.description,
+    alternates: {
+      canonical: `https://dirckmulder.com/blog/${post.slug}`,
+    },
+    authors: [{ name: 'Dirck Mulder', url: 'https://dirckmulder.com' }],
     openGraph: {
       title: post.title,
       description: post.description,
       type: 'article',
       publishedTime: post.date,
+      modifiedTime: post.date,
+      authors: ['Dirck Mulder'],
+      section: post.category,
+      url: `https://dirckmulder.com/blog/${post.slug}`,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.description,
     },
   };
 }
@@ -134,11 +152,15 @@ export default async function BlogPostPage({ params }: PageProps) {
   }
 
   return (
-    <BlogPostLayout
-      post={post}
-      demo={<BlogHeroDemo slug={post.componentSlug} />}
-    >
-      <MDXRemote source={post.content} components={mdxComponents} />
-    </BlogPostLayout>
+    <>
+      <JsonLd data={articleJsonLd(post)} />
+      <JsonLd data={breadcrumbJsonLd(post)} />
+      <BlogPostLayout
+        post={post}
+        demo={<BlogHeroDemo slug={post.componentSlug} />}
+      >
+        <MDXRemote source={post.content} components={mdxComponents} />
+      </BlogPostLayout>
+    </>
   );
 }
