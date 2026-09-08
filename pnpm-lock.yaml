@@ -114,6 +114,9 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.3.1
+      '@mdn/browser-compat-data':
+        specifier: ^8.1.0
+        version: 8.1.0
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.14
@@ -585,6 +588,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@mdn/browser-compat-data@8.1.0':
+    resolution: {integrity: sha512-BNlUjp+9O6gtIHPVZEGFb5rgtuWW8weR+mSKfLOevxbfoZv5DRe3N4ZTEpXiIm5wfR7+kqHu8malCCgP6USrlg==}
 
   '@mdx-js/mdx@3.1.1':
     resolution: {integrity: sha512-f6ZO2ifpwAQIpzGWaBQT2TXxPv6z3RBzQKpVftEWN78Vl/YweF1uwussDx8ECAXVtr3Rs89fKyG9YlzUs9DyGQ==}
@@ -1898,6 +1904,7 @@ packages:
   eslint@9.37.0:
     resolution: {integrity: sha512-XyLmROnACWqSxiGYArdef1fItQd47weqB7iwtfr9JHwRrqIXZdcFMvvEcL9xHCmL0SNsOvF0c42lWyM1U5dgig==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -4039,6 +4046,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@mdn/browser-compat-data@8.1.0': {}
 
   '@mdx-js/mdx@3.1.1':
     dependencies:

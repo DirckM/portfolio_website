@@ -1,0 +1,58 @@
+name: content
+
+# A required check must ALWAYS report, so there is deliberately no `paths:`
+# filter here. A workflow skipped by a path filter leaves the check pending
+# forever and blocks the merge; a job skipped by an `if:` reports SUCCESS and
+# waves a bad post straight through. The second failure mode is the dangerous
+# one, so neither is used.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: content-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  facts:
+    name: facts
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # The gate has to be tested before it is trusted. It disarmed itself once
+      # already: a fix for a false positive widened the negation window until
+      # the real false claim started passing, and nothing would have reported
+      # that, because a gate that silently stops failing looks exactly like a
+      # gate with nothing to catch.
+      - name: Self-test the fact gate
+        run: node scripts/check-facts.test.mjs
+
+      - name: Check every browser-support claim against MDN compat data
+        run: node scripts/check-facts.mjs
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm type-check
+      - run: pnpm build
