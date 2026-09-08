@@ -10,6 +10,14 @@ interface LiveStepProps {
   controls?: ControlConfig[];
   previewClassName?: string;
   previewBg?: string;
+  /**
+   * Turns the preview pane into its own scroll container with room above and
+   * below the demo. Required for anything driven by `animation-timeline:
+   * view()` or `scroll()`, which needs a scrollport of its own. Without it the
+   * timeline resolves against the article and the demo animates on the reader's
+   * page scroll instead of its own.
+   */
+  previewScroll?: boolean;
 }
 
 function updateCodeWithValues(
@@ -40,6 +48,7 @@ export default function LiveStep({
   controls = [],
   previewClassName = '',
   previewBg = 'bg-library-cream',
+  previewScroll = false,
 }: LiveStepProps) {
   const defaultValues = useMemo(() => {
     const vals: Record<string, string | number | boolean> = {};
@@ -95,14 +104,34 @@ export default function LiveStep({
               />
             </div>
             <div
-              className={`${previewBg} min-h-[200px] flex items-center justify-center p-6 relative ${previewClassName}`}
+              className={
+                previewScroll
+                  ? `${previewBg} relative ${previewClassName}`
+                  : `${previewBg} min-h-[200px] flex items-center justify-center p-6 relative ${previewClassName}`
+              }
             >
-              <div
-                key={replayKey}
-                className='w-full flex items-center justify-center'
-              >
-                <LivePreview />
-              </div>
+              {previewScroll ? (
+                <div
+                  key={replayKey}
+                  className='h-[420px] overflow-y-auto px-6'
+                  // Space above and below so the demo enters and leaves this
+                  // scrollport, which is what a view() timeline animates on.
+                >
+                  <div aria-hidden className='h-[320px]' />
+                  <div className='w-full flex items-center justify-center'>
+                    <LivePreview />
+                  </div>
+                  <div aria-hidden className='h-[320px]' />
+                </div>
+              ) : (
+                <div
+                  key={replayKey}
+                  data-live-preview
+                  className='w-full flex items-center justify-center'
+                >
+                  <LivePreview />
+                </div>
+              )}
               <button
                 onClick={() => setReplayKey(k => k + 1)}
                 className='absolute top-3 right-3 text-xs px-3 py-1.5 rounded-md bg-black/10 hover:bg-black/20 text-black/50 hover:text-black/80 transition-colors'
@@ -111,7 +140,12 @@ export default function LiveStep({
               </button>
             </div>
           </div>
-          <LiveError className='bg-red-900/50 text-red-200 text-xs p-3 font-[family-name:var(--font-jetbrains-mono)]' />
+          {/* data-live-error is what scripts/check-post.mjs looks for. react-live
+              renders nothing here when the code compiles, so a non-empty slot
+              means the demo is broken. */}
+          <div data-live-error>
+            <LiveError className='bg-red-900/50 text-red-200 text-xs p-3 font-[family-name:var(--font-jetbrains-mono)]' />
+          </div>
           {controls.length > 0 && (
             <PropControls
               controls={controls}

@@ -40,6 +40,24 @@ pnpm type-check      # tsc --noEmit
 ```
 No unit-test framework is configured.
 
+## Blog content scripts
+```bash
+pnpm generate:scope                              # regenerate src/lib/live-scope.ts
+node scripts/check-post.mjs <slug>               # render-gate one blog post
+node scripts/check-post.mjs <slug> --strict      # also fail on a missing hero demo
+```
+`generate:scope` walks `src/components/library/` and writes the react-live scope
+that the blog's `<LiveStep>` boxes evaluate against. It runs automatically from
+`prebuild`, so a forgotten regeneration cannot ship. Never hand-edit
+`src/lib/live-scope.ts`.
+
+`check-post.mjs` boots a production server on port 3111 (override with `PORT`, or
+point at a running one with `BASE_URL`) and loads the post in Chromium via
+Playwright. **This is the only real check on a blog post.** The demos compile in
+the browser, so a missing component or a typo'd `codeId` passes `pnpm build` and
+breaks only for the reader. Writing a post is covered by the `new-blog-post`
+skill.
+
 ## Deploy
 The project is already linked to Vercel — `.vercel/repo.json` links it to Vercel project `portfolio-website` (id `prj_d829sHRZPql5Mdq0EYLTUE90fubg`). Deploy to production with:
 ```bash
@@ -61,3 +79,9 @@ Note: the code also references `RESEND_API_KEY`, `CONTACT_FROM_EMAIL`, and `CONT
 - No `CLAUDE.md` / `AGENTS.md`; contact-form setup details are in `CONTACT_FORM_SETUP.md`.
 - PostHog env vars are reportedly set in Vercel for the Production environment only — add `NEXT_PUBLIC_POSTHOG_KEY` to the Preview and Development environments too (open registry need).
 - Heavy 3D/animation dependency footprint (Three.js, GSAP, matter-js, OGL) — expect longer build times than a plain content site.
+- `pnpm install` exits non-zero on `ERR_PNPM_IGNORED_BUILDS` even when the install
+  succeeded. Judge it by whether `node_modules/next` exists, not by the exit code.
+- A weekly LaunchAgent (`com.dirck.weekly-blog-post`) generates blog drafts into a
+  git worktree under `~/.claude/blog-worktrees/`, branched from `origin/main`. It
+  never touches this checkout and never publishes. Queue lives in
+  `docs/blog-queue.md`.

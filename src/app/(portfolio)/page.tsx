@@ -16,6 +16,7 @@ import BlurText from '@/components/library/text-animations/BlurText';
 import Magnet from '@/components/library/animations/Magnet';
 import ScrollVelocity from '@/components/library/text-animations/ScrollVelocity';
 import Folder from '@/components/library/components/Folder';
+import FavouriteBars from '@/components/favourites/FavouriteBars';
 
 interface LatestPost {
   slug: string;
@@ -64,13 +65,6 @@ export default function Home() {
   });
   const folderProgress = useTransform(scrollYProgress, [0.2, 0.8], [0, 1]);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
   useMotionValueEvent(folderProgress, 'change', v => {
     setScrollProgress(Math.max(0, Math.min(1, v)));
   });
@@ -150,38 +144,6 @@ export default function Home() {
   }, [selectedJob]);
 
   const projects: Project[] = [
-    {
-      title: 'Website Rebuilds',
-      image: '/projects/website-rebuilds.png',
-      cardBg: 'linear-gradient(135deg, #0a0a0f 0%, #241246 100%)',
-      cardTextColor: '#ffffff',
-      description: 'Polished web and mobile designs rebuilt as live, animated pages',
-      media: {
-        type: 'image' as const,
-        src: '/projects/website-rebuilds.png',
-        alt: 'Website Rebuilds gallery of recreated designs',
-      },
-      content: {
-        description:
-          '<strong>Website Rebuilds</strong> is a growing gallery where I recreate the most polished web and mobile designs I can find, cut frame-by-frame from reels and posts, as real live pages. Every rebuild gets a proper <strong>WebGL</strong> or <strong>Framer Motion</strong> hero instead of a flat screenshot, from iridescent 3D cans to a pixel-art hero that morphs on scroll.',
-        technologies: [
-          'Next.js',
-          'React',
-          'TypeScript',
-          'Tailwind CSS',
-          'Framer Motion',
-          'react-three-fiber',
-          'Three.js',
-        ],
-        features: [
-          'Real 3D product heroes with react-three-fiber',
-          'Scroll-driven WebGL scenes',
-          'Pixel-faithful recreations from reference media',
-          'A single gallery routing to every rebuild',
-        ],
-        link: 'https://github.com/DirckM/website-rebuilds',
-      },
-    },
     {
       title: 'Wakeup',
       image: '/projects/wakeup-not-rounded.svg',
@@ -531,7 +493,10 @@ export default function Home() {
       </section>
 
       {/* Selected Work - auto-scrolling 3D carousel */}
-      <section id='projects' className='pt-6 sm:pt-8 md:pt-12 lg:pt-16 xl:pt-20 pb-32 overflow-x-clip'>
+      <section
+        id='projects'
+        className='pt-6 sm:pt-8 md:pt-12 lg:pt-16 xl:pt-20 pb-32 overflow-x-clip'
+      >
         <div className='max-w-5xl mx-auto px-6 md:px-16 mb-10 md:mb-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
             Selected{' '}
@@ -556,35 +521,25 @@ export default function Home() {
               animation: `projectScroll ${projects.length * 6}s linear infinite`,
               width: 'fit-content',
             }}
-            onMouseEnter={e =>
-              ((e.currentTarget as HTMLElement).style.animationPlayState =
-                'paused')
-            }
-            onMouseLeave={e =>
-              ((e.currentTarget as HTMLElement).style.animationPlayState =
-                'running')
-            }
-            onTouchStart={e => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.animationPlayState = 'paused';
-              el.dataset.touchStartX = String(e.touches[0].clientX);
-              el.dataset.touchOffset = String(
-                parseFloat(getComputedStyle(el).transform.split(',')[4] || '0')
-              );
+            onPointerEnter={e => {
+              // Touch taps fire emulated mouse events after touchend, which
+              // used to pause the strip forever on phones. Mouse only.
+              if (e.pointerType !== 'mouse') return;
+              (e.currentTarget as HTMLElement).style.animationPlayState =
+                'paused';
             }}
-            onTouchMove={e => {
-              const el = e.currentTarget as HTMLElement;
-              const startX = parseFloat(el.dataset.touchStartX || '0');
-              const offset = parseFloat(el.dataset.touchOffset || '0');
-              const diff = e.touches[0].clientX - startX;
-              el.style.animation = 'none';
-              el.style.transform = `translateX(${offset + diff}px)`;
+            onPointerLeave={e => {
+              if (e.pointerType !== 'mouse') return;
+              (e.currentTarget as HTMLElement).style.animationPlayState =
+                'running';
+            }}
+            onTouchStart={e => {
+              (e.currentTarget as HTMLElement).style.animationPlayState =
+                'paused';
             }}
             onTouchEnd={e => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.animation = '';
-              el.style.transform = '';
-              el.style.animationPlayState = 'running';
+              (e.currentTarget as HTMLElement).style.animationPlayState =
+                'running';
             }}
           >
             {[...projects, ...projects].map((project, idx) => (
@@ -600,14 +555,16 @@ export default function Home() {
                   opacity: 0.85,
                   transition: 'opacity 0.3s ease, transform 0.4s ease',
                 }}
-                onMouseEnter={e => {
+                onPointerEnter={e => {
+                  if (e.pointerType !== 'mouse') return;
                   const el = e.currentTarget as HTMLElement;
                   el.style.transform =
                     'perspective(1143px) rotateY(-30deg) skewY(12deg) scale(1.08) translateY(-15px)';
                   el.style.opacity = '1';
                   el.style.zIndex = '10';
                 }}
-                onMouseLeave={e => {
+                onPointerLeave={e => {
+                  if (e.pointerType !== 'mouse') return;
                   const el = e.currentTarget as HTMLElement;
                   el.style.transform =
                     'perspective(1143px) rotateY(-50deg) skewY(20deg)';
@@ -749,6 +706,26 @@ export default function Home() {
         )}
       </section>
 
+      {/* My Favourites - curated interactive website work */}
+      <section id='favourites' className='py-32'>
+        <div className='max-w-5xl mx-auto px-6 md:px-16 mb-10 md:mb-14'>
+          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
+            My{' '}
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal text-gradient-primary'>
+              Favourites
+            </span>
+          </h2>
+          <p className='mt-4 text-sm text-library-gray max-w-xl leading-relaxed'>
+            The designs I enjoyed rebuilding most these past months, all live as
+            real pages. Hover or tap a bar to open it up, then click through to
+            visit it.
+          </p>
+        </div>
+        <div className='max-w-5xl mx-auto px-6 md:px-16'>
+          <FavouriteBars />
+        </div>
+      </section>
+
       {/* Skills - Scroll Velocity Marquee */}
       <section id='skills' className='py-32 overflow-clip'>
         <div className='max-w-5xl mx-auto px-6 md:px-16 mb-16'>
@@ -791,7 +768,10 @@ export default function Home() {
             </h2>
 
             <div className='flex flex-col items-center'>
-              <div ref={folderRef} className='py-20 scale-[0.55] md:scale-100 origin-center'>
+              <div
+                ref={folderRef}
+                className='py-20 scale-[0.55] md:scale-100 origin-center'
+              >
                 <Folder
                   color='#000000'
                   size={3}

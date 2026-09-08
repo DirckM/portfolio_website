@@ -157,6 +157,21 @@
   background: linear-gradient(135deg, #8a3209 0%, #a33d0d 25%, #c44b10 50%, #d4692a 75%, #e66a1a 100%);
 }
 
+/* Brand spinner: eased full turns so each revolution reads as a hand-spun flick */
+@keyframes brand-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-brand-spin {
+  animation: brand-spin 1.4s cubic-bezier(0.6, 0.15, 0.35, 0.9) infinite;
+  will-change: transform;
+}
+
 /* Continuous scrolling animation */
 @keyframes scroll {
   0% {
