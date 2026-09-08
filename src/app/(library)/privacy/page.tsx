@@ -43,6 +43,16 @@ export default function PrivacyPage() {
           the analytics feature and not used for advertising.
         </p>
         <p>
+          <strong>Newsletter:</strong> your email address, which page you signed
+          up from, the exact consent wording you agreed to, your browser&apos;s
+          user-agent, and a one-way salted hash of your IP address. I never
+          store the IP itself. Legal basis: consent (Art. 6(1)(a) GDPR).
+          Subscription is double opt-in, so you are only added after clicking
+          the link in the confirmation email, and addresses that are never
+          confirmed are deleted after 30 days. Every issue carries a one-click
+          unsubscribe. Stored in Supabase (EU), delivered by Resend (EU).
+        </p>
+        <p>
           <strong>Server logs:</strong> Vercel logs IP address and user-agent
           for security and abuse prevention. Retained up to 30 days.
         </p>
@@ -65,6 +75,11 @@ export default function PrivacyPage() {
         <h2>4. Retention</h2>
         <ul className="list-disc pl-6 space-y-1">
           <li>Contact form messages: 12 months, then deleted.</li>
+          <li>
+            Newsletter subscribers: until you unsubscribe. Unconfirmed sign-ups
+            are deleted after 30 days. A record that an address unsubscribed is
+            kept so you are not accidentally added again.
+          </li>
           <li>Server logs: up to 30 days.</li>
           <li>Analytics events: 12 months, then aggregated.</li>
         </ul>
