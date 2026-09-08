@@ -295,6 +295,15 @@ export const componentRegistry: ComponentEntry[] = [
 
   // Components
   {
+    name: 'Scroll Progress CSS',
+    slug: 'scroll-progress-css',
+    category: 'components',
+    description:
+      'A reading progress bar driven by animation-timeline: scroll(), no JavaScript',
+    sourceRef: '',
+    featured: false,
+  },
+  {
     name: 'Animated List',
     slug: 'animated-list',
     category: 'components',
