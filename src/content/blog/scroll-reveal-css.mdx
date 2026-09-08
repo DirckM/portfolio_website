@@ -32,7 +32,7 @@ The [GSAP version of this effect](/blog/scroll-reveal) reaches the same picture 
 
 ## Setting up
 
-Nothing to install and nothing to import. No provider, no ref, no cleanup function. The only setup is deciding what happens in a browser that does not do scroll-driven animations yet, which as of mid 2026 is roughly one visitor in six (Chrome and Edge 115+, Firefox 132+, Safari 18+).
+Nothing to install and nothing to import. No provider, no ref, no cleanup function. The only setup is deciding what happens in a browser that does not do scroll-driven animations yet. Chrome and Edge have shipped them unflagged since Chrome 115 and Safari since 26, but Firefox still keeps them behind the `layout.css.scroll-driven-animations.enabled` flag in stable, so every Firefox visitor takes the fallback. That makes the block below load-bearing rather than decoration.
 
 ```css
 @supports not (animation-timeline: view()) {
