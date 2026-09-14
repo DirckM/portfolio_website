@@ -25,7 +25,7 @@ Nothing in that card moves except one number. The gradient is painted once and n
 
 Two absolutely positioned layers sit behind the content. Both paint the same `conic-gradient`, and both read their start angle from `--gbcss-angle`. The front layer is masked down to a ring the thickness of the border. The back one is the same gradient blurred, which reads as a halo. A single animation on the card moves `--gbcss-angle` from `0deg` to `360deg` and both layers follow, because a registered property that inherits reaches its descendants with the animated value rather than the declared one.
 
-The [cursor-following version of this border](/blog/border-glow) reaches a similar picture with a mousemove handler and React state. Reading them next to each other is the fastest way to see what the two approaches actually cost, and there is a real thing the CSS one cannot do, at the bottom.
+The [cursor-following version of this border](/blog/border-glow) reaches a similar picture with a pointermove handler and React state. Reading them next to each other is the fastest way to see what the two approaches actually cost, and there is a real thing the CSS one cannot do, at the bottom.
 
 ## Setting up
 
@@ -93,8 +93,8 @@ Same for `prefers-reduced-motion`, where `animation-name: none` leaves the gradi
 
 ## Where this runs out
 
-Custom property animations are not composited. Every frame changes a paint-time value, so the card repaints on the main thread at 60fps for as long as it is on screen, which the rotating-element trick avoided by moving a transform on the GPU. One hero card is nothing. Twenty of them in a list is a decision you should make on purpose.
+The properties a browser can reliably hand to the compositor are `transform` and `opacity`, and an angle feeding a gradient is neither. Every frame changes a paint-time value, so the card repaints for as long as it is on screen, which the rotating-element trick avoided by handing a transform to the compositor instead. One hero card is nothing. Twenty of them in a list is a decision you should make on purpose.
 
 The other limit is the one the twin post is about. This border runs on a clock and knows nothing about the reader. Making it point at the cursor means writing a coordinate into a custom property from a `pointermove` handler, and at that point the JavaScript version is not the expensive one any more.
 
-Two directions from here. Animate the colour stops as well, since registering them as `<color>` makes them interpolate the same way. Or watch `background-clip: border-area`, which landed in Chrome 150 in June 2026 and paints a background directly into the border box, deleting the mask from step 1 entirely. It is Chromium only for now, so the mask stays for a while yet.
+Two directions from here. Animate the colour stops as well, since registering them as `<color>` makes them interpolate the same way. Or watch `background-clip: border-area`, which paints a background straight into the border box and deletes the mask from step 1 entirely. Safari shipped it first, in 18.2 in December 2024, and Chrome followed in 150 in June 2026. Firefox has not shipped it at all, which is why the mask stays for a while yet.
