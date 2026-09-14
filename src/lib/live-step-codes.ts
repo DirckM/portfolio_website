@@ -299,6 +299,35 @@ export const liveStepCodes: Record<string, string> = {
   <ReflectiveCard className="w-64 h-80 rounded-2xl" />
 </div>`,
 
+  // gradient-border-css
+  'gradient-border-css-final': `<GradientBorderCSS className="w-64" duration={6} borderWidth={2} glow={18} colors={["#5227FF", "#FF9FFC", "#38bdf8"]}>
+  <div className="px-6 py-5">
+    <p className="text-xs uppercase tracking-[0.18em] text-white/40">Pro</p>
+    <p className="mt-2 text-lg font-semibold text-white">One typed angle</p>
+    <p className="mt-1 text-sm text-white/55">Nothing here is JavaScript.</p>
+  </div>
+</GradientBorderCSS>`,
+  'gradient-border-css-step3': `<div className="flex flex-wrap items-center justify-center gap-6">
+  <GradientBorderCSS typed={false} className="w-44" glow={0} duration={4}>
+    <div className="px-5 py-4">
+      <p className="text-sm font-semibold text-white">Untyped</p>
+      <p className="mt-1 text-xs text-white/50">Frozen. The angle has no in-between.</p>
+    </div>
+  </GradientBorderCSS>
+  <GradientBorderCSS typed={true} className="w-44" glow={0} duration={4}>
+    <div className="px-5 py-4">
+      <p className="text-sm font-semibold text-white">Registered</p>
+      <p className="mt-1 text-xs text-white/50">Same keyframes, one @property.</p>
+    </div>
+  </GradientBorderCSS>
+</div>`,
+  'gradient-border-css-step4': `<GradientBorderCSS className="w-64" spinOnHover={true} duration={3} borderWidth={3} borderRadius={26} glow={26} colors={["#f97316", "#facc15", "#34d399"]}>
+  <div className="px-6 py-5">
+    <p className="text-lg font-semibold text-white">Hover me</p>
+    <p className="mt-1 text-sm text-white/55">Paused play state, not a second animation.</p>
+  </div>
+</GradientBorderCSS>`,
+
   // scroll-progress-css
   'scroll-progress-css-final': `<ScrollProgressCSS className="w-full" variant="bar" thickness={6} color="#000000" height={260} />`,
   'scroll-progress-css-step3': `<ScrollProgressCSS className="w-full" sticky={false} thickness={6} height={220} />`,
