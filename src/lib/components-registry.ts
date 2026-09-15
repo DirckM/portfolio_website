@@ -130,6 +130,15 @@ export const componentRegistry: ComponentEntry[] = [
     featured: false,
   },
   {
+    name: 'Scroll Reveal CSS',
+    slug: 'scroll-reveal-css',
+    category: 'text',
+    description:
+      'Words revealed on scroll with animation-timeline, no JavaScript',
+    sourceRef: '',
+    featured: false,
+  },
+  {
     name: 'ASCII Text',
     slug: 'ascii-text',
     category: 'text',
@@ -285,6 +294,15 @@ export const componentRegistry: ComponentEntry[] = [
   },
 
   // Components
+  {
+    name: 'Scroll Progress CSS',
+    slug: 'scroll-progress-css',
+    category: 'components',
+    description:
+      'A reading progress bar driven by animation-timeline: scroll(), no JavaScript',
+    sourceRef: '',
+    featured: false,
+  },
   {
     name: 'Animated List',
     slug: 'animated-list',

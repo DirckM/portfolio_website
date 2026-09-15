@@ -16,6 +16,7 @@ import BlurText from '@/components/library/text-animations/BlurText';
 import Magnet from '@/components/library/animations/Magnet';
 import ScrollVelocity from '@/components/library/text-animations/ScrollVelocity';
 import Folder from '@/components/library/components/Folder';
+import FavouriteBars from '@/components/favourites/FavouriteBars';
 
 interface LatestPost {
   slug: string;
@@ -150,6 +151,38 @@ export default function Home() {
   }, [selectedJob]);
 
   const projects: Project[] = [
+    {
+      title: 'Website Rebuilds',
+      image: '/projects/website-rebuilds.png',
+      cardBg: 'linear-gradient(135deg, #0a0a0f 0%, #241246 100%)',
+      cardTextColor: '#ffffff',
+      description: 'Polished web and mobile designs rebuilt as live, animated pages',
+      media: {
+        type: 'image' as const,
+        src: '/projects/website-rebuilds.png',
+        alt: 'Website Rebuilds gallery of recreated designs',
+      },
+      content: {
+        description:
+          '<strong>Website Rebuilds</strong> is a growing gallery where I recreate the most polished web and mobile designs I can find, cut frame-by-frame from reels and posts, as real live pages. Every rebuild gets a proper <strong>WebGL</strong> or <strong>Framer Motion</strong> hero instead of a flat screenshot, from iridescent 3D cans to a pixel-art hero that morphs on scroll.',
+        technologies: [
+          'Next.js',
+          'React',
+          'TypeScript',
+          'Tailwind CSS',
+          'Framer Motion',
+          'react-three-fiber',
+          'Three.js',
+        ],
+        features: [
+          'Real 3D product heroes with react-three-fiber',
+          'Scroll-driven WebGL scenes',
+          'Pixel-faithful recreations from reference media',
+          'A single gallery routing to every rebuild',
+        ],
+        link: 'https://github.com/DirckM/website-rebuilds',
+      },
+    },
     {
       title: 'Wakeup',
       image: '/projects/wakeup-not-rounded.svg',
@@ -715,6 +748,26 @@ export default function Home() {
             </motion.div>
           </motion.div>
         )}
+      </section>
+
+      {/* My Favourites - curated interactive website work */}
+      <section id='favourites' className='py-32'>
+        <div className='max-w-5xl mx-auto px-6 md:px-16 mb-10 md:mb-14'>
+          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
+            My{' '}
+            <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal text-gradient-primary'>
+              Favourites
+            </span>
+          </h2>
+          <p className='mt-4 text-sm text-library-gray max-w-xl leading-relaxed'>
+            The designs I enjoyed rebuilding most these past months, all live as
+            real pages. Hover or tap a bar to open it up, then click through to
+            visit it.
+          </p>
+        </div>
+        <div className='max-w-5xl mx-auto px-6 md:px-16'>
+          <FavouriteBars />
+        </div>
       </section>
 
       {/* Skills - Scroll Velocity Marquee */}

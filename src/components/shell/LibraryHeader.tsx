@@ -86,6 +86,12 @@ export default function LibraryHeader() {
         >
           Blog
         </Link>
+        <a
+          href='https://portal.dirckmulder.com'
+          className='no-underline transition-colors text-library-gray hover:text-black'
+        >
+          Portal
+        </a>
       </nav>
 
       <button
@@ -166,6 +172,13 @@ export default function LibraryHeader() {
               >
                 Blog
               </Link>
+              <a
+                href='https://portal.dirckmulder.com'
+                onClick={() => setMenuOpen(false)}
+                className='text-black hover:text-library-gray transition-colors py-2 no-underline'
+              >
+                Portal
+              </a>
             </div>
           </div>
         </div>

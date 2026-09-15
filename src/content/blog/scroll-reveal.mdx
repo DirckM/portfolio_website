@@ -115,6 +115,10 @@ Running these three animations separately lets you tune them independently. You 
 </ScrollReveal>
 ```
 
+## The version without GSAP
+
+Modern CSS can drive this same reveal off the scrollbar directly, with `animation-timeline: view()` and no library. [Scroll Reveal Text with Zero JavaScript](/blog/scroll-reveal-css) builds it from scratch and covers what you give up, which is mainly the progress value and the callbacks that GSAP hands you here.
+
 ## Key takeaways
 
 - Splitting text with a regex that captures whitespace (`/(\s+)/`) preserves the original spacing without needing to manually reinsert spaces between words.

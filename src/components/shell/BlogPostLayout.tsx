@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { BlogPost } from '@/lib/blog-utils';
+import PostFeedback from './PostFeedback';
 
 interface BlogPostLayoutProps {
   post: BlogPost;
@@ -30,25 +31,25 @@ export default function BlogPostLayout({
         <p className='mt-4 text-library-gray text-lg'>{post.description}</p>
       </header>
 
-      {demo && (
-        <section className='w-full bg-library-cream border-y border-library-border mb-12'>
-          <div className='max-w-[1200px] mx-auto min-h-[300px] flex items-center justify-center py-12'>
-            {demo}
-          </div>
-        </section>
-      )}
+      {/* The demo brings its own <section> chrome, because only a client
+          component can read the fullDemos map. See BlogHeroDemo. */}
+      {demo}
 
       <div className='max-w-[720px] mx-auto px-6 prose prose-neutral prose-lg'>
         {children}
       </div>
 
-      <footer className='max-w-[720px] mx-auto px-6 mt-16 pt-8 border-t border-library-border'>
+      <footer className='max-w-[720px] mx-auto px-6 mt-16 pt-8 border-t border-black/10'>
         <Link
           href={`/components/${post.componentSlug}`}
           className='text-sm text-black underline underline-offset-4 hover:no-underline'
         >
           View {post.title} component
         </Link>
+
+        {/* The widget asks first and wraps the signup, so the email ask arrives
+            after a micro-commitment rather than cold. */}
+        <PostFeedback slug={post.slug} category={post.category} />
       </footer>
     </article>
   );

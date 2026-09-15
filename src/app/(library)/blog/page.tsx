@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { getAllBlogPosts } from '@/lib/blog-utils';
+import { JsonLd, blogIndexJsonLd } from '@/lib/structured-data';
 import BlogList from '@/components/shell/BlogList';
 
 export const metadata: Metadata = {
@@ -12,6 +13,8 @@ export default function BlogPage() {
   const posts = getAllBlogPosts();
 
   return (
+    <>
+    <JsonLd data={blogIndexJsonLd(posts)} />
     <div className='pt-24 pb-20 max-w-[900px] mx-auto px-6'>
       <h1 className='text-3xl font-[family-name:var(--font-instrument-serif)] mb-16'>
         Blog
@@ -28,5 +31,6 @@ export default function BlogPage() {
         }))}
       />
     </div>
+    </>
   );
 }

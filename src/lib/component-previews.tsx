@@ -14,6 +14,7 @@ import RotatingText from '@/components/library/text-animations/RotatingText';
 import ScrambledText from '@/components/library/text-animations/ScrambledText';
 import ScrollFloat from '@/components/library/text-animations/ScrollFloat';
 import ScrollReveal from '@/components/library/text-animations/ScrollReveal';
+import ScrollRevealCSS from '@/components/library/text-animations/ScrollRevealCSS';
 import { ScrollVelocity } from '@/components/library/text-animations/ScrollVelocity';
 import ShinyText from '@/components/library/text-animations/ShinyText';
 import Shuffle from '@/components/library/text-animations/Shuffle';
@@ -107,6 +108,7 @@ const PixelCard = dynamic(
   { ssr: false }
 );
 import ReflectiveCard from '@/components/library/components/ReflectiveCard';
+import ScrollProgressCSS from '@/components/library/components/ScrollProgressCSS';
 import ScrollStack, {
   ScrollStackItem,
 } from '@/components/library/components/ScrollStack';
@@ -167,6 +169,15 @@ function VariableProximityFullDemo() {
 
 export const cardPreviews: Record<string, React.ReactNode> = {
   // Text animations
+  'scroll-reveal-css': (
+    <div className='h-full w-full overflow-y-auto px-4'>
+      <div aria-hidden className='h-[70%]' />
+      <ScrollRevealCSS textClassName='!text-lg text-black' rangeStart={10}>
+        Reveal on scroll, no JavaScript
+      </ScrollRevealCSS>
+      <div aria-hidden className='h-[70%]' />
+    </div>
+  ),
   'ascii-text': (
     <div className='w-full h-full bg-black'>
       <ASCIIText
@@ -796,6 +807,27 @@ export const cardPreviews: Record<string, React.ReactNode> = {
       <ReflectiveCard className='w-40 h-28 rounded-xl' />
     </div>
   ),
+  'scroll-progress-css': (
+    <div className='flex items-center justify-center w-full h-full px-4'>
+      <ScrollProgressCSS
+        className='w-full'
+        height={150}
+        thickness={5}
+        contentClassName='!p-3'
+      >
+        <p className='text-xs leading-relaxed text-black/70'>
+          The bar at the top of this box is one animation pointed at the
+          scrollbar. Scroll and it fills. Scroll back and it empties.
+        </p>
+        <p className='mt-2 text-xs leading-relaxed text-black/70'>
+          No listener, no observer, no state. Just animation-timeline.
+        </p>
+        <p className='mt-2 text-xs leading-relaxed text-black/70'>
+          The browser owns the mapping between the two.
+        </p>
+      </ScrollProgressCSS>
+    </div>
+  ),
   'scroll-stack': (
     <div className='w-full h-full overflow-hidden scale-75 origin-top'>
       <ScrollStack useWindowScroll={false} className='!h-auto'>
@@ -821,6 +853,33 @@ export const cardPreviews: Record<string, React.ReactNode> = {
 };
 
 export const fullDemos: Record<string, React.ReactNode> = {
+  // scroll() reads the nearest scroll container, so each demo brings its own
+  // box rather than reporting on the reader's page scroll.
+  'scroll-progress-css': (
+    <div className='flex flex-col items-center gap-3 p-8 w-full'>
+      <div className='grid w-full max-w-[820px] grid-cols-1 gap-6 md:grid-cols-2'>
+        <ScrollProgressCSS height={300} thickness={6} />
+        <ScrollProgressCSS height={300} variant='ring' thickness={5} />
+      </div>
+      <p className='text-xs text-library-gray'>
+        Scroll inside either box. Same timeline, two shapes.
+      </p>
+    </div>
+  ),
+  // view() resolves against the nearest scroll container, so the demo brings
+  // its own instead of animating on the reader's page scroll.
+  'scroll-reveal-css': (
+    <div className='flex flex-col items-center gap-3 p-8 w-full'>
+      <div className='h-[360px] w-full max-w-[720px] overflow-y-auto rounded-xl border border-library-border px-8'>
+        <div aria-hidden className='h-[300px]' />
+        <ScrollRevealCSS textClassName='text-black'>
+          Every word here is revealed by the scrollbar, not by JavaScript
+        </ScrollRevealCSS>
+        <div aria-hidden className='h-[300px]' />
+      </div>
+      <p className='text-xs text-library-gray'>Scroll inside the box</p>
+    </div>
+  ),
   'blur-text': (
     <div className='flex flex-col items-center gap-8 p-12'>
       <BlurText
