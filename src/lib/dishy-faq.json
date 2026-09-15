@@ -1,0 +1,215 @@
+{
+  "note": "The single source of truth for user-facing help. The FAQ screen renders this, and the support-chat edge function is given the same text as its only knowledge. Change an answer here and both change together. Every answer must be true of the shipping build.",
+  "topics": [
+    {
+      "id": "basics",
+      "title": "How Dishy works",
+      "entries": [
+        {
+          "q": "What is Dishy actually for?",
+          "a": "Cooking once instead of every night. You pick the days you want dinner covered, Dishy plans dishes that share ingredients, and you make them all in one session. The rest of the week is reheating."
+        },
+        {
+          "q": "Do I cook a different dinner every evening?",
+          "a": "No. That is the whole point. There is one prep day where everything gets made, and the other evenings are ten minutes of warming something up."
+        },
+        {
+          "q": "How many days can one session cover?",
+          "a": "Usually five. Dishy will not plan more days than the food safely keeps, so how far it stretches depends on the dishes and on whether you use your freezer."
+        },
+        {
+          "q": "What are the four tabs?",
+          "a": "Week is your plan and where you start the prep. List is the shopping. Right now is for when you want something in twenty minutes without a plan. You is your settings."
+        }
+      ]
+    },
+    {
+      "id": "planning",
+      "title": "Planning a week",
+      "entries": [
+        {
+          "q": "How do I plan a new week?",
+          "a": "Tap the plus in the top right of the Week tab. You choose the days, how many people are eating, how often you want meat, and optionally a protein or calorie target per meal."
+        },
+        {
+          "q": "Can I pick any range of days, not just a whole week?",
+          "a": "Yes. The day picker works like booking a hotel: tap the first day, tap the last, and that is your range. There are quick buttons for the common cases if you would rather not tap twice."
+        },
+        {
+          "q": "Can I change a dish I do not fancy?",
+          "a": "Yes, twice over. Straight after planning you get a review screen where you can swap anything before it becomes your week. After that, Swap on the Week tab replaces one dish at a time."
+        },
+        {
+          "q": "How do I add more days to a week I already planned?",
+          "a": "Plan more days, under the day strip on the Week tab. It opens a calendar and fills the gaps. It adds to your week, it never replaces it."
+        },
+        {
+          "q": "Something came up and my week has shifted. Can I move it?",
+          "a": "Yes. Open Plan more days and use the plus one day, plus two, plus three or plus a week buttons at the bottom. The whole plan moves along together."
+        },
+        {
+          "q": "Why did I get fewer dinners than I asked for?",
+          "a": "Your rules ruled out too much. Usually it is a tight budget, a short cook time, or a diet plus an appliance you do not have. Dishy tells you on the Week tab when a week came back short rather than quietly planning less."
+        },
+        {
+          "q": "Nothing fits my rules at all. What now?",
+          "a": "Loosen one thing at a time in the You tab, and start with the cook time. It is almost always the tightest constraint and the one you care about least."
+        }
+      ]
+    },
+    {
+      "id": "prep",
+      "title": "Prep day",
+      "entries": [
+        {
+          "q": "What happens when I tap Start the prep?",
+          "a": "You get a list of the dishes you are about to make so you can agree to it, and then a timeline of single steps. Cut the onion. Cook the rice. One thing at a time, in the order that wastes the least time."
+        },
+        {
+          "q": "Why is the same job not repeated for each dish?",
+          "a": "Because you would only do it once anyway. If three dishes need garlic minced, that is one step, and Dishy tells you which dishes it was for."
+        },
+        {
+          "q": "Can I stop halfway and come back?",
+          "a": "Yes. Back out and the Week tab says Continue prep. Your ticks are remembered."
+        },
+        {
+          "q": "What happens when the prep is finished?",
+          "a": "The evenings switch from cooking to reheating. Every dish you made offers Reheat instead of Start the prep, and that is per dish, so a dish you did not get to still asks to be cooked."
+        },
+        {
+          "q": "A dish went green and said it is ready to build. What does that mean?",
+          "a": "Every component it needs is cooked. It moves to the little row of finished dishes at the top, and tapping it shows you how to put it together and what to hold back until you actually eat it."
+        },
+        {
+          "q": "I do not know what a word in a step means.",
+          "a": "Tap the small information icon next to the step. It explains the cooking words, so sauté or deglaze or fold get a plain answer without you leaving the app."
+        }
+      ]
+    },
+    {
+      "id": "list",
+      "title": "The shopping list",
+      "entries": [
+        {
+          "q": "Does the list cover the whole plan?",
+          "a": "Yes. Every ingredient for every dish in the plan you currently have, added up, so two dishes that both want onions appear once with the total."
+        },
+        {
+          "q": "My shopping list is empty. Where did it go?",
+          "a": "You marked the prep as done, so the list had done its job: it was shopped and it was cooked. It is kept under Past lists at the bottom of the List tab, with what everything cost. Plan a new week and a new list is written."
+        },
+        {
+          "q": "Does the list work in the shop with no signal?",
+          "a": "Yes. The whole app works with the radio off. Your plan and list live on your phone, not on a server."
+        },
+        {
+          "q": "What are the little coloured dots next to the prices?",
+          "a": "Where the price came from. Dishy never shows a price without saying how confident it is about it."
+        },
+        {
+          "q": "Are these real prices from my shop?",
+          "a": "Not yet. They are estimates from published figures, and every line is labelled as such. Live shelf prices from real shops are being built and Dishy will not claim a price is exact until it genuinely is."
+        }
+      ]
+    },
+    {
+      "id": "fridge",
+      "title": "The fridge scan",
+      "entries": [
+        {
+          "q": "What does scanning my fridge do?",
+          "a": "It takes what you already own off your shopping list, so the week costs less before you have done anything."
+        },
+        {
+          "q": "What happens to my photos?",
+          "a": "They are sent to be read automatically and are not kept afterwards. Only the list of ingredients that came out of them is saved, on your phone."
+        },
+        {
+          "q": "It missed something that was clearly there.",
+          "a": "Anything behind something else does not get counted, and Dishy will not guess at what is inside an opaque container. Shoot the whole shelf rather than individual items, and you can always tick the missing thing yourself."
+        },
+        {
+          "q": "Scanning says it is unavailable.",
+          "a": "Either you are offline or the service is briefly down. Your photos are fine either way, and your list is unchanged. Try again in a few minutes."
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "title": "Keeping food",
+      "entries": [
+        {
+          "q": "How long does the food actually keep?",
+          "a": "Dishy plans against published food-safety guidance, which is why it will not stretch a session further than it should. Cooked rice is the strict one and gets treated as a one-day ingredient."
+        },
+        {
+          "q": "Can I use my freezer to cover more days?",
+          "a": "Yes, and there is a setting for it. It does not stretch a week into a fortnight though, because eating the same two dishes for ten days is worse than cooking twice."
+        }
+      ]
+    },
+    {
+      "id": "you",
+      "title": "Your settings",
+      "entries": [
+        {
+          "q": "Where do I change my allergies?",
+          "a": "You tab, under What you eat. Diets and allergies are used as a hard rule, so a dish that breaks one is never planned, not just deprioritised."
+        },
+        {
+          "q": "I do not have an oven. Will Dishy plan roasts anyway?",
+          "a": "No. Set your equipment under Your kitchen in the You tab and anything you cannot cook stops being offered."
+        },
+        {
+          "q": "Can I change my budget or how many people I cook for?",
+          "a": "Yes, both are in the You tab under Your prep, along with how long you want the prep session to take and which day you usually plan on."
+        },
+        {
+          "q": "What does connecting my calendar do?",
+          "a": "It notices the evenings you are out, so Dishy does not make a portion nobody eats and does not put your prep session on a night you are busy."
+        }
+      ]
+    },
+    {
+      "id": "billing",
+      "title": "Subscription and billing",
+      "entries": [
+        {
+          "q": "How much does Dishy cost?",
+          "a": "There is a yearly plan and a monthly plan, and the exact prices are shown on the subscribe screen in your own currency. There is no free trial."
+        },
+        {
+          "q": "I already paid but Dishy is asking me to subscribe.",
+          "a": "Tap Restore purchase on that screen, or Restore purchases under Advanced in the You tab. It checks the Apple Account on this device."
+        },
+        {
+          "q": "How do I cancel?",
+          "a": "Manage subscription, under Advanced in the You tab. That opens Apple's own subscription settings, which is the only place a subscription can be cancelled."
+        },
+        {
+          "q": "Will I lose my plan if I cancel?",
+          "a": "Your plan is on your phone and stays there. You just will not be able to open the app until you subscribe again."
+        }
+      ]
+    },
+    {
+      "id": "data",
+      "title": "Your data",
+      "entries": [
+        {
+          "q": "Where is my information kept?",
+          "a": "On your phone. Your plan, your shopping list and your settings never leave the device. There is no account and nothing to sign into."
+        },
+        {
+          "q": "What leaves my phone at all?",
+          "a": "Fridge photos while they are being read, questions you type into this chat, and anonymous usage counts. Nothing that identifies you."
+        },
+        {
+          "q": "I deleted the app and reinstalled it. Where is my week?",
+          "a": "Gone, unfortunately. Because everything is stored on the device and there is no account, deleting the app deletes the plan with it. Your subscription is safe and Restore purchase brings that back."
+        }
+      ]
+    }
+  ]
+}
