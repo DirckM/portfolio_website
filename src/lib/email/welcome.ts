@@ -27,6 +27,8 @@ export const WELCOME_SUBJECT = 'You are on the list';
 export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string {
   const unsub = `${SITE}/api/newsletter/unsubscribe?t=${encodeURIComponent(unsubscribeToken)}`;
   const components = `${SITE}/components?utm_source=newsletter&utm_medium=email&utm_campaign=welcome`;
+  const instagram = 'https://www.instagram.com/dirckmulder/';
+  const tiktok = 'https://www.tiktok.com/@dirckmulder';
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -103,6 +105,30 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
     </table>
   </td></tr>
 
+  <tr><td class="p" style="padding:0 34px 30px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:${T.tint};border-radius:14px;">
+      <tr><td style="padding:22px 24px;font-family:${FONT};">
+        <div style="font-size:15px;line-height:1.65;color:${T.body};margin-bottom:14px;">
+          Most of what I make shows up on Instagram and TikTok first, usually
+          long before it becomes a write-up. That is where I post the most.
+        </div>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+          <td style="padding-right:10px;">
+            <a href="${escapeHtml(instagram)}"
+               style="display:inline-block;padding:10px 18px;border:1px solid ${T.rule};border-radius:99px;background:#ffffff;
+                      font-family:${FONT};font-size:13px;font-weight:700;color:${T.ink};text-decoration:none;">Instagram</a>
+          </td>
+          <td>
+            <a href="${escapeHtml(tiktok)}"
+               style="display:inline-block;padding:10px 18px;border:1px solid ${T.rule};border-radius:99px;background:#ffffff;
+                      font-family:${FONT};font-size:13px;font-weight:700;color:${T.ink};text-decoration:none;">TikTok</a>
+          </td>
+        </tr></table>
+      </td></tr>
+    </table>
+  </td></tr>
+
   <tr><td class="p" style="padding:0 34px 36px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${T.rule};">
       <tr>
@@ -152,6 +178,10 @@ export function renderWelcomeText({ unsubscribeToken, postCount }: Welcome): str
     '',
     `There are ${postCount} tutorials on the site already, each one welded to a component you can pull apart in the browser:`,
     `${SITE}/components`,
+    '',
+    'Most of what I make shows up on Instagram and TikTok first, usually long before it becomes a write-up. That is where I post the most.',
+    'Instagram: https://www.instagram.com/dirckmulder/',
+    'TikTok: https://www.tiktok.com/@dirckmulder',
     '',
     'If you ever want something covered, just reply to this. It comes straight to me.',
     '',
