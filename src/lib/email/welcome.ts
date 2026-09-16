@@ -41,7 +41,7 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
     .hero{width:100%!important;height:auto!important}
   }
 </style></head><body style="margin:0;padding:0;background:${T.page};">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;">One email a month, and this is the only one you will get until the next one.${'&#8203;&nbsp;'.repeat(60)}</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">A huge thank you for signing up. Here is what you signed up for.${'&#8203;&nbsp;'.repeat(60)}</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${T.page};">
 <tr><td align="center" style="padding:26px 10px 30px;">
@@ -66,14 +66,14 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
   <tr><td class="p" style="padding:24px 34px 22px;">
     <h1 class="big" style="margin:0 0 12px;font-family:${FONT};font-size:37px;line-height:1.08;letter-spacing:-.038em;color:${T.ink};font-weight:800;">You are <span style="font-family:${SERIF};font-style:italic;font-weight:400;letter-spacing:-.01em;">in</span></h1>
     <p style="margin:0;font-family:${FONT};font-size:16px;line-height:1.65;color:${T.body};">
-      Thanks for confirming. That is the admin over with, so here is what you
-      actually signed up for.
+      A huge thank you for signing up. Handing someone your inbox is not
+      nothing, and I do not take it lightly. Here is what you signed up for.
     </p>
   </td></tr>
 
-  <tr><td align="center" style="padding:0 34px 26px;">
-    <img class="hero" src="${IMG}/welcome-hero.jpg" width="440" alt="Dirck Mulder"
-         style="display:block;width:440px;max-width:100%;height:auto;border:0;border-radius:14px;">
+  <tr><td class="p" style="padding:0 34px 26px;">
+    <img class="hero" src="${IMG}/welcome-hero.jpg" width="532" alt="Dirck Mulder"
+         style="display:block;width:532px;max-width:100%;height:auto;border:0;border-radius:14px;">
   </td></tr>
 
   <tr><td class="p" style="padding:0 34px 8px;font-family:${FONT};font-size:16px;line-height:1.7;color:${T.body};">
@@ -144,7 +144,7 @@ export function renderWelcomeText({ unsubscribeToken, postCount }: Welcome): str
   return [
     'YOU ARE IN',
     '',
-    'Thanks for confirming. That is the admin over with, so here is what you actually signed up for.',
+    'A huge thank you for signing up. Handing someone your inbox is not nothing, and I do not take it lightly. Here is what you signed up for.',
     '',
     'I build web and mobile things, mostly on my own, and I write up the parts that were harder than they looked.',
     '',
