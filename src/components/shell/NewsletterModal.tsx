@@ -207,13 +207,13 @@ export default function NewsletterModal() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className='relative w-full max-w-[440px] bg-white px-7 pt-10 pb-7 shadow-2xl outline-none sm:px-9 sm:pb-9'
+            className='relative flex w-full max-w-[720px] flex-col overflow-hidden bg-white shadow-2xl outline-none sm:flex-row'
           >
             <button
               type='button'
               onClick={() => close('dismiss')}
               aria-label='Close'
-              className='absolute right-4 top-4 flex h-9 w-9 items-center justify-center text-black/40 transition-colors hover:text-black'
+              className='absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/70 text-black/50 backdrop-blur-sm transition-colors hover:text-black sm:bg-transparent sm:backdrop-blur-none'
             >
               <svg
                 width='14'
@@ -230,52 +230,48 @@ export default function NewsletterModal() {
               </svg>
             </button>
 
-            {/* Same avatar treatment as the email shell in lib/email/issue.ts,
-                so the ask and what lands in the inbox read as one person. */}
-            <div className='mb-5 flex items-center gap-3'>
+            {/* A full-bleed column on desktop, a banner on mobile. object-position
+                keeps the face in frame when the banner crops the portrait. */}
+            <div className='relative h-[190px] w-full shrink-0 sm:h-auto sm:w-[268px]'>
               <Image
-                src='/dirck-newsletter.jpg'
+                src='/dirck-newsletter-tall.jpg'
                 alt='Dirck Mulder'
-                width={52}
-                height={52}
-                className='h-[52px] w-[52px] shrink-0 rounded-full object-cover'
+                fill
+                sizes='(max-width: 640px) 100vw, 268px'
+                priority
+                className='object-cover object-[center_26%] sm:object-center'
               />
-              <div>
-                <p className='text-[13px] font-semibold tracking-[-0.01em] text-black'>
-                  Dirck Mulder
-                </p>
-                <p className='text-[11px] text-black/50'>
-                  Designer and developer
-                </p>
-              </div>
             </div>
 
-            <h2
-              id='nl-modal-title'
-              className='font-[family-name:var(--font-instrument-serif)] text-[28px] leading-tight text-black'
-            >
-              What I am building
-            </h2>
-            <p id='nl-modal-blurb' className='mt-2 mb-7 text-sm text-black/60'>
-              One email a month. New components, what shipped, what broke.
-            </p>
-
-            <NewsletterSignup
-              source={`modal:${pathname}`}
-              headline=''
-              blurb=''
-              onSuccess={handleSuccess}
-            />
-
-            {!signedUp && (
-              <button
-                type='button'
-                onClick={() => close('dismiss')}
-                className='mt-5 w-full text-center text-xs text-black/40 underline underline-offset-2 transition-colors hover:text-black/70'
+            <div className='flex-1 px-7 pt-8 pb-7 sm:px-9 sm:py-10'>
+              <h2
+                id='nl-modal-title'
+                className='font-[family-name:var(--font-instrument-serif)] text-[30px] leading-tight text-black'
               >
-                No thanks
-              </button>
-            )}
+                What I am building
+              </h2>
+              <p id='nl-modal-blurb' className='mt-2 mb-7 text-sm text-black/60'>
+                One email a month from me. New components, what shipped, what
+                broke.
+              </p>
+
+              <NewsletterSignup
+                source={`modal:${pathname}`}
+                headline=''
+                blurb=''
+                onSuccess={handleSuccess}
+              />
+
+              {!signedUp && (
+                <button
+                  type='button'
+                  onClick={() => close('dismiss')}
+                  className='mt-5 w-full text-center text-xs text-black/40 underline underline-offset-2 transition-colors hover:text-black/70'
+                >
+                  No thanks
+                </button>
+              )}
+            </div>
           </motion.div>
         </div>
       )}

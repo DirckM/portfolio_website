@@ -19,25 +19,6 @@ export default function NewsletterPage() {
 
   return (
     <div className='pt-32 pb-24 max-w-[640px] mx-auto px-6'>
-      {/* Same avatar as the modal and the email shell, so every surface that
-          asks for the subscription shows the person doing the asking. */}
-      <div className='mb-8 flex items-center gap-4'>
-        <Image
-          src='/dirck-newsletter.jpg'
-          alt='Dirck Mulder'
-          width={64}
-          height={64}
-          priority
-          className='h-16 w-16 shrink-0 rounded-full object-cover'
-        />
-        <div>
-          <p className='text-sm font-semibold tracking-[-0.01em] text-black'>
-            Dirck Mulder
-          </p>
-          <p className='text-xs text-black/50'>Designer and developer</p>
-        </div>
-      </div>
-
       <h1 className='text-4xl md:text-5xl font-[family-name:var(--font-instrument-serif)] text-black leading-tight'>
         What I am building
       </h1>
@@ -53,13 +34,27 @@ export default function NewsletterPage() {
         new ones land, plus the parts that never make it into a tutorial.
       </p>
 
-      <div className='mt-12'>
-        <NewsletterSignup
-          source='newsletter-page'
-          layout='panel'
-          headline='Sign up'
-          blurb='No spam, no drip sequence, no course. One email a month.'
-        />
+      {/* Photo beside the form, the same pairing the modal uses. Stacks to a
+          banner under 640px where a side column would squeeze both halves. */}
+      <div className='mt-12 flex flex-col overflow-hidden bg-black/[0.03] sm:flex-row'>
+        <div className='relative h-[230px] w-full shrink-0 sm:h-auto sm:w-[250px]'>
+          <Image
+            src='/dirck-newsletter-tall.jpg'
+            alt='Dirck Mulder'
+            fill
+            sizes='(max-width: 640px) 100vw, 250px'
+            priority
+            className='object-cover object-[center_26%] sm:object-center'
+          />
+        </div>
+        <div className='flex-1'>
+          <NewsletterSignup
+            source='newsletter-page'
+            layout='panel'
+            headline='Sign up'
+            blurb='No spam, no drip sequence, no course. One email a month.'
+          />
+        </div>
       </div>
     </div>
   );
