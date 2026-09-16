@@ -34,13 +34,13 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
       href: 'https://www.instagram.com/reel/DdN_CY9o4_U/',
       img: 'reel-2.jpg',
       title: 'The transformer is a weird thing',
-      blurb: 'The maths behind what we all just call AI, and the people who built it.',
+      blurb: 'The maths behind the thing we all casually call AI and the people who somehow figured it out.',
     },
     {
       href: 'https://www.instagram.com/reel/DbC_50xokPJ/',
       img: 'reel-1.jpg',
       title: 'If you use AI, you need this',
-      blurb: 'A feedback loop, so you stop solving the same problem twice.',
+      blurb: 'A feedback loop, so you can stop solving the same problem twice and acting surprised both times.',
     },
   ];
 
@@ -53,6 +53,7 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
                    style="display:block;width:236px;max-width:100%;height:auto;border:0;border-radius:12px;">
               <div style="margin-top:10px;font-family:${FONT};font-size:14px;line-height:1.35;font-weight:700;letter-spacing:-.015em;color:${T.ink};">${escapeHtml(r.title)}</div>
               <div style="margin-top:5px;font-family:${FONT};font-size:12px;line-height:1.5;color:${T.body};">${escapeHtml(r.blurb)}</div>
+              <div style="margin-top:8px;font-family:${FONT};font-size:12px;font-weight:700;color:${T.orangeDeep};">Watch on Instagram</div>
             </a>
           </td>`;
 
@@ -71,7 +72,7 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
     .reelimg{width:100%!important}
   }
 </style></head><body style="margin:0;padding:0;background:${T.page};">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;">A huge thank you for signing up. Here is what you signed up for.${'&#8203;&nbsp;'.repeat(60)}</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Thanks for signing up. You’ll hear from me once a month.${'&#8203;&nbsp;'.repeat(60)}</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${T.page};">
 <tr><td align="center" style="padding:26px 10px 30px;">
@@ -94,10 +95,14 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
   </td></tr>
 
   <tr><td class="p" style="padding:24px 34px 22px;">
-    <h1 class="big" style="margin:0 0 12px;font-family:${FONT};font-size:37px;line-height:1.08;letter-spacing:-.038em;color:${T.ink};font-weight:800;">You are <span style="font-family:${SERIF};font-style:italic;font-weight:400;letter-spacing:-.01em;">in</span></h1>
+    <h1 class="big" style="margin:0 0 12px;font-family:${FONT};font-size:37px;line-height:1.08;letter-spacing:-.038em;color:${T.ink};font-weight:800;">You are <span style="font-family:${SERIF};font-style:italic;font-weight:400;letter-spacing:-.01em;">in</span>.</h1>
     <p style="margin:0;font-family:${FONT};font-size:16px;line-height:1.65;color:${T.body};">
-      A huge thank you for signing up. Handing someone your inbox is not
-      nothing, and I do not take it lightly. Here is what you signed up for.
+      Thanks for signing up. You’ll hear from me once a month. That feels
+      frequent enough to be useful and infrequent enough that we don’t start
+      resenting each other.
+    </p>
+    <p style="margin:12px 0 0;font-family:${FONT};font-size:16px;line-height:1.65;color:${T.body};">
+      Here’s what you signed up for.
     </p>
   </td></tr>
 
@@ -108,18 +113,26 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
 
   <tr><td class="p" style="padding:0 34px 8px;font-family:${FONT};font-size:16px;line-height:1.7;color:${T.body};">
     <p style="margin:0 0 16px;">
-      That is me. I build web and mobile things, mostly on my own, and I write
-      up the parts that were harder than they looked.
+      That’s me. I design and build things for the web and mobile, mostly by
+      myself. Then I write about the parts that took three days despite looking
+      like they should take twenty minutes.
     </p>
     <p style="margin:0 0 16px;">
-      Once a month you get one email. What I shipped, what broke on the way, and
-      whatever came out of it that you can use. No drip sequence, no course, no
-      second email next Tuesday because you opened this one.
+      Once a month, you’ll get one email: what I shipped, what broke along the
+      way, and anything useful I learned while staring at the problem.
     </p>
     <p style="margin:0 0 16px;">
-      There are ${postCount} tutorials on the site already, each one welded to a
-      component you can pull apart in the browser. That is the best place to
-      start while you wait for the first issue.
+      No drip sequence. No surprise course. No “just circling back” email next
+      Tuesday because you made the mistake of opening this one.
+    </p>
+    <p style="margin:0 0 16px;">
+      There are already ${postCount} tutorials on the site. Each one comes with a
+      working component you can poke, pull apart, and occasionally blame when
+      your own version stops working.
+    </p>
+    <p style="margin:0 0 16px;">
+      That’s probably the best place to start while you wait for the first
+      issue.
     </p>
   </td></tr>
 
@@ -138,8 +151,9 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
            style="background:${T.tint};border-radius:14px;">
       <tr><td style="padding:22px 24px;font-family:${FONT};">
         <div style="font-size:15px;line-height:1.65;color:${T.body};margin-bottom:16px;">
-          Most of what I make shows up on Instagram and TikTok first, usually
-          long before it becomes a write-up. That is where I post the most.
+          Most things I make appear on Instagram and TikTok first, usually while
+          they’re still fresh and before I’ve found the energy to turn them into
+          a proper write-up.
         </div>
 
         <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
@@ -196,8 +210,9 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
         </td>
         <td valign="top" style="padding-top:26px;font-family:${FONT};">
           <div style="font-size:15px;line-height:1.65;color:${T.body};">
-            If you ever want something covered, just reply to this. It comes
-            straight to me.
+            If there’s something you’d like me to cover, reply to this email. It
+            comes straight to me, not a support bot pretending its name is
+            Sarah.
           </div>
           <div style="margin-top:10px;font-size:14px;color:${T.ink};font-weight:600;">Dirck</div>
         </td>
@@ -209,7 +224,8 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
 
 <table role="presentation" class="w" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;">
   <tr><td class="p" style="padding:18px 34px 6px;font-family:${FONT};font-size:11px;line-height:1.75;color:${T.mute};">
-    You are getting this because you confirmed your signup at dirckmulder.com.
+    You’re getting this because you confirmed your signup at dirckmulder.com.
+    Changed your mind already? Fair enough.
     <a href="${escapeHtml(unsub)}" style="color:${T.mute};">Unsubscribe in one click</a>.
     <div style="margin-top:6px;">Pure Studio, Dirck Mulder. KVK 98665103. The Netherlands.</div>
   </td></tr>
@@ -226,31 +242,41 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
 export function renderWelcomeText({ unsubscribeToken, postCount }: Welcome): string {
   const unsub = `${SITE}/api/newsletter/unsubscribe?t=${encodeURIComponent(unsubscribeToken)}`;
   return [
-    'YOU ARE IN',
+    'YOU ARE IN.',
     '',
-    'A huge thank you for signing up. Handing someone your inbox is not nothing, and I do not take it lightly. Here is what you signed up for.',
+    'Thanks for signing up. You’ll hear from me once a month. That feels frequent enough to be useful and infrequent enough that we don’t start resenting each other.',
     '',
-    'I build web and mobile things, mostly on my own, and I write up the parts that were harder than they looked.',
+    'Here’s what you signed up for.',
     '',
-    'Once a month you get one email. What I shipped, what broke on the way, and whatever came out of it that you can use. No drip sequence, no course, no second email next Tuesday because you opened this one.',
+    'That’s me. I design and build things for the web and mobile, mostly by myself. Then I write about the parts that took three days despite looking like they should take twenty minutes.',
     '',
-    `There are ${postCount} tutorials on the site already, each one welded to a component you can pull apart in the browser:`,
+    'Once a month, you’ll get one email: what I shipped, what broke along the way, and anything useful I learned while staring at the problem.',
+    '',
+    'No drip sequence. No surprise course. No “just circling back” email next Tuesday because you made the mistake of opening this one.',
+    '',
+    `There are already ${postCount} tutorials on the site. Each one comes with a working component you can poke, pull apart, and occasionally blame when your own version stops working.`,
+    '',
+    'That’s probably the best place to start while you wait for the first issue:',
     `${SITE}/components`,
     '',
-    'Most of what I make shows up on Instagram and TikTok first, usually long before it becomes a write-up. That is where I post the most.',
+    'Most things I make appear on Instagram and TikTok first, usually while they’re still fresh and before I’ve found the energy to turn them into a proper write-up.',
     'Instagram: https://www.instagram.com/dirckmulder/',
     'TikTok: https://www.tiktok.com/@dirckmulder',
     '',
-    'Latest reels:',
-    'The transformer is a weird thing. The maths behind what we all just call AI, and the people who built it. https://www.instagram.com/reel/DdN_CY9o4_U/',
-    'If you use AI, you need this. A feedback loop, so you stop solving the same problem twice. https://www.instagram.com/reel/DbC_50xokPJ/',
+    'LATEST REELS',
     '',
-    'If you ever want something covered, just reply to this. It comes straight to me.',
+    'The transformer is a weird thing. The maths behind the thing we all casually call AI and the people who somehow figured it out.',
+    'https://www.instagram.com/reel/DdN_CY9o4_U/',
+    '',
+    'If you use AI, you need this. A feedback loop, so you can stop solving the same problem twice and acting surprised both times.',
+    'https://www.instagram.com/reel/DbC_50xokPJ/',
+    '',
+    'If there’s something you’d like me to cover, reply to this email. It comes straight to me, not a support bot pretending its name is Sarah.',
     '',
     'Dirck',
     '',
     '---',
-    'You are getting this because you confirmed your signup at dirckmulder.com.',
+    'You’re getting this because you confirmed your signup at dirckmulder.com. Changed your mind already? Fair enough.',
     `Unsubscribe in one click: ${unsub}`,
     'Pure Studio, Dirck Mulder. KVK 98665103. The Netherlands.',
   ].join('\n');
