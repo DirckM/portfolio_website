@@ -18,7 +18,7 @@ export async function GET() {
   }
 
   const html = renderWelcome({
-    unsubscribeToken: 'preview-token-not-real',
+    unsubscribeToken: 'preview_token_not_real',
     postCount: getAllBlogPosts().length,
   })
     // Assets resolve against the live site, which is right for a real send and
