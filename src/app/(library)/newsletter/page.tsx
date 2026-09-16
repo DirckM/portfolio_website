@@ -36,26 +36,41 @@ export default function NewsletterPage() {
           tutorial.
         </p>
 
-        {/* Photo beside the form, the same pairing the modal uses. Stacks to a
-          banner under 640px where a side column would squeeze both halves. */}
+        {/* Photo beside the form, the same pairing the modal uses. The column
+          carries the crop's own 2:3 so the photo is never cut down to whatever
+          height the form happens to need. That makes the photo the tallest
+          child, so the card takes its height from the picture and the form
+          centres beside it. Stacks to a banner under 640px, where a side column
+          would squeeze both halves. */}
         <div className='mt-10 flex flex-col overflow-hidden bg-black/[0.03] sm:flex-row'>
-          <div className='relative h-[260px] w-full shrink-0 sm:h-auto sm:w-[310px]'>
+          <div className='relative h-[260px] w-full shrink-0 sm:h-auto sm:w-[300px] sm:aspect-[2/3]'>
             <Image
               src='/dirck-newsletter-tall.jpg'
               alt='Dirck Mulder'
               fill
-              sizes='(max-width: 640px) 100vw, 310px'
+              sizes='(max-width: 640px) 100vw, 300px'
               priority
               className='object-cover object-[center_26%] sm:object-center'
             />
           </div>
-          <div className='flex-1'>
-            <NewsletterSignup
-              source='newsletter-page'
-              layout='panel'
-              headline='Sign up'
-              blurb='No spam, no drip sequence, no course. One email a month.'
-            />
+          {/* The heading lives here rather than in the panel layout, because
+            that layout paints its own bg-black/[0.03] and stacking it on this
+            card's turns the form half a visibly darker grey. */}
+          <div className='flex flex-1 items-center px-7 py-9 sm:px-9'>
+            <div className='w-full'>
+              <h2 className='font-[family-name:var(--font-instrument-serif)] text-2xl text-black'>
+                Sign up
+              </h2>
+              <p className='mt-2 mb-7 text-sm text-black/60'>
+                No spam, no drip sequence, no course. One email a month.
+              </p>
+              <NewsletterSignup
+                source='newsletter-page'
+                layout='inline'
+                headline=''
+                blurb=''
+              />
+            </div>
           </div>
         </div>
       </div>

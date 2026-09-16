@@ -133,8 +133,6 @@ export default function NewsletterModal() {
     if (!open) return;
 
     previouslyFocused.current = document.activeElement as HTMLElement | null;
-    const scrollY = window.scrollY;
-    document.body.style.overflow = 'hidden';
 
     const panel = panelRef.current;
     const focusables = () =>
@@ -144,7 +142,7 @@ export default function NewsletterModal() {
         ) ?? []
       ).filter(el => el.offsetParent !== null);
 
-    panel?.focus();
+    panel?.focus({ preventScroll: true });
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') return close('escape');
@@ -168,11 +166,29 @@ export default function NewsletterModal() {
 
     return () => {
       document.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = '';
-      window.scrollTo(0, scrollY);
-      previouslyFocused.current?.focus();
+      previouslyFocused.current?.focus({ preventScroll: true });
     };
   }, [open, close]);
+
+  // The backdrop covers the page, so a wheel or a drag on it never reaches the
+  // document. Forwarding the delta by hand is what lets someone keep reading
+  // behind the modal without giving up click-outside-to-close.
+  const touchY = useRef<number | null>(null);
+
+  const forwardWheel = useCallback((e: React.WheelEvent) => {
+    window.scrollBy({ top: e.deltaY, behavior: 'instant' as ScrollBehavior });
+  }, []);
+
+  const startTouch = useCallback((e: React.TouchEvent) => {
+    touchY.current = e.touches[0]?.clientY ?? null;
+  }, []);
+
+  const forwardTouch = useCallback((e: React.TouchEvent) => {
+    const y = e.touches[0]?.clientY;
+    if (y == null || touchY.current == null) return;
+    window.scrollBy({ top: touchY.current - y, behavior: 'instant' as ScrollBehavior });
+    touchY.current = y;
+  }, []);
 
   // A signup suppresses the modal permanently. Not for 30 days: there is no
   // version of "already subscribed" where asking again next month is right.
@@ -191,8 +207,11 @@ export default function NewsletterModal() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             onClick={() => close('backdrop')}
+            onWheel={forwardWheel}
+            onTouchStart={startTouch}
+            onTouchMove={forwardTouch}
             className='absolute inset-0 bg-black/40 backdrop-blur-[2px]'
           />
 
@@ -203,10 +222,14 @@ export default function NewsletterModal() {
             tabIndex={-1}
             aria-labelledby='nl-modal-title'
             aria-describedby='nl-modal-blurb'
-            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            initial={{ opacity: 0, y: 40, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.98 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, y: 24, scale: 0.97 }}
+            transition={{
+              duration: 0.65,
+              ease: [0.22, 1, 0.36, 1],
+              opacity: { duration: 0.45 },
+            }}
             className='relative flex w-full max-w-[720px] flex-col overflow-hidden bg-white shadow-2xl outline-none sm:flex-row'
           >
             <button
