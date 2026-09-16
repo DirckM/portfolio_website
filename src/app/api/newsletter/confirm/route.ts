@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { confirmByToken } from '@/lib/newsletter';
+import { getAllBlogPosts } from '@/lib/blog-utils';
+import {
+  renderWelcome,
+  renderWelcomeText,
+  WELCOME_SUBJECT,
+} from '@/lib/email/welcome';
 
 export const runtime = 'nodejs';
 
@@ -37,5 +44,48 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${site}/newsletter/confirm-failed?reason=expired`, 302);
   }
 
+  await sendWelcome(result.data.email, result.data.unsubscribeToken);
+
   return NextResponse.redirect(`${site}/newsletter/confirmed`, 302);
+}
+
+/**
+ * The welcome email, sent once, right here.
+ *
+ * Before this, confirming led to a redirect and then nothing until the next
+ * issue, which could be a month. An address that hears nothing after opting in
+ * has forgotten who you are by the time you do write.
+ *
+ * Failure is swallowed on purpose, exactly as in the subscribe route. The
+ * person IS confirmed at this point, and bouncing them to an error page over a
+ * missing greeting would undo a successful action to report a cosmetic one.
+ */
+async function sendWelcome(email: string, unsubscribeToken: string) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error('welcome email skipped: RESEND_API_KEY is not set');
+    return;
+  }
+
+  const from = process.env.NEWSLETTER_FROM_EMAIL || 'dirck@dirckmulder.com';
+  const replyTo = process.env.NEWSLETTER_REPLY_TO || 'dirck@dirckmulder.com';
+  const payload = {
+    unsubscribeToken,
+    postCount: getAllBlogPosts().length,
+  };
+
+  const { error } = await new Resend(apiKey).emails.send({
+    from: `Dirck Mulder <${from}>`,
+    to: email,
+    replyTo,
+    subject: WELCOME_SUBJECT,
+    html: renderWelcome(payload),
+    text: renderWelcomeText(payload),
+    tags: [
+      { name: 'project', value: 'portfolio' },
+      { name: 'kind', value: 'welcome' },
+    ],
+  });
+
+  if (error) console.error('welcome email failed:', error);
 }
