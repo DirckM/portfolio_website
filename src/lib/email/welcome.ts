@@ -29,7 +29,32 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
   const components = `${SITE}/components?utm_source=newsletter&utm_medium=email&utm_campaign=welcome`;
   const instagram = 'https://www.instagram.com/dirckmulder/';
   const tiktok = 'https://www.tiktok.com/@dirckmulder';
-  const reel = 'https://www.instagram.com/reel/DbC_50xokPJ/';
+  const reels = [
+    {
+      href: 'https://www.instagram.com/reel/DdN_CY9o4_U/',
+      img: 'reel-2.jpg',
+      title: 'The transformer is a weird thing',
+      blurb: 'The maths behind what we all just call AI, and the people who built it.',
+    },
+    {
+      href: 'https://www.instagram.com/reel/DbC_50xokPJ/',
+      img: 'reel-1.jpg',
+      title: 'If you use AI, you need this',
+      blurb: 'A feedback loop, so you stop solving the same problem twice.',
+    },
+  ];
+
+  // Two fixed 236px cells rather than percentages. Outlook resolves a percentage
+  // width against the wrong container often enough that a fixed pair is the only
+  // one that lands the same way everywhere.
+  const reelCell = (r: (typeof reels)[number]) => `<td class="col" width="236" valign="top">
+            <a href="${escapeHtml(r.href)}" style="text-decoration:none;">
+              <img class="reelimg" src="${IMG}/${r.img}" width="236" alt="Watch on Instagram"
+                   style="display:block;width:236px;max-width:100%;height:auto;border:0;border-radius:12px;">
+              <div style="margin-top:10px;font-family:${FONT};font-size:14px;line-height:1.35;font-weight:700;letter-spacing:-.015em;color:${T.ink};">${escapeHtml(r.title)}</div>
+              <div style="margin-top:5px;font-family:${FONT};font-size:12px;line-height:1.5;color:${T.body};">${escapeHtml(r.blurb)}</div>
+            </a>
+          </td>`;
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -43,6 +68,7 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
     .big{font-size:30px!important}
     .hero{width:100%!important;height:auto!important}
     .col{display:block!important;width:100%!important;padding:0 0 16px 0!important}
+    .reelimg{width:100%!important}
   }
 </style></head><body style="margin:0;padding:0;background:${T.page};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">A huge thank you for signing up. Here is what you signed up for.${'&#8203;&nbsp;'.repeat(60)}</div>
@@ -147,27 +173,15 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
           </td>
         </tr></table>
 
-        <!-- Email cannot play video, so this is the cover frame with the play
-             mark baked into the JPEG, linking out to the reel. A CSS overlay is
-             the web answer and Outlook ignores the positioning it needs. -->
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr>
-          <td class="col" width="176" valign="top" style="padding-right:16px;">
-            <a href="${escapeHtml(reel)}" style="text-decoration:none;">
-              <img src="${IMG}/reel-feedback-loop.jpg" width="176" alt="Watch the reel on Instagram"
-                   style="display:block;width:176px;max-width:100%;height:auto;border:0;border-radius:12px;">
-            </a>
-          </td>
-          <td class="col" valign="top" style="font-family:${FONT};">
-            <div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:${T.mute};font-weight:700;">Latest reel</div>
-            <div style="margin-top:8px;font-size:17px;line-height:1.35;font-weight:700;letter-spacing:-.02em;color:${T.ink};">If you use AI, you need this</div>
-            <div style="margin-top:8px;font-size:14px;line-height:1.6;color:${T.body};">
-              A feedback loop. After every session the AI writes down what it
-              learned, so you stop solving the same problem twice.
-            </div>
-            <div style="margin-top:12px;">
-              <a href="${escapeHtml(reel)}" style="font-family:${FONT};font-size:13px;font-weight:700;color:${T.orangeDeep};text-decoration:none;">Watch it on Instagram &rarr;</a>
-            </div>
-          </td>
+        <!-- Email cannot play video, so each cell is the cover frame with the
+             play mark baked into the JPEG, linking out to the reel. A CSS
+             overlay is the web answer and Outlook ignores the positioning it
+             needs. Caption sits UNDER each one, not beside it. -->
+        <div style="margin-top:22px;font-family:${FONT};font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:${T.mute};font-weight:700;">Latest reels</div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;"><tr>
+          ${reelCell(reels[0])}
+          <td width="12" class="col" style="font-size:0;line-height:0;">&nbsp;</td>
+          ${reelCell(reels[1])}
         </tr></table>
       </td></tr>
     </table>
@@ -227,8 +241,9 @@ export function renderWelcomeText({ unsubscribeToken, postCount }: Welcome): str
     'Instagram: https://www.instagram.com/dirckmulder/',
     'TikTok: https://www.tiktok.com/@dirckmulder',
     '',
-    'Latest reel, If you use AI, you need this: a feedback loop, where after every session the AI writes down what it learned, so you stop solving the same problem twice.',
-    'https://www.instagram.com/reel/DbC_50xokPJ/',
+    'Latest reels:',
+    'The transformer is a weird thing. The maths behind what we all just call AI, and the people who built it. https://www.instagram.com/reel/DdN_CY9o4_U/',
+    'If you use AI, you need this. A feedback loop, so you stop solving the same problem twice. https://www.instagram.com/reel/DbC_50xokPJ/',
     '',
     'If you ever want something covered, just reply to this. It comes straight to me.',
     '',
