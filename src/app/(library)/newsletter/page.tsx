@@ -17,48 +17,44 @@ export const metadata: Metadata = {
 export default function NewsletterPage() {
   const posts = getAllBlogPosts();
 
-  // A full viewport split. The photo holds one half and the ask the other, so
-  // the footer only arrives once someone has scrolled past it rather than
-  // sitting in frame beside it.
   return (
-    <div className='flex min-h-[100svh] flex-col md:flex-row'>
-      <div className='relative h-[280px] w-full shrink-0 md:h-auto md:w-[42%] md:max-w-[620px]'>
-        <Image
-          src='/dirck-newsletter-tall.jpg'
-          alt='Dirck Mulder'
-          fill
-          sizes='(max-width: 768px) 100vw, 42vw'
-          priority
-          className='object-cover object-[center_24%] md:object-center'
-        />
-      </div>
+    <div className='flex min-h-[100svh] flex-col justify-center px-6 pt-24 pb-16'>
+      <div className='mx-auto w-full max-w-[760px]'>
+        <h1 className='text-4xl md:text-5xl font-[family-name:var(--font-instrument-serif)] text-black leading-tight'>
+          What I am building
+        </h1>
 
-      <div className='flex flex-1 items-center px-6 pt-12 pb-20 md:px-14 md:pt-28 lg:px-20'>
-        <div className='w-full max-w-[540px]'>
-          <h1 className='text-5xl md:text-6xl lg:text-7xl font-[family-name:var(--font-instrument-serif)] text-black leading-[1.05]'>
-            What I am building
-          </h1>
+        <p className='mt-6 text-lg text-black/70 leading-relaxed'>
+          One email a month. What I shipped, what broke, and the components and
+          write-ups that came out of it.
+        </p>
 
-          <p className='mt-7 text-lg md:text-xl text-black/70 leading-relaxed'>
-            One email a month. What I shipped, what broke, and the components
-            and write-ups that came out of it.
-          </p>
+        <p className='mt-4 text-black/60 leading-relaxed'>
+          There are {posts.length} tutorials on this site so far, each one
+          welded to a component you can edit in the browser. The newsletter is
+          where the new ones land, plus the parts that never make it into a
+          tutorial.
+        </p>
 
-          <p className='mt-4 text-base text-black/60 leading-relaxed'>
-            There are {posts.length} tutorials on this site so far, each one
-            welded to a component you can edit in the browser. The newsletter is
-            where the new ones land, plus the parts that never make it into a
-            tutorial.
-          </p>
-
-          {/* Inline rather than the grey panel: a boxed card inside a
-              full-bleed hero reads as a widget dropped on the page. */}
-          <div className='mt-10'>
+        {/* Photo beside the form, the same pairing the modal uses. Stacks to a
+          banner under 640px where a side column would squeeze both halves. */}
+        <div className='mt-10 flex flex-col overflow-hidden bg-black/[0.03] sm:flex-row'>
+          <div className='relative h-[260px] w-full shrink-0 sm:h-auto sm:w-[310px]'>
+            <Image
+              src='/dirck-newsletter-tall.jpg'
+              alt='Dirck Mulder'
+              fill
+              sizes='(max-width: 640px) 100vw, 310px'
+              priority
+              className='object-cover object-[center_26%] sm:object-center'
+            />
+          </div>
+          <div className='flex-1'>
             <NewsletterSignup
               source='newsletter-page'
-              layout='inline'
-              headline=''
-              blurb=''
+              layout='panel'
+              headline='Sign up'
+              blurb='No spam, no drip sequence, no course. One email a month.'
             />
           </div>
         </div>
