@@ -101,7 +101,23 @@ export default function DishyPrivacyPage() {
           work (Art. 6(1)(f) GDPR).
         </p>
 
-        <h2>6. Purchases</h2>
+        <h2>6. Crashes and performance</h2>
+        <p>
+          The app reports crashes, hangs and performance figures such as launch
+          time, energy use and peak memory. These come from Apple&apos;s own
+          MetricKit, which the operating system collects and aggregates on the
+          device and hands to the app about once a day. They are counts and
+          timings, never a stack trace containing your data, and they carry no
+          email address, no account id and nothing from your plan.
+        </p>
+        <p>
+          We send them to PostHog, the same EU-hosted processor as the analytics
+          above. No crash-reporting company is involved and nothing extra leaves
+          your phone to a third party. Legal basis: legitimate interest in the
+          app not being broken (Art. 6(1)(f) GDPR).
+        </p>
+
+        <h2>7. Purchases</h2>
         <p>
           Subscriptions are sold by Apple. We never see your payment details.{" "}
           <strong>RevenueCat</strong> tells the app whether a subscription is
@@ -110,7 +126,7 @@ export default function DishyPrivacyPage() {
           (Art. 6(1)(b) GDPR).
         </p>
 
-        <h2>7. Who processes data for us</h2>
+        <h2>8. Who processes data for us</h2>
         <ul className="list-disc space-y-1 pl-5">
           <li>
             <strong>Supabase</strong> (EU) — accounts and rate-limit records.
@@ -124,7 +140,7 @@ export default function DishyPrivacyPage() {
             <strong>RevenueCat</strong> — subscription status.
           </li>
           <li>
-            <strong>PostHog</strong> (EU) — anonymous product analytics.
+            <strong>PostHog</strong> (EU) — anonymous product analytics, plus crash and performance figures from MetricKit.
           </li>
           <li>
             <strong>Apple</strong> — the App Store, payments and, if you use it,
@@ -141,14 +157,14 @@ export default function DishyPrivacyPage() {
           Framework. You can ask us for a copy of the safeguards.
         </p>
 
-        <h2>8. How long we keep things</h2>
+        <h2>9. How long we keep things</h2>
         <p>
           Account records live until you delete the account. Rate-limit rows are
           pruned. Photos and chat questions are not retained at all. Analytics
           events are kept in aggregate.
         </p>
 
-        <h2>9. Your rights</h2>
+        <h2>10. Your rights</h2>
         <p>
           Under the GDPR you can ask for access, correction, erasure, a copy of
           your data, or object to processing. Deleting your account in the app
@@ -157,13 +173,13 @@ export default function DishyPrivacyPage() {
           may also complain to the Autoriteit Persoonsgegevens.
         </p>
 
-        <h2>10. Children</h2>
+        <h2>11. Children</h2>
         <p>
           Dishy is not aimed at children and we do not knowingly collect data
           from anyone under 16.
         </p>
 
-        <h2>11. Changes</h2>
+        <h2>12. Changes</h2>
         <p>
           If this policy changes materially, the date at the top changes with
           it.
