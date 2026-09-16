@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { PostHogAnalytics } from './providers';
+import NewsletterModal from '@/components/shell/NewsletterModal';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -42,6 +43,7 @@ export default function RootLayout({
       >
         <PostHogAnalytics />
         {children}
+        <NewsletterModal />
       </body>
     </html>
   );

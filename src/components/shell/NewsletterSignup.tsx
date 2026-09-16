@@ -26,6 +26,8 @@ interface Props {
   layout?: 'inline' | 'panel';
   headline?: string;
   blurb?: string;
+  /** Fired once the signup succeeded, so a host (the modal) can react. */
+  onSuccess?: () => void;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,6 +37,7 @@ export default function NewsletterSignup({
   layout = 'inline',
   headline = 'What I am building',
   blurb = 'One email a month. New components, what shipped, what broke.',
+  onSuccess,
 }: Props) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +82,7 @@ export default function NewsletterSignup({
 
       setStatus('success');
       setEmail('');
+      onSuccess?.();
       if (posthog.__loaded) posthog.capture('newsletter_signup', { source });
     } catch {
       setStatus('error');
@@ -111,7 +115,7 @@ export default function NewsletterSignup({
           <p className='mt-2 mb-6 text-sm text-black/60'>{blurb}</p>
         </>
       )}
-      {!isPanel && (
+      {!isPanel && (headline || blurb) && (
         <p className='mb-4 text-sm text-black/60'>
           <span className='text-black'>{headline}.</span> {blurb}
         </p>
