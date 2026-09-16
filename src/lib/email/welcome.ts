@@ -29,6 +29,7 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
   const components = `${SITE}/components?utm_source=newsletter&utm_medium=email&utm_campaign=welcome`;
   const instagram = 'https://www.instagram.com/dirckmulder/';
   const tiktok = 'https://www.tiktok.com/@dirckmulder';
+  const reel = 'https://www.instagram.com/reel/DbC_50xokPJ/';
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -41,6 +42,7 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
     .p{padding-left:20px!important;padding-right:20px!important}
     .big{font-size:30px!important}
     .hero{width:100%!important;height:auto!important}
+    .col{display:block!important;width:100%!important;padding:0 0 16px 0!important}
   }
 </style></head><body style="margin:0;padding:0;background:${T.page};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">A huge thank you for signing up. Here is what you signed up for.${'&#8203;&nbsp;'.repeat(60)}</div>
@@ -109,20 +111,62 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="background:${T.tint};border-radius:14px;">
       <tr><td style="padding:22px 24px;font-family:${FONT};">
-        <div style="font-size:15px;line-height:1.65;color:${T.body};margin-bottom:14px;">
+        <div style="font-size:15px;line-height:1.65;color:${T.body};margin-bottom:16px;">
           Most of what I make shows up on Instagram and TikTok first, usually
           long before it becomes a write-up. That is where I post the most.
         </div>
+
         <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
           <td style="padding-right:10px;">
-            <a href="${escapeHtml(instagram)}"
-               style="display:inline-block;padding:10px 18px;border:1px solid ${T.rule};border-radius:99px;background:#ffffff;
-                      font-family:${FONT};font-size:13px;font-weight:700;color:${T.ink};text-decoration:none;">Instagram</a>
+            <a href="${escapeHtml(instagram)}" style="text-decoration:none;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0"
+                     style="border:1px solid ${T.rule};border-radius:99px;background:#ffffff;">
+                <tr>
+                  <td style="padding:9px 4px 9px 16px;" valign="middle">
+                    <img src="${IMG}/icon-instagram.png" width="18" height="18" alt=""
+                         style="display:block;width:18px;height:18px;border:0;">
+                  </td>
+                  <td style="padding:9px 18px 9px 8px;font-family:${FONT};font-size:13px;font-weight:700;color:${T.ink};" valign="middle">Instagram</td>
+                </tr>
+              </table>
+            </a>
           </td>
           <td>
-            <a href="${escapeHtml(tiktok)}"
-               style="display:inline-block;padding:10px 18px;border:1px solid ${T.rule};border-radius:99px;background:#ffffff;
-                      font-family:${FONT};font-size:13px;font-weight:700;color:${T.ink};text-decoration:none;">TikTok</a>
+            <a href="${escapeHtml(tiktok)}" style="text-decoration:none;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0"
+                     style="border:1px solid ${T.rule};border-radius:99px;background:#ffffff;">
+                <tr>
+                  <td style="padding:9px 4px 9px 16px;" valign="middle">
+                    <img src="${IMG}/icon-tiktok.png" width="18" height="18" alt=""
+                         style="display:block;width:18px;height:18px;border:0;">
+                  </td>
+                  <td style="padding:9px 18px 9px 8px;font-family:${FONT};font-size:13px;font-weight:700;color:${T.ink};" valign="middle">TikTok</td>
+                </tr>
+              </table>
+            </a>
+          </td>
+        </tr></table>
+
+        <!-- Email cannot play video, so this is the cover frame with the play
+             mark baked into the JPEG, linking out to the reel. A CSS overlay is
+             the web answer and Outlook ignores the positioning it needs. -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr>
+          <td class="col" width="176" valign="top" style="padding-right:16px;">
+            <a href="${escapeHtml(reel)}" style="text-decoration:none;">
+              <img src="${IMG}/reel-feedback-loop.jpg" width="176" alt="Watch the reel on Instagram"
+                   style="display:block;width:176px;max-width:100%;height:auto;border:0;border-radius:12px;">
+            </a>
+          </td>
+          <td class="col" valign="top" style="font-family:${FONT};">
+            <div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:${T.mute};font-weight:700;">Latest reel</div>
+            <div style="margin-top:8px;font-size:17px;line-height:1.35;font-weight:700;letter-spacing:-.02em;color:${T.ink};">If you use AI, you need this</div>
+            <div style="margin-top:8px;font-size:14px;line-height:1.6;color:${T.body};">
+              A feedback loop. After every session the AI writes down what it
+              learned, so you stop solving the same problem twice.
+            </div>
+            <div style="margin-top:12px;">
+              <a href="${escapeHtml(reel)}" style="font-family:${FONT};font-size:13px;font-weight:700;color:${T.orangeDeep};text-decoration:none;">Watch it on Instagram &rarr;</a>
+            </div>
           </td>
         </tr></table>
       </td></tr>
@@ -182,6 +226,9 @@ export function renderWelcomeText({ unsubscribeToken, postCount }: Welcome): str
     'Most of what I make shows up on Instagram and TikTok first, usually long before it becomes a write-up. That is where I post the most.',
     'Instagram: https://www.instagram.com/dirckmulder/',
     'TikTok: https://www.tiktok.com/@dirckmulder',
+    '',
+    'Latest reel, If you use AI, you need this: a feedback loop, where after every session the AI writes down what it learned, so you stop solving the same problem twice.',
+    'https://www.instagram.com/reel/DbC_50xokPJ/',
     '',
     'If you ever want something covered, just reply to this. It comes straight to me.',
     '',
