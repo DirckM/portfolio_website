@@ -1,0 +1,20 @@
+# Findings that are true positives by pattern and non-secrets by meaning.
+#
+# One line per gitleaks fingerprint: commit:file:rule:line. An entry here is a
+# claim that the value is public BY DESIGN, not that it is unimportant. Anything
+# that is merely inconvenient to rotate does not belong in this file, it belongs
+# in a rotation.
+#
+# Why this file exists at all: without it the finding fires on every push that
+# touches the file, which teaches whoever is pushing to reach for
+# GIT_ALLOW_CREDENTIAL_PUSH=1. A guard that is routinely overridden stops being a
+# guard, and that is the path by which a real leak eventually gets waved through.
+
+# Ahrefs Web Analytics site key, in the <script data-key=...> tag in the root
+# layout. It is rendered into the HTML of every page and is readable by anyone
+# who views source, so it is not a secret in any useful sense. It identifies the
+# site for event ingestion and grants no read access to the Ahrefs account. The
+# worst an attacker does with it is post junk pageviews into the analytics.
+# Same class as the phc_ PostHog ingestion key, which is public for the same reason.
+# Verified public on the live site 2026-09-16.
+4913184c33f9d6725615e8d05e327b4ed7532b6c:src/app/layout.tsx:generic-api-key:36
