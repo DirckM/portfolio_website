@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import NewsletterSignup from '@/components/shell/NewsletterSignup';
 import { getAllBlogPosts } from '@/lib/blog-utils';
 
@@ -18,6 +19,25 @@ export default function NewsletterPage() {
 
   return (
     <div className='pt-32 pb-24 max-w-[640px] mx-auto px-6'>
+      {/* Same avatar as the modal and the email shell, so every surface that
+          asks for the subscription shows the person doing the asking. */}
+      <div className='mb-8 flex items-center gap-4'>
+        <Image
+          src='/dirck-newsletter.jpg'
+          alt='Dirck Mulder'
+          width={64}
+          height={64}
+          priority
+          className='h-16 w-16 shrink-0 rounded-full object-cover'
+        />
+        <div>
+          <p className='text-sm font-semibold tracking-[-0.01em] text-black'>
+            Dirck Mulder
+          </p>
+          <p className='text-xs text-black/50'>Designer and developer</p>
+        </div>
+      </div>
+
       <h1 className='text-4xl md:text-5xl font-[family-name:var(--font-instrument-serif)] text-black leading-tight'>
         What I am building
       </h1>

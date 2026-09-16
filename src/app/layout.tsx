@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { PostHogAnalytics } from './providers';
@@ -43,7 +44,9 @@ export default function RootLayout({
       >
         <PostHogAnalytics />
         {children}
-        <NewsletterModal />
+        <Suspense fallback={null}>
+          <NewsletterModal />
+        </Suspense>
       </body>
     </html>
   );

@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import posthog from 'posthog-js';
 import NewsletterSignup from './NewsletterSignup';
 
@@ -60,6 +60,11 @@ function remember(until: number | null) {
 
 export default function NewsletterModal() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // ?preview-modal opens it on demand, ignoring the triggers and the cooldown.
+  // Previewing a thing that by design only appears once every 30 days is
+  // otherwise a matter of clearing localStorage by hand every time.
+  const preview = searchParams.get('preview-modal') !== null;
   const [open, setOpen] = useState(false);
   const [signedUp, setSignedUp] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -73,17 +78,23 @@ export default function NewsletterModal() {
   const close = useCallback(
     (reason: 'dismiss' | 'escape' | 'backdrop') => {
       setOpen(false);
-      remember(Date.now() + DISMISS_DAYS * 24 * 60 * 60 * 1000);
+      if (!preview) {
+        remember(Date.now() + DISMISS_DAYS * 24 * 60 * 60 * 1000);
+      }
       if (posthog.__loaded) {
         posthog.capture('newsletter_modal_dismissed', { reason, pathname });
       }
     },
-    [pathname]
+    [pathname, preview]
   );
 
   // Arm the triggers. Both are torn down as soon as either one fires, so the
   // scroll listener does not outlive its usefulness.
   useEffect(() => {
+    if (preview) {
+      setOpen(true);
+      return;
+    }
     if (excluded || firedRef.current || shouldSuppress()) return;
 
     let timer: ReturnType<typeof setTimeout>;
@@ -114,7 +125,7 @@ export default function NewsletterModal() {
       clearTimeout(timer);
       window.removeEventListener('scroll', onScroll);
     };
-  }, [excluded, pathname]);
+  }, [excluded, pathname, preview]);
 
   // Focus handling and the escape key. Moving focus into the panel is what
   // makes this usable with a keyboard or a screen reader instead of a trap.
@@ -170,7 +181,7 @@ export default function NewsletterModal() {
     remember(null);
   }, []);
 
-  if (excluded) return null;
+  if (excluded && !preview) return null;
 
   return (
     <AnimatePresence>
