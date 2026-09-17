@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import {
+  renderConfirmEmail,
+  renderAlreadySubscribedEmail,
+  CONFIRM_SUBJECT,
+  ALREADY_SUBJECT,
+} from '@/lib/email/confirm';
 import { dbConfigured } from '@/lib/db';
 import {
   normaliseEmail,
   startSignup,
   recentSignupsFromIp,
-  CONSENT_TEXT,
 } from '@/lib/newsletter';
 import { clientIp } from '@/lib/tokens';
-import { renderShell, button, h1, p } from '@/lib/email/shell';
-import { escapeHtml } from '@/lib/escape-html';
 
 export const runtime = 'nodejs';
 
@@ -97,45 +100,25 @@ async function sendSignupEmail(
   const resend = new Resend(apiKey);
 
   const isConfirm = data.action === 'send_confirm';
-  const html = isConfirm
-    ? renderShell({
-        preheader: 'One click and you are on the list.',
-        body: [
-          h1('Confirm your email'),
-          p('You asked to hear what I am building. One click and you are on the list.'),
-          button(`${site}/api/newsletter/confirm?t=${data.confirmToken}`, 'Confirm'),
-          p(
-            `<span style="color:#6b6b6b;font-size:13px;">You agreed to: ${escapeHtml(CONSENT_TEXT)}</span>`
-          ),
-          p(
-            '<span style="color:#6b6b6b;font-size:13px;">If you did not ask for this, ignore this email and nothing happens. The link expires in three days.</span>'
-          ),
-        ].join(''),
-      })
-    : renderShell({
-        preheader: 'You are already on the list.',
-        body: [
-          h1('You are already on the list'),
-          p('Nothing to do. The next issue will land in your inbox.'),
-          p(
-            '<span style="color:#6b6b6b;font-size:13px;">Every issue has a one-click unsubscribe at the bottom.</span>'
-          ),
-        ].join(''),
-      });
+  const { html, text } = isConfirm
+    ? renderConfirmEmail({ site, confirmToken: data.confirmToken ?? '' })
+    : renderAlreadySubscribedEmail();
 
   const { error } = await resend.emails.send({
     from: `Dirck Mulder <${from}>`,
     to: email,
     replyTo,
-    subject: isConfirm ? 'Confirm your email' : 'You are already subscribed',
-    text: isConfirm
-      ? `Confirm your email to get what I am building:\n${site}/api/newsletter/confirm?t=${data.confirmToken}\n\nYou agreed to: ${CONSENT_TEXT}\n\nIf you did not ask for this, ignore this email. The link expires in three days.`
-      : 'You are already on the list. Nothing to do.',
-    tags: [{ name: 'project', value: 'portfolio' }],
+    subject: isConfirm ? CONFIRM_SUBJECT : ALREADY_SUBJECT,
+    // `html` used to be built here and then never passed, so every subscriber
+    // received the plain-text half of a fully designed email. Resend accepts a
+    // send with no html, which is why nothing ever errored.
+    html,
+    text,
+    tags: [
+      { name: 'project', value: 'portfolio' },
+      { name: 'kind', value: isConfirm ? 'confirm' : 'already-subscribed' },
+    ],
   });
 
-  // A failed send must not fail the request. The row is already pending, so a
-  // resend recovers it, and telling the user "something went wrong" after they
-  // successfully signed up is worse than a missing email they can retry.
   if (error) console.error('confirm email failed:', error);
 }
