@@ -128,6 +128,20 @@ function featuresIn(text) {
   return found;
 }
 
+/**
+ * Split a post body into paragraphs, keeping each one's offset into the body so
+ * claim context windows still read across the paragraph boundary.
+ */
+function paragraphsOf(body) {
+  const out = [];
+  let pos = 0;
+  for (const part of body.split(/(\n{2,})/)) {
+    if (part.trim() && !/^\n+$/.test(part)) out.push({ text: part, start: pos });
+    pos += part.length;
+  }
+  return out;
+}
+
 function checkPost(slug) {
   const file = path.join(BLOG_DIR, `${slug}.mdx`);
   if (!fs.existsSync(file)) return [`${slug}: no such post`];
@@ -136,37 +150,53 @@ function checkPost(slug) {
   const body = raw.replace(/^---\n[\s\S]*?\n---\n/, '');
   const failures = [];
 
-  const features = featuresIn(body);
-  if (features.size === 0) return failures; // nothing checkable, not a failure
+  // A claim is checked ONLY against features discussed in the same paragraph.
+  //
+  // WHY THIS IS SCOPED. The first version paired every version claim in a post
+  // with every feature the post mentioned anywhere, and that is not a support
+  // claim, it is a coincidence of being in the same file. The gradient-border
+  // post says `@property` shipped in Firefox 128 (true, BCD agrees) and, eight
+  // paragraphs later, that Firefox has not shipped `background-clip: border-area`
+  // at all (also true). Cross-multiplying those produced four "contradictions"
+  // in a post that was entirely correct, and a gate that cries wolf gets
+  // switched off. Prose attaches a version to the feature next to it.
+  if (featuresIn(body).size === 0) return failures; // nothing checkable
 
-  const claims = [...body.matchAll(CLAIM_RE)]
-    .map(m => ({
-      engine: m[1].toLowerCase() === 'chromium' ? 'chrome' : m[1].toLowerCase(),
-      version: parseFloat(m[2]),
-      text: m[0].trim(),
-      // Context before the mention, for the negation test below.
-      before: body.slice(Math.max(0, m.index - 160), m.index),
-      after: body.slice(m.index, m.index + 120),
-    }))
-    .filter(c => !isNegated(c));
+  for (const para of paragraphsOf(body)) {
+    const features = featuresIn(para.text);
+    if (features.size === 0) continue;
 
-  for (const claim of claims) {
-    for (const [fpath, compat] of features) {
-      const s = shipped(compat, claim.engine);
-      if (s.state === 'never' || s.state === 'preview' || s.state === 'flagged') {
-        failures.push(
-          `${slug}: claims "${claim.text}" but BCD says ${fpath} has ` +
-            `version_added=${s.state === 'preview' ? '"preview"' : s.state} for ` +
-            `${claim.engine}. That engine has not shipped it.`
-        );
-      } else if (s.state === 'shipped' && claim.version < s.since) {
-        failures.push(
-          `${slug}: claims "${claim.text}" but BCD says ${fpath} landed in ` +
-            `${claim.engine} ${s.since}, later than the version claimed.`
-        );
+    const claims = [...para.text.matchAll(CLAIM_RE)]
+      .map(m => ({
+        engine: m[1].toLowerCase() === 'chromium' ? 'chrome' : m[1].toLowerCase(),
+        version: parseFloat(m[2]),
+        text: m[0].trim(),
+        // Offsets stay relative to the whole body so the negation window can
+        // still see a cue that sits just before the paragraph break.
+        before: body.slice(Math.max(0, para.start + m.index - 160), para.start + m.index),
+        after: body.slice(para.start + m.index, para.start + m.index + 120),
+      }))
+      .filter(c => !isNegated(c));
+
+    for (const claim of claims) {
+      for (const [fpath, compat] of features) {
+        const s = shipped(compat, claim.engine);
+        if (s.state === 'never' || s.state === 'preview' || s.state === 'flagged') {
+          failures.push(
+            `${slug}: claims "${claim.text}" but BCD says ${fpath} has ` +
+              `version_added=${s.state === 'preview' ? '"preview"' : s.state} for ` +
+              `${claim.engine}. That engine has not shipped it.`
+          );
+        } else if (s.state === 'shipped' && claim.version < s.since) {
+          failures.push(
+            `${slug}: claims "${claim.text}" but BCD says ${fpath} landed in ` +
+              `${claim.engine} ${s.since}, later than the version claimed.`
+          );
+        }
       }
     }
   }
+
   return failures;
 }
 
