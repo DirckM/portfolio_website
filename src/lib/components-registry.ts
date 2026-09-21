@@ -295,6 +295,15 @@ export const componentRegistry: ComponentEntry[] = [
 
   // Components
   {
+    name: 'Gradient Border CSS',
+    slug: 'gradient-border-css',
+    category: 'components',
+    description:
+      'A rotating gradient border built on an @property angle, no JavaScript',
+    sourceRef: '',
+    featured: false,
+  },
+  {
     name: 'Scroll Progress CSS',
     slug: 'scroll-progress-css',
     category: 'components',
