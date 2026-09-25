@@ -8,6 +8,11 @@
 // build stays green. Anything generating posts automatically needs this gate,
 // not a build, to know whether it succeeded.
 //
+// Story posts (category "Story") are the one declared exception to "every post
+// is a component": they get their own path below. It is keyed on the category,
+// never on a missing field, so a tutorial that forgot its componentSlug still
+// fails here instead of being waved through as a story.
+//
 // Usage:
 //   node scripts/check-post.mjs <slug>              starts its own next server
 //   BASE_URL=http://localhost:3000 node scripts/check-post.mjs <slug>
@@ -53,15 +58,54 @@ if (!existsSync(postPath)) {
 const raw = readFileSync(postPath, 'utf-8');
 const { data: frontmatter, content } = matter(raw);
 
-for (const field of ['title', 'description', 'date', 'category', 'componentSlug']) {
+const STORY_CATEGORY = 'Story';
+const isStory = frontmatter.category === STORY_CATEGORY;
+
+const requiredFields = isStory
+  ? ['title', 'description', 'date', 'category']
+  : ['title', 'description', 'date', 'category', 'componentSlug'];
+for (const field of requiredFields) {
   if (!frontmatter[field]) fail(`frontmatter is missing "${field}"`);
 }
 
-// Every codeId the post references must exist, otherwise LiveStep gets ''.
-const codeIds = [...content.matchAll(/codeId=["']([^"']+)["']/g)].map(m => m[1]);
-if (codeIds.length === 0) fail('the post has no <LiveStep codeId="..."> demos');
+const codeIds = [...content.matchAll(/codeId=["']([^"']+)["']/g)].map(
+  m => m[1]
+);
+const phoneDemos = [
+  ...content.matchAll(/<PhoneDemo\s+[^>]*demo=["']([^"']+)["']/g),
+].map(m => m[1]);
 
-const codesSource = readFileSync(join(ROOT, 'src/lib/live-step-codes.ts'), 'utf-8');
+if (isStory) {
+  // A story is prose with no component. Anything that says otherwise is a
+  // tutorial with the wrong category, and should fail loudly as one.
+  if (frontmatter.componentSlug) {
+    fail(
+      `a "${STORY_CATEGORY}" post must not set componentSlug. Is it really a tutorial?`
+    );
+  }
+  if (codeIds.length > 0) {
+    fail(
+      `a "${STORY_CATEGORY}" post must not carry <LiveStep> demos. Is it really a tutorial?`
+    );
+  }
+  const demosSource = readFileSync(
+    join(ROOT, 'src/lib/phone-demos.ts'),
+    'utf-8'
+  );
+  for (const id of phoneDemos) {
+    if (!demosSource.includes(`'${id}'`))
+      fail(`PhoneDemo "${id}" is not defined in src/lib/phone-demos.ts`);
+  }
+}
+
+// Every codeId the post references must exist, otherwise LiveStep gets ''.
+if (!isStory && codeIds.length === 0)
+  fail('the post has no <LiveStep codeId="..."> demos');
+
+const codesSource = readFileSync(
+  join(ROOT, 'src/lib/live-step-codes.ts'),
+  'utf-8'
+);
 for (const id of codeIds) {
   if (!codesSource.includes(`'${id}'`) && !codesSource.includes(`"${id}"`)) {
     fail(`codeId "${id}" is not defined in src/lib/live-step-codes.ts`);
@@ -70,20 +114,30 @@ for (const id of codeIds) {
 
 // componentSlug has to resolve, or the header demo and the "View component"
 // link in BlogPostLayout both dead-end.
-const registrySource = readFileSync(join(ROOT, 'src/lib/components-registry.ts'), 'utf-8');
-if (!registrySource.includes(`'${frontmatter.componentSlug}'`)) {
-  fail(`componentSlug "${frontmatter.componentSlug}" is not in components-registry.ts`);
+const registrySource = readFileSync(
+  join(ROOT, 'src/lib/components-registry.ts'),
+  'utf-8'
+);
+if (!isStory && !registrySource.includes(`'${frontmatter.componentSlug}'`)) {
+  fail(
+    `componentSlug "${frontmatter.componentSlug}" is not in components-registry.ts`
+  );
 }
 
-const previewsSource = readFileSync(join(ROOT, 'src/lib/component-previews.tsx'), 'utf-8');
-const demosBlock = previewsSource.slice(previewsSource.indexOf('export const fullDemos'));
+const previewsSource = readFileSync(
+  join(ROOT, 'src/lib/component-previews.tsx'),
+  'utf-8'
+);
+const demosBlock = previewsSource.slice(
+  previewsSource.indexOf('export const fullDemos')
+);
 // Keys are quoted only when the slug is not a valid JS identifier, so
 // 'scroll-reveal-css' is quoted but antigravity is not. Match both, or every
 // single-word slug reads as missing.
 const demoKeys = new Set(
   [...demosBlock.matchAll(/^ {2}'?([a-zA-Z][a-zA-Z0-9-]*)'?:/gm)].map(m => m[1])
 );
-if (!demoKeys.has(frontmatter.componentSlug)) {
+if (!isStory && !demoKeys.has(frontmatter.componentSlug)) {
   requireForNew(
     `componentSlug "${frontmatter.componentSlug}" has no entry in fullDemos, so the post renders without its hero demo`
   );
@@ -143,12 +197,72 @@ try {
   });
 
   if (!response || !response.ok()) {
-    fail(`/blog/${slug} returned ${response ? response.status() : 'no response'}`);
+    fail(
+      `/blog/${slug} returned ${response ? response.status() : 'no response'}`
+    );
   }
 
   // react-live mounts on the client, so give the demos a beat to compile.
   await page.waitForTimeout(2500);
 
+  if (isStory) await checkStory(page);
+  else await checkLiveSteps(page);
+
+  const realErrors = consoleErrors.filter(
+    e => !/favicon|Download the React DevTools|hydrat/i.test(e)
+  );
+  for (const e of realErrors.slice(0, 5)) {
+    fail(`console error: ${e.slice(0, 200)}`);
+  }
+
+  await browser.close();
+} catch (err) {
+  fail(String(err.message || err));
+} finally {
+  stopServer();
+}
+
+/**
+ * A story has no LiveSteps to compile. What can break for the reader instead is
+ * media: a video path that 404s, or a phone demo that never starts. So every
+ * PhoneDemo is scrolled into view, since they only load when seen, and has to
+ * reach a playable frame and light a chapter.
+ */
+async function checkStory(page) {
+  const count = await page.locator('[data-phone-demo]').count();
+  if (count !== phoneDemos.length) {
+    fail(
+      `the MDX has ${phoneDemos.length} <PhoneDemo> but the page rendered ${count}`
+    );
+  }
+  for (let i = 0; i < count; i++) {
+    const demo = page.locator('[data-phone-demo]').nth(i);
+    await demo.scrollIntoViewIfNeeded();
+    const ready = await demo.locator('video').evaluate(
+      v =>
+        new Promise(resolve => {
+          const done = () => resolve(v.readyState >= 2 && v.videoWidth > 0);
+          if (v.readyState >= 2) return done();
+          v.addEventListener('loadeddata', done, { once: true });
+          v.addEventListener('error', () => resolve(false), { once: true });
+          setTimeout(done, 15_000);
+        })
+    );
+    if (!ready) fail(`PhoneDemo #${i + 1} never loaded a playable frame`);
+    const lit = await demo
+      .locator('[data-chapter][data-current="true"]')
+      .count();
+    if (lit !== 1)
+      fail(`PhoneDemo #${i + 1} has ${lit} current chapters, expected 1`);
+  }
+
+  const broken = await page.$$eval('article img', imgs =>
+    imgs.filter(i => i.complete && i.naturalWidth === 0).map(i => i.src)
+  );
+  for (const src of broken) fail(`image did not load: ${src}`);
+}
+
+async function checkLiveSteps(page) {
   const errorText = await page.$$eval('[data-live-error]', nodes =>
     nodes.map(n => n.textContent.trim()).filter(Boolean)
   );
@@ -169,19 +283,6 @@ try {
   previews.forEach((p, i) => {
     if (p.empty) fail(`LiveStep demo #${i + 1} rendered an empty box`);
   });
-
-  const realErrors = consoleErrors.filter(
-    e => !/favicon|Download the React DevTools|hydrat/i.test(e)
-  );
-  for (const e of realErrors.slice(0, 5)) {
-    fail(`console error: ${e.slice(0, 200)}`);
-  }
-
-  await browser.close();
-} catch (err) {
-  fail(String(err.message || err));
-} finally {
-  stopServer();
 }
 
 for (const w of warnings) console.warn(`WARN ${slug}: ${w}`);
@@ -191,7 +292,11 @@ if (failures.length > 0) {
   for (const f of failures) console.error(`  - ${f}`);
   exitCode = 1;
 } else {
-  console.log(`OK ${slug}: ${codeIds.length} demo(s) rendered clean`);
+  console.log(
+    isStory
+      ? `OK ${slug}: story post, ${phoneDemos.length} phone demo(s) played`
+      : `OK ${slug}: ${codeIds.length} demo(s) rendered clean`
+  );
 }
 
 process.exit(exitCode);

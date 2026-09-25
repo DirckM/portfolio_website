@@ -40,16 +40,24 @@ export default function BlogPostLayout({
       </div>
 
       <footer className='max-w-[720px] mx-auto px-6 mt-16 pt-8 border-t border-black/10'>
-        <Link
-          href={`/components/${post.componentSlug}`}
-          className='text-sm text-black underline underline-offset-4 hover:no-underline'
-        >
-          View {post.title} component
-        </Link>
+        {/* A story post has no component behind it, so no dead-end link. */}
+        {post.componentSlug && (
+          <Link
+            href={`/components/${post.componentSlug}`}
+            className='text-sm text-black underline underline-offset-4 hover:no-underline'
+          >
+            View {post.title} component
+          </Link>
+        )}
 
         {/* The widget asks first and wraps the signup, so the email ask arrives
             after a micro-commitment rather than cold. */}
-        <PostFeedback slug={post.slug} category={post.category} />
+        <PostFeedback
+          slug={post.slug}
+          category={post.category}
+          // A post with its own signup (a kit) already asked once.
+          showSignup={!/<KitSignup\b/.test(post.content)}
+        />
       </footer>
     </article>
   );

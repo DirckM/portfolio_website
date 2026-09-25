@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import NewsletterSignup from '@/components/shell/NewsletterSignup';
-import { getAllBlogPosts } from '@/lib/blog-utils';
+import { getTutorialPosts } from '@/lib/blog-utils';
 
 export const metadata: Metadata = {
   title: 'Newsletter | Dirck Mulder',
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
  * also where the archive will live once there are issues to show.
  */
 export default function NewsletterPage() {
-  const posts = getAllBlogPosts();
+  const posts = getTutorialPosts();
 
   return (
     <div className='flex min-h-[100svh] flex-col justify-center px-6 pt-24 pb-16'>

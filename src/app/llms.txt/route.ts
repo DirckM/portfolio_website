@@ -15,22 +15,23 @@ const BASE = 'https://dirckmulder.com';
  */
 export function GET() {
   const posts = getAllBlogPosts();
+  const tutorials = posts.filter(p => p.kind === 'tutorial');
+  const stories = posts.filter(p => p.kind === 'story');
 
-  const byCategory = componentRegistry.reduce<Record<string, typeof componentRegistry>>(
-    (acc, entry) => {
-      const label = CATEGORY_LABELS[entry.category];
-      (acc[label] ??= []).push(entry);
-      return acc;
-    },
-    {}
-  );
+  const byCategory = componentRegistry.reduce<
+    Record<string, typeof componentRegistry>
+  >((acc, entry) => {
+    const label = CATEGORY_LABELS[entry.category];
+    (acc[label] ??= []).push(entry);
+    return acc;
+  }, {});
 
   const lines: string[] = [
     '# Dirck Mulder — React component library and build notes',
     '',
     '> Open source React and CSS animation components, each one paired with a',
     '> tutorial that explains how it works and where it breaks. Written and',
-    `> maintained by Dirck Mulder. ${posts.length} tutorials, ${componentRegistry.length} components.`,
+    `> maintained by Dirck Mulder. ${tutorials.length} tutorials, ${componentRegistry.length} components.`,
     '',
     'Every component has a live, editable demo on its page. Every tutorial is',
     'welded to a real component in the library rather than being prose about one,',
@@ -40,8 +41,22 @@ export function GET() {
     '',
   ];
 
-  for (const post of posts) {
-    lines.push(`- [${post.title}](${BASE}/blog/${post.slug}): ${post.description}`);
+  for (const post of tutorials) {
+    lines.push(
+      `- [${post.title}](${BASE}/blog/${post.slug}): ${post.description}`
+    );
+  }
+
+  // Story posts are prose about how something was made, with no component
+  // behind them, so they are listed apart from the tutorials the paragraph
+  // above makes promises about.
+  if (stories.length > 0) {
+    lines.push('', '## Stories', '');
+    for (const post of stories) {
+      lines.push(
+        `- [${post.title}](${BASE}/blog/${post.slug}): ${post.description}`
+      );
+    }
   }
 
   lines.push('', '## Components', '');
@@ -49,7 +64,9 @@ export function GET() {
   for (const [label, entries] of Object.entries(byCategory)) {
     lines.push(`### ${label}`, '');
     for (const entry of entries) {
-      lines.push(`- [${entry.name}](${BASE}/components/${entry.slug}): ${entry.description}`);
+      lines.push(
+        `- [${entry.name}](${BASE}/components/${entry.slug}): ${entry.description}`
+      );
     }
     lines.push('');
   }

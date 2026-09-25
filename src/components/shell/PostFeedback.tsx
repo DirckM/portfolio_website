@@ -40,9 +40,15 @@ const REACTIONS = [
 interface Props {
   slug: string;
   category: string;
+  /** False on a post that already carries its own signup, e.g. a kit giveaway. */
+  showSignup?: boolean;
 }
 
-export default function PostFeedback({ slug, category }: Props) {
+export default function PostFeedback({
+  slug,
+  category,
+  showSignup = true,
+}: Props) {
   const [variant, setVariant] = useState<string | null>(null);
   const [answered, setAnswered] = useState<string | null>(null);
   const [followUp, setFollowUp] = useState('');
@@ -197,9 +203,11 @@ export default function PostFeedback({ slug, category }: Props) {
         <p className='text-sm text-black/60'>Noted, thank you.</p>
       )}
 
-      <div className='mt-10 pt-8 border-t border-black/10'>
-        <NewsletterSignup source={`post:${slug}`} />
-      </div>
+      {showSignup && (
+        <div className='mt-10 pt-8 border-t border-black/10'>
+          <NewsletterSignup source={`post:${slug}`} />
+        </div>
+      )}
     </div>
   );
 }
