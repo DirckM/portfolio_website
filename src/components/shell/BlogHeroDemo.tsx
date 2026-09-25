@@ -14,8 +14,9 @@ import { fullDemos } from '@/lib/component-previews';
  * Renders nothing at all when the slug has no entry, so posts without a demo
  * keep their current layout instead of gaining an empty band.
  */
-export default function BlogHeroDemo({ slug }: { slug: string }) {
-  const demo = fullDemos[slug];
+export default function BlogHeroDemo({ slug }: { slug: string | null }) {
+  // A story post has no component, so there is nothing to look up.
+  const demo = slug ? fullDemos[slug] : undefined;
   if (!demo) return null;
 
   return (

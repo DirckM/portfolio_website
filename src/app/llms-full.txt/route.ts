@@ -15,7 +15,14 @@ export function GET() {
 
   const chunks = posts.map(post => {
     const body = post.content
-      .replace(/<LiveStep[\s\S]*?\/>/g, '[Live editable demo of this step on the page.]')
+      .replace(
+        /<LiveStep[\s\S]*?\/>/g,
+        '[Live editable demo of this step on the page.]'
+      )
+      // Story posts: a video of the app on the page, and a signup form that
+      // means nothing as text.
+      .replace(/<PhoneDemo[\s\S]*?\/>/g, '[Video of the app demo on the page.]')
+      .replace(/<KitSignup[\s\S]*?\/>/g, '')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
 
@@ -23,7 +30,9 @@ export function GET() {
       `# ${post.title}`,
       '',
       `Source: ${BASE}/blog/${post.slug}`,
-      `Component: ${BASE}/components/${post.componentSlug}`,
+      ...(post.componentSlug
+        ? [`Component: ${BASE}/components/${post.componentSlug}`]
+        : []),
       `Published: ${post.date}`,
       `Category: ${post.category}`,
       '',
@@ -33,11 +42,14 @@ export function GET() {
     ].join('\n');
   });
 
+  const tutorials = posts.filter(p => p.kind === 'tutorial').length;
+  const stories = posts.filter(p => p.kind === 'story').length;
   const header = [
     '# Dirck Mulder — full tutorial text',
     '',
-    `${posts.length} tutorials on React and CSS animation components.`,
-    'Each one corresponds to a working component with a live demo at the URL given.',
+    `${tutorials} tutorials on React and CSS animation components,`,
+    `and ${stories} ${stories === 1 ? 'story post' : 'story posts'} on how a project was made.`,
+    'Each tutorial corresponds to a working component with a live demo at the URL given.',
     '',
     '---',
     '',

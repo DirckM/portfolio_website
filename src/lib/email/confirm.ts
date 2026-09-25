@@ -18,9 +18,16 @@
 import { escapeHtml } from '@/lib/escape-html';
 import { T, FONT, SERIF, SITE, IMG } from './theme';
 import { CONSENT_TEXT } from '@/lib/newsletter';
+import type { Kit } from '@/lib/kits';
+import { DOWNLOAD_CSS } from './blocks';
+import { renderKitSection, renderKitText } from './kit';
 
 export const CONFIRM_SUBJECT = 'Confirm your email';
 export const ALREADY_SUBJECT = 'You are already subscribed';
+
+export function alreadySubject(kit?: Kit | null): string {
+  return kit ? `Your ${kit.name}` : ALREADY_SUBJECT;
+}
 
 interface Rendered {
   html: string;
@@ -37,7 +44,7 @@ function shell(preheader: string, body: string): string {
   @media (max-width:620px){
     .w{width:100%!important}
     .p{padding-left:20px!important;padding-right:20px!important}
-    .big{font-size:28px!important}
+    .big{font-size:28px!important}${DOWNLOAD_CSS}
   }
 </style></head><body style="margin:0;padding:0;background:${T.page};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(preheader)}${'&#8203;&nbsp;'.repeat(60)}</div>
@@ -79,10 +86,18 @@ function shell(preheader: string, body: string): string {
 export function renderConfirmEmail({
   site,
   confirmToken,
+  kit,
 }: {
   site: string;
   confirmToken: string;
+  /** Signed up from a giveaway form: say the kit follows the confirmation. */
+  kit?: Kit | null;
 }): Rendered {
+  // The kit is NOT in this email. It waits for the confirmation, so an address
+  // typed in by somebody else never receives anything but this one message.
+  const kitLine = kit
+    ? `Confirm and your ${kit.name} is in the next email.`
+    : '';
   const link = `${site}/api/newsletter/confirm?t=${confirmToken}`;
 
   const body = `
@@ -90,7 +105,7 @@ export function renderConfirmEmail({
     <h1 class="big" style="margin:0 0 12px;font-family:${FONT};font-size:34px;line-height:1.1;letter-spacing:-.035em;color:${T.ink};font-weight:800;">One <span style="font-family:${SERIF};font-style:italic;font-weight:400;letter-spacing:-.01em;">click</span> and you are on the list</h1>
     <p style="margin:0;font-family:${FONT};font-size:16px;line-height:1.65;color:${T.body};">
       You asked to hear what I am building. Confirm below and that is the whole
-      admin done, for good.
+      admin done, for good.${kit ? ` ${escapeHtml(kitLine)}` : ''}
     </p>
   </td></tr>
 
@@ -122,7 +137,7 @@ export function renderConfirmEmail({
   const text = [
     'ONE CLICK AND YOU ARE ON THE LIST',
     '',
-    'You asked to hear what I am building. Confirm below and that is the whole admin done, for good.',
+    `You asked to hear what I am building. Confirm below and that is the whole admin done, for good.${kit ? ` ${kitLine}` : ''}`,
     '',
     link,
     '',
@@ -146,12 +161,18 @@ export function renderConfirmEmail({
  * answers identically for a new address and an existing one, so this email is
  * the only place the difference shows, and it goes to the address itself.
  */
-export function renderAlreadySubscribedEmail(): Rendered {
-  const body = `
-  <tr><td class="p" style="padding:24px 34px 34px;">
+export function renderAlreadySubscribedEmail({
+  kit,
+}: { kit?: Kit | null } = {}): Rendered {
+  // Someone already on the list who signed up again from a kit form gets the
+  // kit here, since no welcome email follows for them. It still only goes to
+  // the address itself, so the subscribe endpoint's identical response keeps
+  // its privacy property.
+  const body = `${kit ? `<tr><td style="height:24px;line-height:24px;font-size:0;">&nbsp;</td></tr>${renderKitSection(kit)}` : ''}
+  <tr><td class="p" style="padding:${kit ? 4 : 24}px 34px 34px;">
     <h1 class="big" style="margin:0 0 12px;font-family:${FONT};font-size:34px;line-height:1.1;letter-spacing:-.035em;color:${T.ink};font-weight:800;">You are already <span style="font-family:${SERIF};font-style:italic;font-weight:400;letter-spacing:-.01em;">in</span></h1>
     <p style="margin:0 0 14px;font-family:${FONT};font-size:16px;line-height:1.65;color:${T.body};">
-      Nothing to do. The next issue lands in your inbox on its own.
+      ${kit ? 'You were already on the list, so the kit is right here instead of in a welcome email.' : 'Nothing to do.'} The next issue lands in your inbox on its own.
     </p>
     <p style="margin:0;font-family:${FONT};font-size:12px;line-height:1.6;color:${T.mute};">
       Every issue carries a one-click unsubscribe at the bottom, so leaving is
@@ -160,11 +181,17 @@ export function renderAlreadySubscribedEmail(): Rendered {
   </td></tr>`;
 
   return {
-    html: shell('You are already on the list. Nothing to do.', body),
+    html: shell(
+      kit
+        ? `Your ${kit.name} is inside. You were already on the list.`
+        : 'You are already on the list. Nothing to do.',
+      body
+    ),
     text: [
+      ...(kit ? renderKitText(kit) : []),
       'YOU ARE ALREADY IN',
       '',
-      'Nothing to do. The next issue lands in your inbox on its own.',
+      `${kit ? 'You were already on the list, so the kit is right here instead of in a welcome email.' : 'Nothing to do.'} The next issue lands in your inbox on its own.`,
       '',
       'Every issue carries a one-click unsubscribe at the bottom, so leaving is never more than that.',
       '',

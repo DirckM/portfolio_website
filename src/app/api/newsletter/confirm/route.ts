@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { confirmByToken } from '@/lib/newsletter';
-import { getAllBlogPosts } from '@/lib/blog-utils';
+import { getTutorialPosts } from '@/lib/blog-utils';
 import {
   renderWelcome,
   renderWelcomeText,
-  WELCOME_SUBJECT,
+  welcomeSubject,
 } from '@/lib/email/welcome';
+import { kitForSource } from '@/lib/kits';
 
 export const runtime = 'nodejs';
 
@@ -27,24 +28,37 @@ export async function GET(request: Request) {
   const token = new URL(request.url).searchParams.get('t');
 
   if (!token) {
-    return NextResponse.redirect(`${site}/newsletter/confirm-failed?reason=missing`, 302);
+    return NextResponse.redirect(
+      `${site}/newsletter/confirm-failed?reason=missing`,
+      302
+    );
   }
 
   const result = await confirmByToken(token);
 
   if (!result.ok) {
     console.error('confirm failed:', result.error);
-    return NextResponse.redirect(`${site}/newsletter/confirm-failed?reason=error`, 302);
+    return NextResponse.redirect(
+      `${site}/newsletter/confirm-failed?reason=error`,
+      302
+    );
   }
 
   // Null means the token matched nothing that was still pending and unexpired.
   // Both cases land on the same page: we cannot tell the person which it was
   // without revealing whether that address is on the list.
   if (!result.data) {
-    return NextResponse.redirect(`${site}/newsletter/confirm-failed?reason=expired`, 302);
+    return NextResponse.redirect(
+      `${site}/newsletter/confirm-failed?reason=expired`,
+      302
+    );
   }
 
-  await sendWelcome(result.data.email, result.data.unsubscribeToken);
+  await sendWelcome(
+    result.data.email,
+    result.data.unsubscribeToken,
+    result.data.source
+  );
 
   return NextResponse.redirect(`${site}/newsletter/confirmed`, 302);
 }
@@ -60,7 +74,11 @@ export async function GET(request: Request) {
  * person IS confirmed at this point, and bouncing them to an error page over a
  * missing greeting would undo a successful action to report a cosmetic one.
  */
-async function sendWelcome(email: string, unsubscribeToken: string) {
+async function sendWelcome(
+  email: string,
+  unsubscribeToken: string,
+  source: string
+) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.error('welcome email skipped: RESEND_API_KEY is not set');
@@ -69,21 +87,31 @@ async function sendWelcome(email: string, unsubscribeToken: string) {
 
   const from = process.env.NEWSLETTER_FROM_EMAIL || 'dirck@dirckmulder.com';
   const replyTo = process.env.NEWSLETTER_REPLY_TO || 'dirck@dirckmulder.com';
+  const kit = kitForSource(source);
   const payload = {
     unsubscribeToken,
-    postCount: getAllBlogPosts().length,
+    postCount: getTutorialPosts().length,
+    kit,
   };
 
   const { error } = await new Resend(apiKey).emails.send({
     from: `Dirck Mulder <${from}>`,
     to: email,
     replyTo,
-    subject: WELCOME_SUBJECT,
+    subject: welcomeSubject(kit),
     html: renderWelcome(payload),
     text: renderWelcomeText(payload),
     tags: [
       { name: 'project', value: 'portfolio' },
       { name: 'kind', value: 'welcome' },
+      ...(kit
+        ? [
+            {
+              name: 'kit',
+              value: kit.sourcePrefix.replace(/[^a-zA-Z0-9_-]/g, '-'),
+            },
+          ]
+        : []),
     ],
   });
 

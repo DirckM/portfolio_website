@@ -25,6 +25,30 @@ export const AUTHOR = {
  * plus `dependencies` are the fields that say so.
  */
 export function articleJsonLd(post: BlogPost) {
+  // A story post is not a how-to about a named component, so it is plain
+  // BlogPosting and claims no source code, proficiency level or dependencies.
+  if (post.kind === 'story') {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      '@id': `${BASE}/blog/${post.slug}#article`,
+      headline: post.title,
+      description: post.description,
+      datePublished: post.date,
+      dateModified: post.date,
+      author: AUTHOR,
+      publisher: AUTHOR,
+      inLanguage: 'en',
+      isAccessibleForFree: true,
+      articleSection: post.category,
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': `${BASE}/blog/${post.slug}`,
+      },
+      url: `${BASE}/blog/${post.slug}`,
+    };
+  }
+
   return {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
@@ -85,7 +109,7 @@ export function blogIndexJsonLd(posts: BlogPost[]) {
     author: AUTHOR,
     publisher: AUTHOR,
     blogPost: posts.map(post => ({
-      '@type': 'TechArticle',
+      '@type': post.kind === 'story' ? 'BlogPosting' : 'TechArticle',
       headline: post.title,
       description: post.description,
       datePublished: post.date,

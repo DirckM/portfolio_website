@@ -13,18 +13,31 @@
  */
 
 import { escapeHtml } from '@/lib/escape-html';
+import type { Kit } from '@/lib/kits';
 import { T, FONT, SERIF, SITE, IMG } from './theme';
+import { DOWNLOAD_CSS } from './blocks';
+import { renderKitSection, renderKitText } from './kit';
 
 export interface Welcome {
   /** Per-subscriber, so the unsubscribe link keeps working in the inbox. */
   unsubscribeToken: string;
   /** How many tutorials exist, so the promise is a real number, not "lots". */
   postCount: number;
+  /**
+   * The kit they signed up for, if the form was a giveaway. It goes at the very
+   * top: it is the reason they are here, and burying it under the welcome
+   * makes the person scroll for the one thing they came for.
+   */
+  kit?: Kit | null;
 }
 
 export const WELCOME_SUBJECT = 'You are on the list';
 
-export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string {
+export function welcomeSubject(kit?: Kit | null): string {
+  return kit ? `Your ${kit.name}, and you are on the list` : WELCOME_SUBJECT;
+}
+
+export function renderWelcome({ unsubscribeToken, postCount, kit }: Welcome): string {
   const unsub = `${SITE}/api/newsletter/unsubscribe?t=${encodeURIComponent(unsubscribeToken)}`;
   const components = `${SITE}/components?utm_source=newsletter&utm_medium=email&utm_campaign=welcome`;
   const instagram = 'https://www.instagram.com/dirckmulder/';
@@ -69,10 +82,10 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
     .big{font-size:30px!important}
     .hero{width:100%!important;height:auto!important}
     .col{display:block!important;width:100%!important;padding:0 0 16px 0!important}
-    .reelimg{width:100%!important}
+    .reelimg{width:100%!important}${DOWNLOAD_CSS}
   }
 </style></head><body style="margin:0;padding:0;background:${T.page};">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Thanks for signing up. You’ll hear from me once a month.${'&#8203;&nbsp;'.repeat(60)}</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${kit ? `Your ${escapeHtml(kit.name)} is inside. ` : ''}Thanks for signing up. You’ll hear from me once a month.${'&#8203;&nbsp;'.repeat(60)}</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${T.page};">
 <tr><td align="center" style="padding:26px 10px 30px;">
@@ -94,7 +107,9 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
     </tr></table>
   </td></tr>
 
-  <tr><td class="p" style="padding:24px 34px 22px;">
+  ${kit ? `<tr><td style="height:24px;line-height:24px;font-size:0;">&nbsp;</td></tr>${renderKitSection(kit)}` : ''}
+
+  <tr><td class="p" style="padding:${kit ? 4 : 24}px 34px 22px;">
     <h1 class="big" style="margin:0 0 12px;font-family:${FONT};font-size:37px;line-height:1.08;letter-spacing:-.038em;color:${T.ink};font-weight:800;">You are <span style="font-family:${SERIF};font-style:italic;font-weight:400;letter-spacing:-.01em;">in</span>.</h1>
     <p style="margin:0;font-family:${FONT};font-size:16px;line-height:1.65;color:${T.body};">
       Thanks for signing up. You’ll hear from me once a month. That feels
@@ -239,9 +254,10 @@ export function renderWelcome({ unsubscribeToken, postCount }: Welcome): string 
  * filters, and this is the first email the address ever receives from us, which
  * is exactly when reputation is decided.
  */
-export function renderWelcomeText({ unsubscribeToken, postCount }: Welcome): string {
+export function renderWelcomeText({ unsubscribeToken, postCount, kit }: Welcome): string {
   const unsub = `${SITE}/api/newsletter/unsubscribe?t=${encodeURIComponent(unsubscribeToken)}`;
   return [
+    ...(kit ? renderKitText(kit) : []),
     'YOU ARE IN.',
     '',
     'Thanks for signing up. You’ll hear from me once a month. That feels frequent enough to be useful and infrequent enough that we don’t start resenting each other.',

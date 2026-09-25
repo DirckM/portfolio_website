@@ -9,6 +9,8 @@ import BlogHeroDemo from '@/components/shell/BlogHeroDemo';
 import { liveStepCodes } from '@/lib/live-step-codes';
 import { liveScope } from '@/lib/live-scope';
 import LiveStep from '@/components/shell/LiveStep';
+import PhoneDemo from '@/components/shell/PhoneDemo';
+import KitSignup from '@/components/shell/KitSignup';
 import {
   JsonLd,
   articleJsonLd,
@@ -120,6 +122,12 @@ const mdxComponents = {
       />
     );
   },
+  // Story posts only. Props are plain strings, because next-mdx-remote drops
+  // JavaScript expressions from MDX props, so the data sits in phone-demos.ts.
+  PhoneDemo: ({ demo }: { demo: string }) => <PhoneDemo demo={demo} />,
+  KitSignup: ({ placement }: { placement?: 'top' | 'end' }) => (
+    <KitSignup placement={placement} />
+  ),
   pre: HighlightedPre,
   h2: ({ children }: { children: React.ReactNode }) => (
     <h2 className='text-2xl font-[family-name:var(--font-instrument-serif)] mt-12 mb-4'>
@@ -157,7 +165,11 @@ export default async function BlogPostPage({ params }: PageProps) {
       <JsonLd data={breadcrumbJsonLd(post)} />
       <BlogPostLayout
         post={post}
-        demo={<BlogHeroDemo slug={post.componentSlug} />}
+        demo={
+          post.componentSlug ? (
+            <BlogHeroDemo slug={post.componentSlug} />
+          ) : undefined
+        }
       >
         <MDXRemote source={post.content} components={mdxComponents} />
       </BlogPostLayout>

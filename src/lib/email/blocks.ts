@@ -95,7 +95,8 @@ export type Section =
   | ({ kind: 'tinted' } & Base)
   | ({ kind: 'device'; side: 'left' | 'right' } & Base)
   | ({ kind: 'inline' } & Base)
-  | { kind: 'quote'; text: string; image: string; alt: string };
+  | { kind: 'quote'; text: string; image: string; alt: string }
+  | ({ kind: 'download'; link: Link; meta: string } & Omit<Base, 'link'>);
 
 const kicker = (t: string) =>
   `<div style="font-family:${FONT};font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:${T.orangeDeep};font-weight:700;margin-bottom:10px;">${escapeHtml(t)}</div>`;
@@ -123,8 +124,52 @@ const maybeLink = (
 const copy = (s: Base, ctx?: TrackCtx) =>
   `${kicker(s.kicker)}${h2(s.title)}${para(s.body, !!s.link)}${pill(s.link, ctx, slugify(s.title))}`;
 
+/**
+ * The house primary button: orange, square-ish, the one the welcome email uses
+ * for its main action. The black pill above is for "have a look" links inside
+ * an issue, where no single link is the point of the email.
+ */
+const primaryButton = (href: string, cta: string) => `
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="background:${T.orange};border-radius:10px;">
+        <a href="${escapeHtml(href)}"
+           style="display:inline-block;padding:14px 26px;font-family:${FONT};font-size:13px;font-weight:700;
+                  letter-spacing:.08em;text-transform:uppercase;color:#ffffff;text-decoration:none;">${escapeHtml(cta)}</a>
+      </td></tr>
+    </table>`;
+
+/**
+ * Mobile rules for the 'download' shape. Any email that renders one has to put
+ * this in its <style> block. It has its own classes because the shared `.col`
+ * rule zeroes the padding, which is right for a bare column and puts the copy
+ * flush against the edge of a tinted panel.
+ */
+export const DOWNLOAD_CSS = `
+    .dl-img{display:block!important;width:auto!important;padding:22px 20px 0!important}
+    .dl-copy{display:block!important;width:auto!important;padding:18px 20px 22px!important}`;
+
 export function renderSection(s: Section, ctx?: TrackCtx): string {
   switch (s.kind) {
+    // Something the reader asked for, delivered. Tinted so it reads as its own
+    // thing at the top of an email, phone on the left like the 'device' shape,
+    // and the only orange button in the section. A download is not tracked:
+    // UTM parameters on a zip URL measure nothing.
+    case 'download': {
+      const img = `<img src="${IMG}/${s.image}" width="130" alt="${escapeHtml(s.alt)}" style="display:block;width:130px;max-width:100%;height:auto;border:0;">`;
+      return `
+<tr><td class="p" style="padding:0 34px 26px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${T.tint};border-radius:14px;">
+    <tr>
+      <td class="dl-img" width="130" valign="middle" style="padding:22px 0 22px 24px;">${img}</td>
+      <td class="dl-copy" valign="middle" style="padding:22px 24px;">
+        ${kicker(s.kicker)}${h2(s.title)}${para(s.body, true)}${primaryButton(s.link.href, s.link.cta)}
+        <div style="margin-top:10px;font-family:${FONT};font-size:12px;color:${T.mute};">${escapeHtml(s.meta)}</div>
+      </td>
+    </tr>
+  </table>
+</td></tr>`;
+    }
+
     case 'browser': {
       const tag = slugify(s.title);
       const bar = s.link?.url ?? s.link?.href.replace(/^https?:\/\//, '') ?? 'dirckmulder.com';

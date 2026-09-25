@@ -101,6 +101,10 @@ export default function NewsletterModal() {
 
     const fire = (trigger: 'time' | 'scroll') => {
       if (firedRef.current) return;
+      // A page that carries its own signup (a kit giveaway inside a post)
+      // already asked. A second, generic ask on top of it competes with the
+      // offer the reader is actually looking at.
+      if (document.querySelector('[data-own-signup]')) return;
       firedRef.current = true;
       clearTimeout(timer);
       window.removeEventListener('scroll', onScroll);
