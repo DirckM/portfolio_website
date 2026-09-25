@@ -53,6 +53,21 @@ export default function PrivacyPage() {
           unsubscribe. Stored in Supabase (EU), delivered by Resend (EU).
         </p>
         <p>
+          <strong>Newsletter design pages and kit panels:</strong> on the
+          /designs pages linked from an issue, and on the kit signup panels in
+          blog posts, I record which buttons are pressed (opening the page from
+          the email, downloading, sharing, copying a link, opening or sending
+          the form). When you arrive from your own email the presses are linked
+          to your subscription, so I can count downloads and shares per
+          subscriber. Otherwise they are anonymous, tied only to a random id in
+          a first-party cookie. A share link carries a random id of its own, so
+          I can see whether it was opened and whether someone signed up through
+          it. Nothing is recorded just by loading a page. IP addresses are
+          stored only as a one-way salted hash, for rate limiting. Legal basis:
+          legitimate interest in knowing whether the free downloads are used
+          (Art. 6(1)(f)).
+        </p>
+        <p>
           <strong>Server logs:</strong> Vercel logs IP address and user-agent
           for security and abuse prevention. Retained up to 30 days.
         </p>

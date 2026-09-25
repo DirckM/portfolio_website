@@ -39,8 +39,13 @@ interface Props {
    * records they agreed to.
    */
   finePrint?: React.ReactNode;
-  /** A referral code from a shared link, passed through to the signup. */
+  /** A share link id from a shared link, passed through to the signup. */
   refCode?: string | null;
+  /**
+   * Record the submit press as a button event (the /designs page and the blog
+   * kit panel). Only the press, never the address.
+   */
+  track?: { page: 'designs' | 'blog-kit'; slug?: string };
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -56,6 +61,7 @@ export default function NewsletterSignup({
   successBody = 'I sent a confirmation link. One click and you are on the list.',
   finePrint = 'One email a month, and a one-click unsubscribe in every one.',
   refCode = null,
+  track,
 }: Props) {
   // Two forms with the same source can sit on one page, and the source used to
   // be the id, which made the labels point at the wrong input.
@@ -80,6 +86,14 @@ export default function NewsletterSignup({
 
     setError(null);
     setIsSubmitting(true);
+    if (track) {
+      fetch('/api/designs/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page: track.page, slug: track.slug ?? '', kind: 'form_submit' }),
+        keepalive: true,
+      }).catch(() => {});
+    }
 
     try {
       const res = await fetch('/api/newsletter/subscribe', {

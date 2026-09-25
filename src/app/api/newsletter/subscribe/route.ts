@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { Resend } from 'resend';
 import {
   renderConfirmEmail,
@@ -8,7 +8,8 @@ import {
 } from '@/lib/email/confirm';
 import type { Kit } from '@/lib/kits';
 import { giveawayForSource } from '@/lib/giveaways';
-import { REF_RE } from '@/lib/designs';
+import { SHARE_ID_RE, VISITOR_COOKIE } from '@/lib/designs';
+import { visitorHash } from '@/lib/designs-http';
 import { designsDb } from '@/lib/designs-db';
 import { dbConfigured } from '@/lib/db';
 import {
@@ -32,7 +33,7 @@ const MAX_SIGNUPS_PER_IP_PER_HOUR = 3;
  * that person is on Dirck's list. That is a privacy leak about third parties,
  * not just an annoyance.
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   if (!dbConfigured()) {
     return NextResponse.json({ error: 'Not configured' }, { status: 500 });
   }
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
     consent?: boolean;
     website?: string;
     elapsed?: number;
-    /** A referral code from a shared /designs link. Stored only if it exists. */
+    /** A share link id from a shared /designs link. Stored only if it exists. */
     ref?: string;
   };
   try {
@@ -77,25 +78,31 @@ export async function POST(request: Request) {
   }
 
   const source = (body.source ?? 'unknown').slice(0, 80);
-  // Looked up, never trusted: an unknown or malformed code is dropped, so the
-  // column only ever holds codes that belong to a real subscriber.
+  // A share link id from /designs/<slug>?ref=. Looked up, never trusted: an
+  // unknown or malformed id is dropped, so the column only ever holds ids of
+  // real share links, and through them, of a real sharer.
   const ref =
     typeof body.ref === 'string' &&
-    REF_RE.test(body.ref) &&
-    (await designsDb.referralCodeExists(body.ref))
+    SHARE_ID_RE.test(body.ref) &&
+    (await designsDb.shareLink(body.ref))
       ? body.ref
       : null;
   const result = await startSignup(email, {
     source,
     ip,
     userAgent: request.headers.get('user-agent'),
-    referredBy: ref,
+    referredByShare: ref,
   });
 
   if (!result.ok) {
     console.error('newsletter signup failed:', result.error);
     return NextResponse.json({ error: 'Could not sign up' }, { status: 500 });
   }
+
+  // This browser came in through that link and has now signed up. Written
+  // for every outcome, so the response stays identical either way.
+  const vid = request.cookies.get(VISITOR_COOKIE)?.value;
+  if (ref && vid) await designsDb.markVisitSignedUp(ref, visitorHash(vid));
 
   const apiKey = process.env.RESEND_API_KEY;
   if (apiKey && result.data.action !== 'nothing') {

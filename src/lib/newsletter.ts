@@ -43,8 +43,8 @@ export interface SignupContext {
   referrerPath?: string | null;
   ip?: string | null;
   userAgent?: string | null;
-  /** A referral code that has already been looked up and found. */
-  referredBy?: string | null;
+  /** A share link id that has already been looked up and found. */
+  referredByShare?: string | null;
 }
 
 /** Append to the audit trail. Best effort: never block the user's action. */
@@ -164,7 +164,7 @@ export async function startSignup(
     consent_user_agent: ctx.userAgent?.slice(0, 500) ?? null,
     // Only sent when there is one: before the migration adds the column, an
     // insert naming it would fail every signup.
-    ...(ctx.referredBy ? { referred_by: ctx.referredBy } : {}),
+    ...(ctx.referredByShare ? { referred_by_share: ctx.referredByShare } : {}),
   });
   if (!created.ok) return created;
 

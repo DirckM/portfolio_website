@@ -1,34 +1,25 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { cookieName, download } from '@/lib/designs';
+import { download } from '@/lib/designs';
 import { designsDb } from '@/lib/designs-db';
-import { clientIp, pseudonymise } from '@/lib/tokens';
+import { jsonBody, who } from '@/lib/designs-http';
 
 export const runtime = 'nodejs';
 
 /**
- * The download click on /designs/<slug>. POST only, and there is deliberately
- * no GET: a mail scanner or link prefetcher that follows links must never be
- * able to count as a download. Access comes from the HttpOnly cookie the page set,
- * never from anything in the request body but the slug.
+ * The download click. POST only, and there is deliberately no GET: a scanner
+ * or prefetcher that follows links must never count as a download. Access
+ * comes from the HttpOnly designs cookie, never from the request body.
  */
 export async function POST(request: NextRequest) {
-  let body: { slug?: string };
-  try {
-    body = await request.json();
-  } catch {
+  const body = await jsonBody<{ slug?: string }>(request);
+  if (!body)
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
-  }
-  const slug = body.slug ?? '';
-  const ip = clientIp(request.headers);
-  const result = await download(designsDb, {
-    slug,
-    token: request.cookies.get(cookieName(slug))?.value ?? null,
-    ipHash: ip ? pseudonymise(ip) : null,
-  });
-  if (!result.ok)
-    return NextResponse.json(
-      { error: result.error },
-      { status: result.status }
+  const { w, finish } = who(request, body.slug ?? '');
+  const result = await download(designsDb, w);
+  if (!result.ok) {
+    return finish(
+      NextResponse.json({ error: result.error }, { status: result.status })
     );
-  return NextResponse.json({ url: result.url });
+  }
+  return finish(NextResponse.json({ url: result.url }));
 }

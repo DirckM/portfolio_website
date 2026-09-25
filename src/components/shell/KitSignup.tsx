@@ -17,6 +17,7 @@ export default function KitSignup({
   placement?: 'top' | 'end';
 }) {
   const shared = {
+    track: { page: 'blog-kit' as const },
     cta: 'Send me the kit',
     successTitle: 'Check your inbox.',
     successBody: 'Confirm and the kit is in the next email.',
