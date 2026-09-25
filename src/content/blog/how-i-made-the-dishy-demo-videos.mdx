@@ -9,7 +9,7 @@ After I presented Dishy at a Mollie build night in Amsterdam, someone came up an
 
 Short answer: I did not touch the app during the demos. Every tap in that walkthrough was written into a UI test, filmed in the simulator and cut down by a script. On stage I pressed the arrow key and talked.
 
-This is the onboarding video from the talk. The chapter list follows the video, the same way it did on the slide.
+This is the onboarding demo, filmed again after the talk with the fixes at the end of this post. The chapter list follows the video, the same way it did on the slide.
 
 <PhoneDemo demo="dishy-onboarding" />
 
@@ -113,7 +113,9 @@ The meal prep video was put together in Remotion: the kept segments laid end to 
 
 <PhoneDemo demo="dishy-mealprep" />
 
-The onboarding did not make it through that route. Its take is longer, and the Remotion render crashed on it. So on stage the onboarding was the recording itself, trimmed and scaled down, clipped to the screen shape with CSS and laid under the same bezel PNG. That is also the version at the top of this post, which is why it has no tap circles.
+The onboarding did not make it through that route. Its take is longer, and the Remotion render crashed on it. So on stage the onboarding was the recording itself, trimmed and scaled down, clipped to the screen shape with CSS and laid under the same bezel PNG, without tap circles.
+
+Both videos on this page are newer takes. The stage versions stuttered a little, and part of that was Remotion: inside a cut it sometimes showed a source frame one early or one late, which reads as a repeat followed by a skip. Now ffmpeg cuts the footage frame-exact and Remotion only draws the bezel and the tap circles on top. That also got the long onboarding render through. I filmed several takes of each demo and kept the cleanest. One small hitch is left when a tap lands on the prep screen, and that one is the app's own.
 
 Scaling down was not optional either. The full resolution 1206 by 2622 H.264 file would not play in the browser. At 604 pixels wide it did.
 
