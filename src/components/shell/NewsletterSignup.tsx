@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useId, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import posthog from 'posthog-js';
 
@@ -28,6 +28,17 @@ interface Props {
   blurb?: string;
   /** Fired once the signup succeeded, so a host (the modal) can react. */
   onSuccess?: () => void;
+  /** Label on the submit button. */
+  cta?: string;
+  /** Replaces the success copy, e.g. a giveaway that arrives after confirming. */
+  successTitle?: string;
+  successBody?: string;
+  /**
+   * Replaces the line under the button. A giveaway form MUST say here that the
+   * signup also puts them on the newsletter, because that is what CONSENT_TEXT
+   * records they agreed to.
+   */
+  finePrint?: React.ReactNode;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -38,7 +49,14 @@ export default function NewsletterSignup({
   headline = 'What I am building',
   blurb = 'One email a month. New components, what shipped, what broke.',
   onSuccess,
+  cta = 'Sign up',
+  successTitle = 'Check your inbox.',
+  successBody = 'I sent a confirmation link. One click and you are on the list.',
+  finePrint = 'One email a month, and a one-click unsubscribe in every one.',
 }: Props) {
+  // Two forms with the same source can sit on one page, and the source used to
+  // be the id, which made the labels point at the wrong input.
+  const uid = useId();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,10 +113,8 @@ export default function NewsletterSignup({
   if (status === 'success') {
     return (
       <div className={layout === 'panel' ? 'py-8' : 'py-2'}>
-        <p className='text-sm text-black'>Check your inbox.</p>
-        <p className='mt-1 text-sm text-black/60'>
-          I sent a confirmation link. One click and you are on the list.
-        </p>
+        <p className='text-sm text-black'>{successTitle}</p>
+        <p className='mt-1 text-sm text-black/60'>{successBody}</p>
       </div>
     );
   }
@@ -127,9 +143,9 @@ export default function NewsletterSignup({
           aria-hidden='true'
           className='absolute left-[-9999px] h-0 w-0 overflow-hidden'
         >
-          <label htmlFor={`website-${source}`}>Leave this empty</label>
+          <label htmlFor={`website-${uid}`}>Leave this empty</label>
           <input
-            id={`website-${source}`}
+            id={`website-${uid}`}
             type='text'
             tabIndex={-1}
             autoComplete='off'
@@ -140,7 +156,7 @@ export default function NewsletterSignup({
 
         <div className='relative'>
           <label
-            htmlFor={`email-${source}`}
+            htmlFor={`email-${uid}`}
             className={`absolute left-0 transition-all duration-200 pointer-events-none ${
               focused || email
                 ? 'text-[10px] -top-4 uppercase tracking-widest text-black/50'
@@ -150,7 +166,7 @@ export default function NewsletterSignup({
             Your email
           </label>
           <input
-            id={`email-${source}`}
+            id={`email-${uid}`}
             type='email'
             inputMode='email'
             autoComplete='email'
@@ -172,11 +188,11 @@ export default function NewsletterSignup({
           whileTap={{ scale: isSubmitting ? 1 : 0.99 }}
           className='mt-6 w-full bg-gradient-primary text-white py-4 text-sm uppercase tracking-widest disabled:opacity-60'
         >
-          {isSubmitting ? 'Signing up' : 'Sign up'}
+          {isSubmitting ? 'Signing up' : cta}
         </motion.button>
 
         <p className='mt-3 text-[11px] leading-relaxed text-black/50'>
-          One email a month, and a one-click unsubscribe in every one. See the{' '}
+          {finePrint} See the{' '}
           <a href='/privacy' className='underline underline-offset-2'>
             privacy policy
           </a>

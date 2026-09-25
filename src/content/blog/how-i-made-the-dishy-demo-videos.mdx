@@ -1,0 +1,153 @@
+---
+title: "How I Made the Dishy App Demo Play Itself"
+description: "After my Dishy talk someone asked how I made the slides and why the app walkthrough looked so smooth. The answer is a UI test, a simulator recording, an automatic cut and Apple's own iPhone bezel."
+date: "2026-09-25"
+category: "Story"
+---
+
+After I presented Dishy, someone came up and asked: "how did you make the slides, and how did the app walkthrough go so smooth?"
+
+Short answer: I did not touch the app during the demos. Every tap in that walkthrough was written into a UI test, filmed in the simulator and cut down by a script. On stage I pressed the arrow key and talked.
+
+This is the onboarding video from the talk. The chapter list follows the video, the same way it did on the slide.
+
+<PhoneDemo demo="dishy-onboarding" />
+
+<KitSignup placement="top" />
+
+## The slides
+
+The deck is one HTML file. Every slide is a `<section>`, and a small script I share between my decks handles the arrow keys, a presenter view with notes, and the videos. A video starts when its slide comes up and rewinds when you leave, so stepping back gives you the demo from the top. There is no build step and no server.
+
+It was four slides: a title, the onboarding demo, a fridge and meal prep demo, and a thank you. The two demo slides are the ones people asked about, so the rest of this post is how those were made.
+
+## Step 1: Drive the real app with a UI test
+
+A normal UI test taps as fast as XCTest allows. That is right for a test and unwatchable on a wall. So I wrote one test per demo that taps at a human pace. Each tap waits a beat so you can see where it is going, lands, and then leaves the screen alone long enough to be read.
+
+```swift
+private func press(_ el: XCUIElement, wait: TimeInterval = 20, before: Double = 0.7, after: Double = 1.2) {
+    guard el.waitForExistence(timeout: wait) else {
+        print("DEMOMISS \(el.debugDescription.prefix(120))")
+        return
+    }
+    Thread.sleep(forTimeInterval: before)
+    let f = el.frame
+    print("DEMOTAP \(Date().timeIntervalSince1970) \(f.midX) \(f.midY)")
+    el.tap()
+    Thread.sleep(forTimeInterval: after)
+}
+```
+
+Every tap also prints a line with the time and the point it landed on. XCTest taps leave no trace in a recording, and that log is what later lets me draw a finger on the video and decide where to cut.
+
+The test itself reads like the script of the demo:
+
+```swift
+press("Plan my first week", before: 1.5)
+press("Stop deciding every night", before: 1.2)
+press("Continue", before: 0.4)
+press("Two", before: 1.0)
+```
+
+The app starts from launch arguments that reset it and seed the data, so every take opens on the same screen with the same week in it. The meal prep test waits until that seeded week has finished building before it films anything, so the take never opens on a spinner. The simulator has no camera, so for the fridge scan a bundled photo stands in for the shutter.
+
+## Step 2: Film it with simctl
+
+The simulator can record its own screen. A short shell script starts the recorder, runs exactly one test and stops the recorder when the test is done:
+
+```bash
+xcrun simctl io $UDID recordVideo --codec=h264 --force takes/$2.mov > takes/$2.rec.log 2>&1 &
+REC=$!
+sleep 1.5
+python3 -c "import time;print('RECSTART',time.time())" > takes/$2.start
+xcodebuild test-without-building ... -only-testing:DishyUITests/DemoRecording/$1 ...
+sleep 1
+kill -INT $REC; wait $REC
+```
+
+It writes down when the recording started, so the tap log can be lined up with the video afterwards.
+
+Before filming, set the simulator keyboard to English only. With more than one language on it, a multilingual keyboard tip pops up halfway through a take.
+
+## Step 3: Cut the dead time automatically
+
+A paced take has a lot of nothing in it. The app waits for the next tap, a screen builds, a result sits there. ffmpeg can give every frame a scene score, which says how much the picture changed since the frame before:
+
+```bash
+ffmpeg -i take.mp4 -vf "scale=150:-1,select='gte(scene,0)',metadata=print:key=lavfi.scene_score:file=take.scene" -f null -
+```
+
+A run of changed frames is something happening. A gap is a still screen. A Python script keeps every burst of motion plus a second and a quarter to read it, keeps the half second before each tap in the log, and drops the rest:
+
+```python
+win = [(t0, t0 + 2.2)]                                  # the opening screen, read
+win += [(a - 0.05, b + HOLD) for a, b in bursts]
+win += [(t - PRE_TAP, t + 0.15) for t, *_ in taps]
+win += [(t - PRE_TAP, t + 1.2) for t, *_ in swipes]
+win.append((t1 - 2.0, t1))                              # land on the last screen
+```
+
+You never see the cuts, because they fall inside still screens where the frames on both sides are the same picture. The meal prep take went from 63.7 seconds to 48.3.
+
+One catch. The test log and the video do not share a clock. The script corrects with a fixed offset, which is close enough to keep a window around a tap. When I filmed close-ups with the same setup a day later, the lag was 1.7 seconds on three takes and 1.25 on the fourth. For an exact cut point, look at the frames.
+
+## Step 4: Put it in the real iPhone bezel
+
+Apple publishes its device bezels at developer.apple.com/design/resources. The iPhone 17 Pro one has a screen opening of 1206 by 2622 pixels, which is exactly the size the simulator records at. So the footage drops into the frame pixel for pixel, with no scaling and no guessing where the corners are.
+
+The meal prep video was put together in Remotion: the kept segments laid end to end, the bezel on top, a soft shadow, and a circle wherever the log says a tap landed. The background is plain white, so the video sits on a white slide without a visible edge.
+
+```tsx
+<div style={{
+  position: "absolute", left: SCREEN_X, top: SCREEN_Y, width: SCREEN_W, height: SCREEN_H,
+  borderRadius: SCREEN_R, overflow: "hidden", background: "#000",
+}}>
+  <Footage take={t} />
+  {t.taps.map((p, i) => <Touch key={i} {...p} />)}
+  {t.swipes.map((s, i) => <Swipe key={`s${i}`} {...s} />)}
+</div>
+<Img src={staticFile("demo/iphone-17-pro-silver.png")}
+     style={{ position: "absolute", inset: 0, width: BEZEL_W, height: BEZEL_H }} />
+```
+
+<PhoneDemo demo="dishy-mealprep" />
+
+The onboarding did not make it through that route. Its take is longer, and the Remotion render crashed on it. So on stage the onboarding was the recording itself, trimmed and scaled down, clipped to the screen shape with CSS and laid under the same bezel PNG. That is also the version at the top of this post, which is why it has no tap circles.
+
+Scaling down was not optional either. The full resolution 1206 by 2622 H.264 file would not play in the browser. At 604 pixels wide it did.
+
+## Step 5: A chapter list that follows the video
+
+Next to each phone is a list of what the video is about to show. The part that is playing is bold, the parts before it read as done, and a line under the current one fills up as that part runs. It let me talk along with the demo without clicking anything.
+
+Each chapter is a list item with a start time, and a few lines work out which one is current:
+
+```js
+const paint = () => {
+  const t = video.currentTime;
+  let current = 0;
+  items.forEach((li, i) => { if (t >= Number(li.dataset.at)) current = i; });
+  const from = Number(items[current].dataset.at);
+  const to = items[current + 1] ? Number(items[current + 1].dataset.at) : (video.duration || from + 1);
+  items.forEach((li, i) => {
+    li.classList.toggle('on', i === current);
+    li.classList.toggle('done', i < current);
+    li.style.setProperty('--p', i === current ? Math.min(1, (t - from) / (to - from)) : 0);
+  });
+};
+```
+
+The video's `timeupdate` event only fires about four times a second, which makes the line jump. While the video plays, a `requestAnimationFrame` loop repaints it every frame instead. The phones on this page run the same logic, and you can click a chapter to jump to it.
+
+## Step 6: Play it, do not demo it
+
+Both demos were video files. Nothing on stage depended on a simulator, a build or the network. The live app was open in a simulator next to the deck, for questions afterwards.
+
+And because each take is a test, a UI change costs a re-record: run the script, cut, copy two mp4 files into the deck.
+
+## Want the setup?
+
+I packed this into a kit. It is a Claude Code skill that knows the order of the steps and the gotchas above, plus templates for the UI test, the recording script, the automatic cut and a standalone page with the phone and the chapter list. Apple's bezel is not in it, you download that from Apple.
+
+<KitSignup />
