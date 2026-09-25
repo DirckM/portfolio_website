@@ -13,7 +13,16 @@
 
 import { escapeHtml } from '@/lib/escape-html';
 import { T, FONT, SERIF, SITE, IMG } from './theme';
-import { renderSection, type Section, type TrackCtx } from './blocks';
+import {
+  renderSection,
+  DOWNLOAD_CSS,
+  ISSUE_CSS,
+  type Section,
+  type ShowcaseItem,
+  type TrackCtx,
+  trackedHref,
+  slugify,
+} from './blocks';
 
 export interface Issue {
   number: number;
@@ -25,7 +34,17 @@ export interface Issue {
   /** One word inside the headline set in the serif italic. Optional. */
   headlineEmphasis?: string;
   standfirst: string;
+  /**
+   * The issue's own hero graphic, made for that month by scripts/make-cover.mjs.
+   * 1200px wide, shown at 600. Required: an issue without one is a template.
+   */
+  cover: { image: string; alt: string };
   sections: Section[];
+  /**
+   * "Made this month". Always rendered after the items and before the
+   * sign-off, by this file, so the drafter cannot move or drop it.
+   */
+  showcase: { title: string; items: ShowcaseItem[] };
   /** Filename in /public/email for the sign-off portrait. */
   signoffImage?: string;
   signoff: string;
@@ -63,6 +82,7 @@ export function renderIssue(issue: Issue): string {
     /* Two-column rows collapse to stacked on a phone. Without this the phone
        mockup and its copy squeeze into 150px each and both become unreadable. */
     .col{display:block!important;width:100%!important;padding:0 0 18px 0!important}
+    .hero{width:100%!important;height:auto!important}${DOWNLOAD_CSS}${ISSUE_CSS}
   }
 </style></head><body style="margin:0;padding:0;background:${T.page};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(issue.standfirst)}${'&#8203;&nbsp;'.repeat(60)}</div>
@@ -87,12 +107,19 @@ export function renderIssue(issue: Issue): string {
     </tr></table>
   </td></tr>
 
-  <tr><td class="p" style="padding:24px 34px 26px;">
-    <h1 class="big" style="margin:0 0 12px;font-family:${FONT};font-size:37px;line-height:1.08;letter-spacing:-.038em;color:${T.ink};font-weight:800;">${headlineHtml(issue)}</h1>
-    <p style="margin:0;font-family:${FONT};font-size:16px;line-height:1.65;color:${T.body};">${escapeHtml(issue.standfirst)}</p>
+  <tr><td style="padding:22px 0 0;line-height:0;font-size:0;">
+    <img class="hero" src="${IMG}/${issue.cover.image}" width="600" alt="${escapeHtml(issue.cover.alt)}"
+         style="display:block;width:600px;max-width:100%;height:auto;border:0;">
+  </td></tr>
+
+  <tr><td class="p" style="padding:30px 34px 34px;">
+    <h1 class="big" style="margin:0 0 14px;font-family:${FONT};font-size:42px;line-height:1.04;letter-spacing:-.042em;color:${T.ink};font-weight:800;">${headlineHtml(issue)}</h1>
+    <p style="margin:0;font-family:${FONT};font-size:17px;line-height:1.62;color:${T.body};">${escapeHtml(issue.standfirst)}</p>
   </td></tr>
 
   ${issue.sections.map(s => renderSection(s, ctx)).join('')}
+
+  ${renderSection({ kind: 'showcase', ...issue.showcase }, ctx)}
 
   <tr><td class="p" style="padding:0 34px 36px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${T.rule};">
@@ -135,17 +162,36 @@ export function renderIssueText(issue: Issue): string {
     issue.standfirst,
     '',
   ];
+  const ctx: TrackCtx = { campaign: issue.slug };
   for (const s of issue.sections) {
     if (s.kind === 'quote') {
       lines.push(`"${s.text}"`, '');
       continue;
     }
+    if (s.kind === 'showcase') continue; // rendered once, below
     lines.push(s.kicker.toUpperCase(), s.title, s.body);
+    if (s.kind === 'download') lines.push(s.meta);
     // Only print a URL when there is a real destination. The HTML version drops
-    // the button in that case, and the text version has to agree with it.
-    if (s.link) lines.push(s.link.href);
+    // the button in that case, and the text version has to agree with it. The
+    // same UTM rule applies, so a click from the text part is attributed too.
+    if (s.link) {
+      lines.push(
+        s.kind === 'download'
+          ? s.link.href
+          : trackedHref(s.link.href, ctx, slugify(s.title))
+      );
+    }
     lines.push('');
   }
+  lines.push('MADE THIS MONTH', issue.showcase.title, '');
+  for (const it of issue.showcase.items) {
+    lines.push(`- ${it.caption}`);
+    if (it.link)
+      lines.push(
+        `  ${trackedHref(it.link.href, ctx, `showcase-${slugify(it.caption)}`)}`
+      );
+  }
+  lines.push('');
   lines.push(
     issue.signoff,
     'Dirck',

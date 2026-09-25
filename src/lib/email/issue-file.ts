@@ -1,0 +1,140 @@
+/**
+ * The shape of one newsletter issue on disk, and the one function that turns
+ * it into what renderIssue() draws.
+ *
+ * An issue is a typed DATA file in src/content/newsletter/<slug>.ts. It never
+ * contains HTML: the design lives in blocks.ts and issue.ts, and the file only
+ * says what goes in it. Where things go is decided here, by rule:
+ *
+ *   cover -> headline -> items (shaped by layout(), kit right under the lead)
+ *         -> "Made this month" showcase -> sign-off
+ *
+ * The send script, the preview route and the tests all go through toIssue(),
+ * so what Dirck approves in the preview is what a subscriber receives.
+ */
+
+import type { Kit } from '@/lib/kits';
+import {
+  layout,
+  type Item,
+  type QuoteBreak,
+  type ShowcaseItem,
+  type Section,
+} from './blocks';
+import type { Issue } from './issue';
+import { kitSection } from './kit';
+
+/**
+ * draft: being written. approved: Dirck has read the preview and said send.
+ * sent: gone out. The send script refuses anything that is not 'approved',
+ * so flipping this line is the approval, and it lands in git with his name.
+ */
+export type IssueStatus = 'draft' | 'approved' | 'sent';
+
+export interface IssueFile {
+  number: number;
+  /** e.g. '2026-09'. The utm_campaign, the idempotency key, the table key. */
+  slug: string;
+  /** e.g. 'September'. */
+  period: string;
+  subject: string;
+  status: IssueStatus;
+  headline: string;
+  /** One word from the headline, set in the serif italic. */
+  headlineEmphasis?: string;
+  standfirst: string;
+  /** Made per issue with scripts/make-cover.mjs. 1200px wide, in /public/email. */
+  cover: { image: string; alt: string };
+  /** The first item is the lead. layout() decides every item's shape. */
+  items: Item[];
+  /**
+   * A kit handed to the whole list, placed directly under the lead item it
+   * belongs to. Subscribers already confirmed, so they get the file, not a form.
+   */
+  kit?: { kit: Kit; kicker: string; title: string; body: string };
+  quote?: QuoteBreak;
+  /** "Made this month": 2 to 4 things Dirck designed. Always rendered. */
+  showcase: { title: string; items: ShowcaseItem[] };
+  signoff: string;
+  signoffImage?: string;
+}
+
+/**
+ * Everything a reader sees, as one list of strings, for the writing rules.
+ */
+export function issueProse(f: IssueFile): string[] {
+  return [
+    f.subject,
+    f.headline,
+    f.standfirst,
+    f.signoff,
+    f.cover.alt,
+    f.showcase.title,
+    ...f.items.flatMap(i => [
+      i.kicker,
+      i.title,
+      i.body,
+      i.alt,
+      i.link?.cta ?? '',
+    ]),
+    ...(f.kit ? [f.kit.kicker, f.kit.title, f.kit.body] : []),
+    ...(f.quote ? [f.quote.text, f.quote.alt] : []),
+    ...f.showcase.items.flatMap(s => [s.caption, s.alt]),
+  ].filter(Boolean);
+}
+
+/**
+ * The rules an issue file has to meet before anything renders it. Returned as
+ * a list of problems rather than thrown one at a time, so a draft shows every
+ * issue at once.
+ *
+ * The prose rules are Dirck's house style (no semicolons, no em dashes). They
+ * are checked here because a style note does not stop a drafter, and this
+ * runs in the test, in the preview and in the send script.
+ */
+export function validateIssueFile(f: IssueFile): string[] {
+  const errors: string[] = [];
+  if (!/^\d{4}-\d{2}$/.test(f.slug))
+    errors.push(`slug "${f.slug}" is not YYYY-MM`);
+  if (!Number.isInteger(f.number) || f.number < 1)
+    errors.push('number must be a positive integer');
+  if (!f.subject.trim()) errors.push('subject is empty');
+  if (!f.cover?.image || !f.cover?.alt)
+    errors.push('cover needs an image and alt text');
+  if (f.items.length < 1) errors.push('an issue needs at least one item');
+  const n = f.showcase.items.length;
+  if (n < 2 || n > 4) errors.push(`showcase needs 2 to 4 items, has ${n}`);
+  if (f.headlineEmphasis && !f.headline.includes(f.headlineEmphasis)) {
+    errors.push(
+      `headlineEmphasis "${f.headlineEmphasis}" is not in the headline`
+    );
+  }
+  for (const t of issueProse(f)) {
+    if (t.includes(';')) errors.push(`semicolon in: "${t.slice(0, 60)}"`);
+    if (/[—–]/.test(t)) errors.push(`em or en dash in: "${t.slice(0, 60)}"`);
+  }
+  return errors;
+}
+
+/** The file plus a per-subscriber unsubscribe token, ready for renderIssue(). */
+export function toIssue(f: IssueFile, unsubscribeToken: string): Issue {
+  const sections: Section[] = layout(f.items, f.quote);
+  if (f.kit) {
+    const { kit, ...copy } = f.kit;
+    sections.splice(1, 0, kitSection(kit, copy));
+  }
+  return {
+    number: f.number,
+    slug: f.slug,
+    period: f.period,
+    headline: f.headline,
+    headlineEmphasis: f.headlineEmphasis,
+    standfirst: f.standfirst,
+    cover: f.cover,
+    sections,
+    showcase: f.showcase,
+    signoff: f.signoff,
+    signoffImage: f.signoffImage,
+    unsubscribeToken,
+  };
+}

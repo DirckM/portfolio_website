@@ -58,7 +58,7 @@ export function trackedHref(
 }
 
 /** A stable, readable utm_content from a section title. */
-function slugify(t: string): string {
+export function slugify(t: string): string {
   return t
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -88,6 +88,24 @@ interface Base {
   image: string;
   alt: string;
   link?: Link;
+  /**
+   * Position in the issue, printed in front of the kicker as "01". Assigned by
+   * layout(), never by the drafter, so the numbers cannot skip or repeat.
+   */
+  n?: number;
+}
+
+/**
+ * One tile in the "Made this month" grid. A thing Dirck designed, shown as an
+ * image or a GIF, with one line saying what it is. The link is optional for the
+ * same reason as everywhere else: no page, no link.
+ */
+export interface ShowcaseItem {
+  /** Filename in /public/email. A GIF loops, a JPEG sits still. */
+  image: string;
+  alt: string;
+  caption: string;
+  link?: { href: string };
 }
 
 export type Section =
@@ -95,11 +113,28 @@ export type Section =
   | ({ kind: 'tinted' } & Base)
   | ({ kind: 'device'; side: 'left' | 'right' } & Base)
   | ({ kind: 'inline' } & Base)
+  | ({ kind: 'reel' } & Base)
   | { kind: 'quote'; text: string; image: string; alt: string }
-  | ({ kind: 'download'; link: Link; meta: string } & Omit<Base, 'link'>);
+  | ({ kind: 'download'; link: Link; meta: string } & Omit<Base, 'link'>)
+  | { kind: 'showcase'; title: string; items: ShowcaseItem[] };
 
 const kicker = (t: string) =>
   `<div style="font-family:${FONT};font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:${T.orangeDeep};font-weight:700;margin-bottom:10px;">${escapeHtml(t)}</div>`;
+
+/**
+ * The issue's kicker: a big orange number, a short orange rule, then the
+ * label. Heavier than the plain kicker on purpose. It is what gives a long
+ * email its rhythm, the way chapter numbers do in a magazine, and it only
+ * appears in issues, so the welcome and confirm emails keep the quiet one.
+ */
+const numbered = (t: string, n: number | undefined, onDark = false) =>
+  n === undefined
+    ? kicker(t)
+    : `<div style="font-family:${FONT};margin-bottom:12px;line-height:1;">
+        <span style="font-size:22px;font-weight:800;letter-spacing:-.03em;color:${T.orange};vertical-align:middle;">${String(n).padStart(2, '0')}</span>
+        <span style="display:inline-block;width:22px;height:2px;background:${T.orange};vertical-align:middle;margin:0 9px 0 8px;"></span>
+        <span style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:${onDark ? '#ffffff' : T.ink};vertical-align:middle;">${escapeHtml(t)}</span>
+      </div>`;
 
 const h2 = (t: string) =>
   `<h2 style="margin:0 0 10px;font-family:${FONT};font-size:23px;line-height:1.24;letter-spacing:-.025em;color:${T.ink};font-weight:700;">${escapeHtml(t)}</h2>`;
@@ -108,7 +143,11 @@ const h2 = (t: string) =>
 const para = (t: string, hasButton: boolean) =>
   `<p style="margin:0 0 ${hasButton ? 18 : 0}px;font-family:${FONT};font-size:15px;line-height:1.65;color:${T.body};">${escapeHtml(t)}</p>`;
 
-const pill = (link: Link | undefined, ctx: TrackCtx | undefined, content: string) =>
+const pill = (
+  link: Link | undefined,
+  ctx: TrackCtx | undefined,
+  content: string
+) =>
   link
     ? `<a href="${escapeHtml(trackedHref(link.href, ctx, content))}" style="display:inline-block;background:${T.ink};color:#fff;font-family:${FONT};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;text-decoration:none;padding:12px 22px;border-radius:99px;">${escapeHtml(link.cta)}</a>`
     : '';
@@ -119,10 +158,13 @@ const maybeLink = (
   link: Link | undefined,
   ctx: TrackCtx | undefined,
   content: string
-) => (link ? `<a href="${escapeHtml(trackedHref(link.href, ctx, content))}">${html}</a>` : html);
+) =>
+  link
+    ? `<a href="${escapeHtml(trackedHref(link.href, ctx, content))}">${html}</a>`
+    : html;
 
 const copy = (s: Base, ctx?: TrackCtx) =>
-  `${kicker(s.kicker)}${h2(s.title)}${para(s.body, !!s.link)}${pill(s.link, ctx, slugify(s.title))}`;
+  `${numbered(s.kicker, s.n)}${h2(s.title)}${para(s.body, !!s.link)}${pill(s.link, ctx, slugify(s.title))}`;
 
 /**
  * The house primary button: orange, square-ish, the one the welcome email uses
@@ -148,6 +190,19 @@ export const DOWNLOAD_CSS = `
     .dl-img{display:block!important;width:auto!important;padding:22px 20px 0!important}
     .dl-copy{display:block!important;width:auto!important;padding:18px 20px 22px!important}`;
 
+/**
+ * Mobile rules for the shapes only an issue uses: the reel card and the
+ * showcase grid. Same reason as DOWNLOAD_CSS for having their own classes: the
+ * generic `.col` rule zeroes padding, which is wrong inside a coloured card.
+ */
+export const ISSUE_CSS = `
+    .reel-copy{display:block!important;width:auto!important;padding:26px 22px 6px!important}
+    .reel-media{display:block!important;width:auto!important;padding:16px 22px 26px!important}
+    .reel-img{width:100%!important;max-width:220px!important;height:auto!important}
+    .sc-cell{display:block!important;width:100%!important;padding:0 0 22px 0!important}
+    .sc-gap{display:none!important}
+    .sc-img{width:100%!important;height:auto!important}`;
+
 export function renderSection(s: Section, ctx?: TrackCtx): string {
   switch (s.kind) {
     // Something the reader asked for, delivered. Tinted so it reads as its own
@@ -172,15 +227,18 @@ export function renderSection(s: Section, ctx?: TrackCtx): string {
 
     case 'browser': {
       const tag = slugify(s.title);
-      const bar = s.link?.url ?? s.link?.href.replace(/^https?:\/\//, '') ?? 'dirckmulder.com';
+      const bar =
+        s.link?.url ??
+        s.link?.href.replace(/^https?:\/\//, '') ??
+        'dirckmulder.com';
       const img = `<img src="${IMG}/${s.image}" width="100%" alt="${escapeHtml(s.alt)}" style="display:block;width:100%;border:0;">`;
       return `
 <tr><td class="p" style="padding:0 34px 14px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
          style="background:#fbfaf8;border:1px solid ${T.rule};border-radius:14px;overflow:hidden;">
-    <tr><td style="padding:11px 14px;border-bottom:1px solid ${T.rule};font-family:${FONT};font-size:11px;color:${T.mute};">
+    <tr><td style="padding:11px 14px;border-bottom:1px solid ${T.rule};font-family:${FONT};font-size:11px;color:${T.mute};overflow:hidden;max-width:1px;white-space:nowrap;text-overflow:ellipsis;">
       <span style="color:#e4e2dd;letter-spacing:2px;">&#9679;&#9679;&#9679;</span>
-      <span style="margin-left:10px;">${escapeHtml(bar)}</span>
+      <span style="margin-left:10px;white-space:nowrap;">${escapeHtml(bar)}</span>
     </td></tr>
     <tr><td style="line-height:0;font-size:0;">${maybeLink(img, s.link, ctx, tag)}</td></tr>
   </table>
@@ -195,7 +253,7 @@ export function renderSection(s: Section, ctx?: TrackCtx): string {
 <tr><td style="padding:0 0 34px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${T.tint};">
     <tr><td class="p" style="padding:30px 34px 18px;">${copy(s, ctx)}</td></tr>
-    <tr><td style="padding:22px 34px 30px;line-height:0;font-size:0;">${maybeLink(img, s.link, ctx, tag)}</td></tr>
+    <tr><td class="p" style="padding:22px 34px 30px;line-height:0;font-size:0;">${maybeLink(img, s.link, ctx, tag)}</td></tr>
   </table>
 </td></tr>`;
     }
@@ -210,6 +268,71 @@ export function renderSection(s: Section, ctx?: TrackCtx): string {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
     ${s.side === 'left' ? media + words : words + media}
   </tr></table>
+</td></tr>`;
+    }
+
+    // A video that lives on Instagram. Email cannot play video, so the cover
+    // frame carries a baked-in play mark (the welcome email's reel cards do the
+    // same), and the whole card links out. The one dark block in an issue: a
+    // reel is the loudest thing in it and the contrast says so.
+    case 'reel': {
+      const tag = slugify(s.title);
+      const img = `<img class="reel-img" src="${IMG}/${s.image}" width="200" alt="${escapeHtml(s.alt)}" style="display:block;width:200px;height:auto;border-radius:12px;border:0;">`;
+      const button = s.link
+        ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#ffffff;border-radius:99px;">
+            <a href="${escapeHtml(trackedHref(s.link.href, ctx, tag))}" style="display:inline-block;padding:11px 20px 11px 16px;font-family:${FONT};font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${T.ink};text-decoration:none;">
+              <img src="${IMG}/icon-instagram.png" width="16" height="16" alt="" style="display:inline-block;width:16px;height:16px;border:0;vertical-align:-3px;margin-right:8px;">${escapeHtml(s.link.cta)}</a>
+          </td></tr></table>`
+        : '';
+      return `
+<tr><td class="p" style="padding:0 34px 34px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${T.ink};border-radius:18px;">
+    <tr>
+      <td class="reel-copy" valign="middle" style="padding:30px 12px 30px 28px;font-family:${FONT};">
+        ${numbered(s.kicker, s.n, true)}
+        <h2 style="margin:0 0 10px;font-family:${FONT};font-size:23px;line-height:1.24;letter-spacing:-.025em;color:#ffffff;font-weight:700;">${escapeHtml(s.title)}</h2>
+        <p style="margin:0 0 ${s.link ? 20 : 0}px;font-family:${FONT};font-size:15px;line-height:1.65;color:#c9c9ce;">${escapeHtml(s.body)}</p>
+        ${button}
+      </td>
+      <td class="reel-media" width="200" valign="middle" style="padding:26px 26px 26px 0;">${maybeLink(img, s.link, ctx, tag)}</td>
+    </tr>
+  </table>
+</td></tr>`;
+    }
+
+    // "Made this month": the design work, as a gallery. Two columns on a
+    // desktop client, one on a phone. Placed by issue.ts, always at the end of
+    // the items, never by the drafter.
+    case 'showcase': {
+      const cell = (it: ShowcaseItem | undefined) => {
+        if (!it)
+          return `<td class="sc-cell" width="256" style="font-size:0;line-height:0;">&nbsp;</td>`;
+        const img = `<img class="sc-img" src="${IMG}/${it.image}" width="256" alt="${escapeHtml(it.alt)}" style="display:block;width:256px;height:auto;border-radius:14px;border:1px solid ${T.rule};background:${T.tint};">`;
+        const href = it.link
+          ? trackedHref(it.link.href, ctx, `showcase-${slugify(it.caption)}`)
+          : null;
+        return `<td class="sc-cell" width="256" valign="top" style="padding:0 0 24px 0;">
+          ${href ? `<a href="${escapeHtml(href)}">${img}</a>` : img}
+          <div style="margin-top:11px;font-family:${FONT};font-size:13px;line-height:1.5;color:${T.body};">${escapeHtml(it.caption)}</div>
+        </td>`;
+      };
+      const rows: string[] = [];
+      for (let i = 0; i < s.items.length; i += 2) {
+        rows.push(
+          `<tr>${cell(s.items[i])}<td class="sc-gap" width="20" style="font-size:0;line-height:0;">&nbsp;</td>${cell(s.items[i + 1])}</tr>`
+        );
+      }
+      return `
+<tr><td class="p" style="padding:4px 34px 10px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:3px solid ${T.ink};">
+    <tr><td style="padding:20px 0 22px;font-family:${FONT};">
+      <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:${T.orangeDeep};margin-bottom:8px;">Made this month</div>
+      <h2 style="margin:0;font-family:${FONT};font-size:28px;line-height:1.15;letter-spacing:-.03em;color:${T.ink};font-weight:800;">${escapeHtml(s.title)}</h2>
+    </td></tr>
+    <tr><td>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows.join('')}</table>
+    </td></tr>
+  </table>
 </td></tr>`;
     }
 
@@ -236,7 +359,7 @@ export function renderSection(s: Section, ctx?: TrackCtx): string {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
     <td width="112" valign="middle" style="padding-right:18px;">${maybeLink(img, s.link, ctx, tag)}</td>
     <td valign="middle" style="font-family:${FONT};">
-      ${kicker(s.kicker)}
+      ${numbered(s.kicker, s.n)}
       <div style="font-size:16px;line-height:1.3;color:${T.ink};font-weight:700;margin-bottom:6px;">${escapeHtml(s.title)}</div>
       <div style="font-size:14px;line-height:1.55;color:${T.body};">${escapeHtml(s.body)}</div>
     </td>
@@ -246,9 +369,12 @@ export function renderSection(s: Section, ctx?: TrackCtx): string {
   }
 }
 
-export interface Item extends Base {
-  /** web renders in browser chrome, app renders in a phone, note is a quiet row. */
-  type: 'web' | 'app' | 'note';
+export interface Item extends Omit<Base, 'n'> {
+  /**
+   * web renders in browser chrome, app renders in a phone, reel renders as the
+   * dark video card, note is a quiet row.
+   */
+  type: 'web' | 'app' | 'reel' | 'note';
 }
 
 export interface QuoteBreak {
@@ -272,12 +398,20 @@ export interface QuoteBreak {
 export function layout(items: Item[], quote?: QuoteBreak): Section[] {
   let web = 0;
   let app = 0;
-  const shaped = items.map(({ type, ...rest }): Section => {
+  const shaped = items.map(({ type, ...base }, i): Section => {
+    const rest = { ...base, n: i + 1 };
+    if (type === 'reel') return { kind: 'reel', ...rest };
     if (type === 'web') {
-      return web++ % 2 === 0 ? { kind: 'browser', ...rest } : { kind: 'tinted', ...rest };
+      return web++ % 2 === 0
+        ? { kind: 'browser', ...rest }
+        : { kind: 'tinted', ...rest };
     }
     if (type === 'app') {
-      return { kind: 'device', side: app++ % 2 === 0 ? 'left' : 'right', ...rest };
+      return {
+        kind: 'device',
+        side: app++ % 2 === 0 ? 'left' : 'right',
+        ...rest,
+      };
     }
     return { kind: 'inline', ...rest };
   });
@@ -288,5 +422,9 @@ export function layout(items: Item[], quote?: QuoteBreak): Section[] {
   // wrote" and "things I built".
   const seam = items.findIndex(i => i.type !== 'web');
   const at = seam <= 0 ? Math.ceil(shaped.length / 2) : seam;
-  return [...shaped.slice(0, at), { kind: 'quote', ...quote }, ...shaped.slice(at)];
+  return [
+    ...shaped.slice(0, at),
+    { kind: 'quote', ...quote },
+    ...shaped.slice(at),
+  ];
 }

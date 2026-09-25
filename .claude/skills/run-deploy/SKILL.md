@@ -38,7 +38,21 @@ pnpm format          # prettier --write .
 pnpm format:check    # prettier --check .
 pnpm type-check      # tsc --noEmit
 ```
-No unit-test framework is configured.
+No unit-test framework is configured. Script tests run on Node's built-in runner via tsx:
+```bash
+pnpm test:send-issue   # newsletter send logic, fake database and fake Resend, no network
+```
+
+## Newsletter issues
+```bash
+pnpm render-issue <slug> /tmp/issue.html        # render an issue to a local file
+pnpm send-issue <slug>                          # dry run: count, subject, preview file
+pnpm send-issue <slug> --test <address>         # one [TEST] copy
+pnpm send-issue <slug> --send                   # the list. Dirck only, needs status 'approved'
+node scripts/make-cover.mjs --number <n> --month <Month> --screen <video> --at <s> --out public/email/cover-<slug>.jpg
+```
+Full flow in the `newsletter-ideas` skill. The send needs the `portfolio.issue_sends`
+table from `supabase/migrations/20260925_0001_issue_sends.sql`.
 
 ## Blog content scripts
 ```bash
