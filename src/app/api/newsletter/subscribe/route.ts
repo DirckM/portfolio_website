@@ -6,7 +6,10 @@ import {
   CONFIRM_SUBJECT,
   alreadySubject,
 } from '@/lib/email/confirm';
-import { kitForSource, type Kit } from '@/lib/kits';
+import type { Kit } from '@/lib/kits';
+import { giveawayForSource } from '@/lib/giveaways';
+import { REF_RE } from '@/lib/designs';
+import { designsDb } from '@/lib/designs-db';
 import { dbConfigured } from '@/lib/db';
 import {
   normaliseEmail,
@@ -40,6 +43,8 @@ export async function POST(request: Request) {
     consent?: boolean;
     website?: string;
     elapsed?: number;
+    /** A referral code from a shared /designs link. Stored only if it exists. */
+    ref?: string;
   };
   try {
     body = await request.json();
@@ -72,10 +77,19 @@ export async function POST(request: Request) {
   }
 
   const source = (body.source ?? 'unknown').slice(0, 80);
+  // Looked up, never trusted: an unknown or malformed code is dropped, so the
+  // column only ever holds codes that belong to a real subscriber.
+  const ref =
+    typeof body.ref === 'string' &&
+    REF_RE.test(body.ref) &&
+    (await designsDb.referralCodeExists(body.ref))
+      ? body.ref
+      : null;
   const result = await startSignup(email, {
     source,
     ip,
     userAgent: request.headers.get('user-agent'),
+    referredBy: ref,
   });
 
   if (!result.ok) {
@@ -85,7 +99,12 @@ export async function POST(request: Request) {
 
   const apiKey = process.env.RESEND_API_KEY;
   if (apiKey && result.data.action !== 'nothing') {
-    await sendSignupEmail(apiKey, email, result.data, kitForSource(source));
+    await sendSignupEmail(
+      apiKey,
+      email,
+      result.data,
+      giveawayForSource(source)
+    );
   }
 
   // Same body whether or not a kit was asked for and whichever email went out.

@@ -22,6 +22,6 @@ nothing here goes into `blog-queue.md`.
 
 ## Live
 
-- 2026-09-25 · asked by: someone after the Dishy talk · "how did you make the slides, and how did the app walkthrough go so smooth?" · project: dishy · material: `projects-hub/decks/dishy/dishy.html` (+ `media/`), `projects-hub/projects/dishy/lessons.md` (2026-09-24 entry), `dishy` repo `DishyUITests/DemoRecording.swift` · post: how-i-made-the-dishy-demo-videos
+- 2026-09-25 · asked by: someone at the Mollie build night in Amsterdam, after the Dishy talk · "how did you make the slides, and how did the app walkthrough go so smooth?" · project: dishy · material: `projects-hub/decks/dishy/dishy.html` (+ `media/`), `projects-hub/projects/dishy/lessons.md` (2026-09-24 entry), `dishy` repo `DishyUITests/DemoRecording.swift` · post: how-i-made-the-dishy-demo-videos
 
 ## Sent

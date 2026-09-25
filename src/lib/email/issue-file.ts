@@ -23,6 +23,7 @@ import {
 } from './blocks';
 import type { Issue } from './issue';
 import { kitSection } from './kit';
+import { SITE } from './theme';
 
 /**
  * draft: being written. approved: Dirck has read the preview and said send.
@@ -51,10 +52,38 @@ export interface IssueFile {
    * A kit handed to the whole list, placed directly under the lead item it
    * belongs to. Subscribers already confirmed, so they get the file, not a form.
    */
-  kit?: { kit: Kit; kicker: string; title: string; body: string };
+  kit?: {
+    kit: Kit;
+    kicker: string;
+    title: string;
+    body: string;
+    badge?: string;
+  };
   quote?: QuoteBreak;
   /** "Made this month": 2 to 4 things Dirck designed. Always rendered. */
-  showcase: { title: string; items: ShowcaseItem[] };
+  showcase: {
+    title: string;
+    items: ShowcaseItem[];
+    /**
+     * Who the designs are based on. Required when they rebuild someone else's
+     * work: giving away code of another designer's shot without saying so is
+     * not OK, and "designer unknown" is a valid, honest answer.
+     */
+    credit: string;
+    /** Line above the button, e.g. that the code is free. */
+    note?: string;
+    /**
+     * The code of the showcased designs, as a zip in public/kits made by
+     * `pnpm make-showcase-zip <slug>`. Its presence adds the "Get the code"
+     * button, which opens /designs/<slug> with the reader's own token.
+     */
+    designs?: {
+      zip: string;
+      size: string;
+      /** Where each design's source lives, for the zip builder. */
+      sources: { dir: string; screen: string; name: string }[];
+    };
+  };
   signoff: string;
   signoffImage?: string;
 }
@@ -70,6 +99,8 @@ export function issueProse(f: IssueFile): string[] {
     f.signoff,
     f.cover.alt,
     f.showcase.title,
+    f.showcase.credit,
+    f.showcase.note ?? '',
     ...f.items.flatMap(i => [
       i.kicker,
       i.title,
@@ -116,8 +147,20 @@ export function validateIssueFile(f: IssueFile): string[] {
   return errors;
 }
 
-/** The file plus a per-subscriber unsubscribe token, ready for renderIssue(). */
-export function toIssue(f: IssueFile, unsubscribeToken: string): Issue {
+/** The page a showcase links to. `t` is the reader's own designs token. */
+export function designsUrl(slug: string, token?: string): string {
+  return `${SITE}/designs/${slug}${token ? `?t=${encodeURIComponent(token)}` : ''}`;
+}
+
+/**
+ * The file plus per-recipient tokens, ready for renderIssue(). The designs
+ * token is separate from the unsubscribe token: see the issue_sends migration.
+ */
+export function toIssue(
+  f: IssueFile,
+  unsubscribeToken: string,
+  designsToken?: string
+): Issue {
   const sections: Section[] = layout(f.items, f.quote);
   if (f.kit) {
     const { kit, ...copy } = f.kit;
@@ -132,7 +175,18 @@ export function toIssue(f: IssueFile, unsubscribeToken: string): Issue {
     standfirst: f.standfirst,
     cover: f.cover,
     sections,
-    showcase: f.showcase,
+    showcase: {
+      title: f.showcase.title,
+      items: f.showcase.items,
+      credit: f.showcase.credit,
+      note: f.showcase.note,
+      code: f.showcase.designs
+        ? {
+            href: designsUrl(f.slug, designsToken ?? 'preview_token_not_real'),
+            cta: 'Get the code',
+          }
+        : undefined,
+    },
     signoff: f.signoff,
     signoffImage: f.signoffImage,
     unsubscribeToken,

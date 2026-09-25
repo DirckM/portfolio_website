@@ -39,6 +39,8 @@ interface Props {
    * records they agreed to.
    */
   finePrint?: React.ReactNode;
+  /** A referral code from a shared link, passed through to the signup. */
+  refCode?: string | null;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -53,6 +55,7 @@ export default function NewsletterSignup({
   successTitle = 'Check your inbox.',
   successBody = 'I sent a confirmation link. One click and you are on the list.',
   finePrint = 'One email a month, and a one-click unsubscribe in every one.',
+  refCode = null,
 }: Props) {
   // Two forms with the same source can sit on one page, and the source used to
   // be the id, which made the labels point at the wrong input.
@@ -88,6 +91,7 @@ export default function NewsletterSignup({
           consent: true,
           website,
           elapsed: Date.now() - mountedAt.current,
+          ...(refCode ? { ref: refCode } : {}),
         }),
       });
 

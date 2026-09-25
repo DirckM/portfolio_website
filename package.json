@@ -16,7 +16,9 @@
     "type-check": "tsc --noEmit",
     "render-issue": "tsx scripts/render-issue.ts",
     "send-issue": "tsx scripts/send-issue.ts",
-    "test:send-issue": "tsx --test scripts/send-issue.test.ts"
+    "test:send-issue": "tsx --test scripts/send-issue.test.ts scripts/designs.test.ts",
+    "make-showcase-zip": "tsx scripts/make-showcase-zip.ts",
+    "designs-stats": "tsx scripts/designs-stats.ts"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

@@ -43,6 +43,8 @@ export interface SignupContext {
   referrerPath?: string | null;
   ip?: string | null;
   userAgent?: string | null;
+  /** A referral code that has already been looked up and found. */
+  referredBy?: string | null;
 }
 
 /** Append to the audit trail. Best effort: never block the user's action. */
@@ -160,6 +162,9 @@ export async function startSignup(
     consent_text: CONSENT_TEXT,
     consent_ip_hash: ctx.ip ? pseudonymise(ctx.ip) : null,
     consent_user_agent: ctx.userAgent?.slice(0, 500) ?? null,
+    // Only sent when there is one: before the migration adds the column, an
+    // insert naming it would fail every signup.
+    ...(ctx.referredBy ? { referred_by: ctx.referredBy } : {}),
   });
   if (!created.ok) return created;
 

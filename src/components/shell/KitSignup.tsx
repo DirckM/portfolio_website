@@ -21,7 +21,7 @@ export default function KitSignup({
     successTitle: 'Check your inbox.',
     successBody: 'Confirm and the kit is in the next email.',
     finePrint:
-      'Signing up also puts you on my newsletter: one email a month, with a one-click unsubscribe in every one.',
+      'Free. The only cost is signing up to my newsletter: one email a month, with a one-click unsubscribe in every one.',
   };
 
   if (placement === 'top') {
@@ -33,7 +33,7 @@ export default function KitSignup({
         <NewsletterSignup
           source='kit:app-demo:top'
           headline='Free kit'
-          blurb='The skill and templates I used for these demos. Put your email in and they come straight to you.'
+          blurb='The skill and templates I used for these demos. Free. No payment, no catch, just your email, and they come straight to you.'
           {...shared}
         />
       </div>
@@ -45,8 +45,8 @@ export default function KitSignup({
       <NewsletterSignup
         source='kit:app-demo'
         layout='panel'
-        headline='The App demo kit'
-        blurb='These are the skills I use to make these. Want them? Put your email in and they come straight to you. A Claude Code skill plus the UI test, recording script, auto-cut and phone page as templates.'
+        headline='The App demo kit, free'
+        blurb='These are the skills I use to make these. Want them? Free. No payment, no catch, just your email, and they come straight to you. A Claude Code skill plus the UI test, recording script, auto-cut and phone page as templates.'
         {...shared}
       />
     </div>

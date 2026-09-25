@@ -17,8 +17,8 @@ import {
   renderSection,
   DOWNLOAD_CSS,
   ISSUE_CSS,
+  VIDEO_CSS,
   type Section,
-  type ShowcaseItem,
   type TrackCtx,
   trackedHref,
   slugify,
@@ -36,7 +36,7 @@ export interface Issue {
   standfirst: string;
   /**
    * The issue's own hero graphic, made for that month by scripts/make-cover.mjs.
-   * 1200px wide, shown at 600. Required: an issue without one is a template.
+   * A 1200x400 banner, shown at 600x200. Required: an issue without one is a template.
    */
   cover: { image: string; alt: string };
   sections: Section[];
@@ -44,7 +44,7 @@ export interface Issue {
    * "Made this month". Always rendered after the items and before the
    * sign-off, by this file, so the drafter cannot move or drop it.
    */
-  showcase: { title: string; items: ShowcaseItem[] };
+  showcase: Omit<Extract<Section, { kind: 'showcase' }>, 'kind'>;
   /** Filename in /public/email for the sign-off portrait. */
   signoffImage?: string;
   signoff: string;
@@ -74,11 +74,17 @@ export function renderIssue(issue: Issue): string {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light"><title>dirckmulder.com</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-<style>
+<style>${VIDEO_CSS}
   @media (max-width:620px){
     .w{width:100%!important}
     .p{padding-left:20px!important;padding-right:20px!important}
-    .big{font-size:31px!important}
+    .big{font-size:28px!important;margin-bottom:10px!important}
+    /* The first screen on a phone has to show the headline and the start of
+       item 01, so everything above them is tightened here. */
+    .hd{padding-top:18px!important}
+    .cv{padding-top:14px!important}
+    .hl{padding-top:20px!important;padding-bottom:26px!important}
+    .sf{font-size:15px!important;line-height:1.55!important}
     /* Two-column rows collapse to stacked on a phone. Without this the phone
        mockup and its copy squeeze into 150px each and both become unreadable. */
     .col{display:block!important;width:100%!important;padding:0 0 18px 0!important}
@@ -93,7 +99,7 @@ export function renderIssue(issue: Issue): string {
 <table role="presentation" class="w" width="600" cellpadding="0" cellspacing="0" border="0"
        style="width:600px;max-width:600px;background:${T.card};border-radius:22px;overflow:hidden;">
 
-  <tr><td class="p" style="padding:28px 34px 0;">
+  <tr><td class="p hd" style="padding:28px 34px 0;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td width="52" valign="middle" style="padding-right:11px;">
         <img src="${IMG}/avatar-orange.jpg" width="40" height="40" alt="Dirck Mulder"
@@ -107,14 +113,14 @@ export function renderIssue(issue: Issue): string {
     </tr></table>
   </td></tr>
 
-  <tr><td style="padding:22px 0 0;line-height:0;font-size:0;">
+  <tr><td class="cv" style="padding:22px 0 0;line-height:0;font-size:0;">
     <img class="hero" src="${IMG}/${issue.cover.image}" width="600" alt="${escapeHtml(issue.cover.alt)}"
          style="display:block;width:600px;max-width:100%;height:auto;border:0;">
   </td></tr>
 
-  <tr><td class="p" style="padding:30px 34px 34px;">
+  <tr><td class="p hl" style="padding:30px 34px 34px;">
     <h1 class="big" style="margin:0 0 14px;font-family:${FONT};font-size:42px;line-height:1.04;letter-spacing:-.042em;color:${T.ink};font-weight:800;">${headlineHtml(issue)}</h1>
-    <p style="margin:0;font-family:${FONT};font-size:17px;line-height:1.62;color:${T.body};">${escapeHtml(issue.standfirst)}</p>
+    <p class="sf" style="margin:0;font-family:${FONT};font-size:17px;line-height:1.62;color:${T.body};">${escapeHtml(issue.standfirst)}</p>
   </td></tr>
 
   ${issue.sections.map(s => renderSection(s, ctx)).join('')}
@@ -192,6 +198,14 @@ export function renderIssueText(issue: Issue): string {
       );
   }
   lines.push('');
+  if (issue.showcase.code) {
+    if (issue.showcase.note) lines.push(issue.showcase.note);
+    lines.push(
+      `${issue.showcase.code.cta}: ${trackedHref(issue.showcase.code.href, ctx, 'showcase-get-the-code')}`,
+      ''
+    );
+  }
+  if (issue.showcase.credit) lines.push(issue.showcase.credit, '');
   lines.push(
     issue.signoff,
     'Dirck',

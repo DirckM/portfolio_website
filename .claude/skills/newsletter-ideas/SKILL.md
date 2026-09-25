@@ -38,21 +38,36 @@ sent, move those entries to **Sent** as `issue #N`.
 
 What every issue has:
 
-- `cover`: its own hero, 1200px wide, made with one command:
+- `cover`: its own banner, 1200x400 shown at 600x200 (short on purpose: on a phone it
+  must leave the headline and item 01 on the first screen). One command:
   `node scripts/make-cover.mjs --number <n> --month <Month> --screen <video|image> --at <sec> --out public/email/cover-<slug>.jpg`
-  (`--photo <image>` instead of `--screen` for a month without an app).
+  (`--photo <image>` instead of `--screen` for a month without an app). Check the phone is whole.
 - `items`: the first one is the lead. `type` is `web`, `app`, `reel` or `note`, and
-  `layout()` picks the shape so no two neighbours match. Numbers (01, 02) are assigned
-  by layout, not written.
-- `kit` (optional): a download handed to the whole list, placed under the lead.
-- `showcase`: "Made this month", 2 to 4 things Dirck designed. GIFs from a screen
-  recording with `scripts/make-email-gif.sh <in.mp4> public/email/made-<slug>-<name>.gif <start> <len>`.
-  Start on a frame where the screen is fully built: Outlook shows frame one only. Keep
-  each under ~1 MB. Only things he actually made.
-- A reel: cover frame with a baked play mark,
-  `PLAY_Y=<% from top, away from faces> node scripts/make-reel-thumb.mjs <video> <sec> public/email/reel-<name>.jpg`.
-  Links to Instagram carry no UTM (not our hostname).
+  `layout()` picks the shape so no two neighbours match. Numbers (01, 02) come from layout.
+- A `reel` item can carry `video: { src, poster }` (mp4 in public/email, H.264,
+  faststart, ~480 wide, under ~3 MB) and `mark` (the host's own logo as a 2x PNG,
+  fetched from their site, never redrawn). The video plays in Apple Mail, everyone else
+  gets the still with the play mark (VIDEO_CSS in blocks.ts explains the switch).
+  Thumbnail: `PLAY_Y=<% from top> node scripts/make-reel-thumb.mjs <video> <sec> public/email/reel-<name>.jpg`.
+- `kit` (optional): a download for the whole list, under the lead, with a `badge: 'Free'`.
+- `showcase`: "Made this month", 2 to 4 things Dirck designed, plus `credit` (required:
+  who the originals are by, "unknown" is an honest answer) and `designs` for the
+  "Get the code" button.
+  - GIFs: `node scripts/make-email-gif.mjs <deterministic 60fps render.mp4> public/email/made-<slug>-<name>.gif --from <s>`.
+    20 fps with a 5 cs delay is the only rate exact both in GIF and from 60 fps (12 fps
+    gave uneven 8/9 cs delays and limped). It finds a seamless loop and also writes the
+    mp4 the /designs page plays. Never feed it a real-time screen recording.
+  - Zip: `pnpm make-showcase-zip <slug>` builds public/kits/showcase-<slug>-<hash>.zip
+    from `designs.sources`, sanitises it and writes the name and size into the issue file.
 - `status: 'draft'` until Dirck signs off the preview.
+
+## The designs page
+
+The "Get the code" button opens `/designs/<slug>?t=<designs token>`. A subscriber
+downloads directly (the token becomes an HttpOnly cookie and leaves the URL) and gets a
+Share button whose link is `/designs/<slug>?ref=<code>`, never the token. Anyone else
+gets the newsletter form (source `designs:<slug>`), and the zip arrives in the welcome
+email. Counting happens only on POSTs from clicks. Demand: `pnpm designs-stats <slug>`.
 
 Writing rules, enforced by `validateIssueFile()` (test, preview and send all run it):
 no semicolons, no em or en dashes. Also by hand: English, first person, dry and

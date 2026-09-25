@@ -40,6 +40,7 @@ const people: Recipient[] = [
 
 interface Row extends SendRow {
   hash: string;
+  designsHash?: string;
 }
 
 function fakeStore(opts: { rows?: Row[]; missing?: boolean } = {}) {
@@ -58,7 +59,7 @@ function fakeStore(opts: { rows?: Row[]; missing?: boolean } = {}) {
     async sendsFor() {
       return [...rows.values()];
     },
-    async reserve(_slug, id, hash) {
+    async reserve(_slug, id, hashes) {
       calls.push(`reserve ${id}`);
       if (rows.has(id)) return false;
       rows.set(id, {
@@ -66,16 +67,20 @@ function fakeStore(opts: { rows?: Row[]; missing?: boolean } = {}) {
         resend_id: null,
         sent_at: null,
         created_at: new Date().toISOString(),
-        hash,
+        hash: hashes.unsubscribe,
+        designsHash: hashes.designs,
       });
       return true;
     },
-    async markSent(_slug, r, resendId, hash) {
+    async markSent(_slug, r, resendId, hashes) {
       calls.push(`markSent ${r.id}`);
       const row = rows.get(r.id)!;
       row.sent_at = new Date().toISOString();
       if (resendId) row.resend_id = resendId;
-      if (hash) row.hash = hash;
+      if (hashes) {
+        row.hash = hashes.unsubscribe;
+        row.designsHash = hashes.designs;
+      }
     },
     async release(_slug, id) {
       calls.push(`release ${id}`);
@@ -325,6 +330,19 @@ test('--send: reserves first, one-click headers, per-person token whose hash is 
     assert.ok(
       e.html.includes(encodeURIComponent(token)),
       'footer link carries the same token'
+    );
+    const designsToken = decodeURIComponent(
+      /\/designs\/2026-09\?t=([^&"]+)/.exec(e.html)![1]
+    );
+    assert.equal(
+      rows.get(r.id)!.designsHash,
+      sha256hex(designsToken),
+      'stored designs hash matches the button'
+    );
+    assert.notEqual(
+      designsToken,
+      token,
+      'designs token is not the unsubscribe token'
     );
     assert.ok(e.text.includes(token), 'text part carries it too');
     assert.ok(e.text.length > 500, 'text part is a real alternative');

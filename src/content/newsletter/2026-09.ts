@@ -3,12 +3,15 @@
  *
  * Sources for every claim, so a later edit can be checked against them:
  * - The Dishy post: src/content/blog/how-i-made-the-dishy-demo-videos.mdx
- * - The talk: projects-hub/projects/dishy/lessons.md, 2026-09-24 entry.
- *   Dishy is not in the App Store, so it is "building", never "launched".
- * - The Mollie reel: its caption, posted 2026-09-25 by @dirckmulder.
+ * - The Mollie night: the reel's caption (posted 2026-09-25 by @dirckmulder),
+ *   and Dirck confirmed on 2026-09-25 that the Dishy talk was at that night
+ *   and that is where the question was asked.
+ * - Mollie's mark: the header logo SVG from mollie.com, rendered to PNG.
  * - The progress bar: src/content/blog/scroll-progress-css.mdx
  * - The showcase: mobile-designs remakes 41, 47 (2026-09-23) and
- *   mobile-designs-mood-jobs 48, 49 (2026-09-25), rendered from video/out/.
+ *   mobile-designs-mood-jobs 48, 49 (2026-09-25). All four rebuild screens
+ *   from Dirck's Pinterest board. Only 47 has a traceable pin, and it names no
+ *   designer (projects-hub/brand/social/x-favourites-mobile-screens-series.md).
  */
 
 import type { IssueFile } from '@/lib/email/issue-file';
@@ -27,7 +30,7 @@ const issue: IssueFile = {
   headline: 'The demo that played itself',
   headlineEmphasis: 'itself',
   standfirst:
-    'This month I presented Dishy, the app I am building for cooking once and eating all week. Afterwards someone asked how the app walkthrough went so smoothly. I did not touch the app during the demos. Here is how, plus the kit I packed it into.',
+    'This month I presented Dishy at a Mollie build night in Amsterdam. Dishy is the app I am building for cooking once and eating all week. Someone there asked how the app walkthrough went so smoothly. I did not touch the app during the demos. Here is how, plus the kit I packed it into.',
 
   cover: {
     image: 'cover-2026-09.jpg',
@@ -50,23 +53,22 @@ const issue: IssueFile = {
     },
     {
       type: 'reel',
-      kicker: 'Reel',
+      kicker: 'The night',
       title: 'A build night at Mollie',
-      body: 'I spent an evening at Mollie’s headquarters in Amsterdam, at a build night put together with the help of day42. It was a super fun evening and I would love to come back. If you are anywhere around Amsterdam, let me know.',
+      body: 'A build night at Mollie’s headquarters in Amsterdam, put together with the help of day42. It was a super fun evening and I would love to come back. If you are anywhere around Amsterdam, let me know.',
       image: 'reel-mollie.jpg',
       alt: 'Dirck waving in the Mollie office, with people working at the tables behind him',
       link: {
         href: 'https://www.instagram.com/reel/DdtFlFtIaHf/',
         cta: 'Watch the reel',
       },
-    },
-    {
-      type: 'app',
-      kicker: 'The talk',
-      title: 'Four slides and two videos',
-      body: 'The Dishy deck was a title, the onboarding demo, a fridge and meal prep demo, and a thank you. Both demos were video files, so nothing on stage depended on a simulator or the network. The real app sat in a simulator next to the deck, for questions. Dishy is not in the App Store yet. I am still building it.',
-      image: 'dishy-mealprep-phone.jpg',
-      alt: 'Dishy’s week screen: a budget ring, the days of the week and tonight’s prep',
+      video: { src: 'reel-mollie.mp4', poster: 'reel-mollie-poster.jpg' },
+      mark: {
+        image: 'logo-mollie-white.png',
+        alt: 'Mollie',
+        width: 66,
+        height: 20,
+      },
     },
     {
       type: 'web',
@@ -85,12 +87,42 @@ const issue: IssueFile = {
   kit: {
     kit: appDemoKit,
     kicker: 'For subscribers',
+    badge: 'Free',
     title: 'The App demo kit',
-    body: `You are already on the list, so here it is without the form. ${appDemoKit.blurb}`,
+    body: `Free, and you are already on the list, so here it is without the form. ${appDemoKit.blurb}`,
   },
 
   showcase: {
     title: 'Four app screens, rebuilt in HTML and animated',
+    note: 'Free, and you are already on the list. The code for all four, one folder each, open in any browser.',
+    credit:
+      'All four are rebuilt from screens I saved on Pinterest. I could not trace who designed them, and the disc carousel is the only one with a pin (pinterest.com/pin/744360644694129716). If one of them is yours, tell me and I will put your name here.',
+    designs: {
+      zip: 'showcase-2026-09-3013ea8526.zip',
+      size: '1021 KB',
+      sources: [
+        {
+          dir: 'mobile-designs-mood-jobs',
+          screen: '48-mood-cloud',
+          name: 'mood-check-in',
+        },
+        {
+          dir: 'mobile-designs-mood-jobs',
+          screen: '49-job-swipe',
+          name: 'job-swipe-welcome',
+        },
+        {
+          dir: 'mobile-designs',
+          screen: '47-sticker-stack',
+          name: 'disc-carousel',
+        },
+        {
+          dir: 'mobile-designs',
+          screen: '41-collections-empty',
+          name: 'collections-empty-state',
+        },
+      ],
+    },
     items: [
       {
         image: 'made-2026-09-mood.gif',

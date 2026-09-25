@@ -13,7 +13,9 @@
 //            shown as a tilted print instead of a phone.
 // --ground   background colour, default the site orange from theme.ts.
 //
-// Output is 1200x680, shown at 600 in the email, so it is sharp on retina.
+// Output is a 1200x400 banner, shown at 600x200 in the email (2x for retina).
+// Wide and short on purpose: on a phone the cover is the first thing on screen,
+// and a near-square block filled the whole first screen with it.
 // Type is the house pair from src/lib/email/theme.ts: Inter for the number,
 // Instrument Serif italic for the month.
 
@@ -51,7 +53,7 @@ const ORANGE = '#ff7e35';
 const INK = '#0d0d0f';
 const ground = opt.ground ?? ORANGE;
 const W = 1200;
-const H = 680;
+const H = 400;
 const BEZEL = resolve('public/blog/dishy-demo/iphone-17-pro-silver.png');
 
 const tmp = mkdtempSync(join(tmpdir(), 'cover-'));
@@ -97,23 +99,23 @@ const html = `<!doctype html><html><head>
   *{box-sizing:border-box}
   html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden;background:${ground};font-family:Inter,sans-serif}
   .grain{position:absolute;inset:0;background:
-      radial-gradient(900px 520px at 78% 30%,rgba(255,255,255,.22),rgba(255,255,255,0) 60%),
-      radial-gradient(700px 480px at 0% 110%,rgba(196,75,16,.35),rgba(196,75,16,0) 60%)}
-  .top{position:absolute;left:64px;top:52px;right:64px;display:flex;justify-content:space-between;
-       font-size:17px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:${INK}}
-  .num{position:absolute;left:52px;top:118px;font-size:300px;line-height:.86;font-weight:800;
+      radial-gradient(700px 360px at 80% 20%,rgba(255,255,255,.22),rgba(255,255,255,0) 60%),
+      radial-gradient(600px 360px at 0% 120%,rgba(196,75,16,.35),rgba(196,75,16,0) 60%)}
+  .top{position:absolute;left:56px;top:40px;display:flex;gap:28px;
+       font-size:16px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:${INK}}
+  .num{position:absolute;left:44px;top:92px;font-size:236px;line-height:.86;font-weight:800;
        letter-spacing:-.07em;color:#fff}
-  .month{position:absolute;left:64px;top:392px;font-family:'Instrument Serif',Georgia,serif;font-style:italic;
-         font-size:128px;line-height:1;color:${INK};letter-spacing:-.01em}
-  .rule{position:absolute;left:66px;bottom:64px;width:120px;height:6px;background:${INK}}
-  .by{position:absolute;left:210px;bottom:56px;font-size:19px;font-weight:500;color:${INK}}
-  .phone{position:absolute;right:92px;top:86px;width:330px;aspect-ratio:1350/2760;transform:rotate(7deg);
-         filter:drop-shadow(0 40px 50px rgba(90,30,0,.35))}
+  .month{position:absolute;left:470px;top:160px;font-family:'Instrument Serif',Georgia,serif;font-style:italic;
+         font-size:112px;line-height:1;color:${INK};letter-spacing:-.01em}
+  .rule{position:absolute;left:474px;top:300px;width:80px;height:5px;background:${INK}}
+  .by{position:absolute;left:572px;top:290px;font-size:18px;font-weight:500;color:${INK}}
+  .phone{position:absolute;right:70px;top:34px;width:158px;aspect-ratio:1350/2760;transform:rotate(7deg);
+         filter:drop-shadow(0 26px 34px rgba(90,30,0,.35))}
   .screen{position:absolute;left:5.333%;top:2.5%;width:89.333%;height:95%;border-radius:13.6%/6.65%;
           background:#000 center/cover no-repeat}
   .bezel{position:absolute;inset:0;width:100%;height:100%}
-  .print{position:absolute;right:80px;top:90px;width:420px;height:520px;transform:rotate(5deg);
-         background:#fff center/cover no-repeat;border:14px solid #fff;box-shadow:0 40px 60px rgba(90,30,0,.35)}
+  .print{position:absolute;right:70px;top:40px;width:250px;height:310px;transform:rotate(5deg);
+         background:#fff center/cover no-repeat;border:10px solid #fff;box-shadow:0 26px 40px rgba(90,30,0,.35)}
 </style></head><body>
   <div class="grain"></div>
   <div class="top"><span>dirckmulder.com</span><span>Newsletter</span></div>

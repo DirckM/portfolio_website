@@ -40,7 +40,7 @@ pnpm type-check      # tsc --noEmit
 ```
 No unit-test framework is configured. Script tests run on Node's built-in runner via tsx:
 ```bash
-pnpm test:send-issue   # newsletter send logic, fake database and fake Resend, no network
+pnpm test:send-issue   # newsletter send + /designs logic, fake database and fake Resend, no network
 ```
 
 ## Newsletter issues
@@ -50,6 +50,9 @@ pnpm send-issue <slug>                          # dry run: count, subject, previ
 pnpm send-issue <slug> --test <address>         # one [TEST] copy
 pnpm send-issue <slug> --send                   # the list. Dirck only, needs status 'approved'
 node scripts/make-cover.mjs --number <n> --month <Month> --screen <video> --at <s> --out public/email/cover-<slug>.jpg
+node scripts/make-email-gif.mjs <render.mp4> public/email/made-<slug>-<name>.gif --from <s>
+pnpm make-showcase-zip <slug>                   # the "Get the code" zip
+pnpm designs-stats <slug>                       # downloads, shares, referred signups
 ```
 Full flow in the `newsletter-ideas` skill. The send needs the `portfolio.issue_sends`
 table from `supabase/migrations/20260925_0001_issue_sends.sql`.

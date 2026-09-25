@@ -57,6 +57,16 @@ export class IssueSendsMissing extends Error {
   }
 }
 
+/**
+ * The two per-send tokens, hashed. `unsubscribe` is the footer link and the
+ * List-Unsubscribe header. `designs` is the "Get the code" button. Separate,
+ * so a forwarded or scanned designs link can never take anyone off the list.
+ */
+export interface TokenHashes {
+  unsubscribe: string;
+  designs: string;
+}
+
 export interface SendStore {
   /** Throws IssueSendsMissing when the table is not there. */
   assertReady(): Promise<void>;
@@ -66,14 +76,14 @@ export interface SendStore {
   reserve(
     slug: string,
     subscriberId: string,
-    tokenHash: string
+    hashes: TokenHashes
   ): Promise<boolean>;
-  /** Set resend_id and sent_at. A new token hash replaces the reserved one when given. */
+  /** Set resend_id and sent_at. New token hashes replace the reserved ones when given. */
   markSent(
     slug: string,
     recipient: Recipient,
     resendId: string | null,
-    tokenHash?: string
+    hashes?: TokenHashes
   ): Promise<void>;
   /** Drop a reservation after Resend definitely refused the email. */
   release(slug: string, subscriberId: string): Promise<void>;
@@ -162,9 +172,10 @@ export function buildEmail(
   token: string,
   from: string,
   replyTo: string,
-  subscriberId?: string
+  subscriberId?: string,
+  designsToken?: string
 ): OutgoingEmail {
-  const issue = toIssue(file, token);
+  const issue = toIssue(file, token, designsToken);
   return {
     from: `Dirck Mulder <${from}>`,
     to,
@@ -326,7 +337,11 @@ export async function sendIssue(o: SendOptions): Promise<SendReport> {
   for (const r of todo) {
     const existing = rows.get(r.id);
     const token = newToken();
-    const hash = sha256hex(token);
+    const designsToken = newToken();
+    const hashes: TokenHashes = {
+      unsubscribe: sha256hex(token),
+      designs: sha256hex(designsToken),
+    };
 
     if (existing) {
       // Reserved on an earlier run and never marked sent: the run died between
@@ -338,12 +353,20 @@ export async function sendIssue(o: SendOptions): Promise<SendReport> {
         );
         continue;
       }
-    } else if (!(await o.store.reserve(file.slug, r.id, hash))) {
+    } else if (!(await o.store.reserve(file.slug, r.id, hashes))) {
       log(`  ${r.id}: another run reserved this one, skipped`);
       continue;
     }
 
-    const email = buildEmail(file, r.email, token, o.from, o.replyTo, r.id);
+    const email = buildEmail(
+      file,
+      r.email,
+      token,
+      o.from,
+      o.replyTo,
+      r.id,
+      designsToken
+    );
     const res = await sendWithRetry(
       o.mailer,
       email,
@@ -355,7 +378,12 @@ export async function sendIssue(o: SendOptions): Promise<SendReport> {
     if (res.ok) {
       // For a retried row the email that went out carries the NEW token, so the
       // row takes its hash. For a fresh row the hash is already the right one.
-      await o.store.markSent(file.slug, r, res.id, existing ? hash : undefined);
+      await o.store.markSent(
+        file.slug,
+        r,
+        res.id,
+        existing ? hashes : undefined
+      );
       report.sent++;
     } else if (res.kind === 'conflict') {
       // The key already sent a different body: the earlier attempt went out,

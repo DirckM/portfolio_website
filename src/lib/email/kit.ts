@@ -15,7 +15,7 @@ import { renderSection, type Section } from './blocks';
  */
 export function kitSection(
   kit: Kit,
-  copy: { kicker?: string; title?: string; body?: string } = {}
+  copy: { kicker?: string; title?: string; body?: string; badge?: string } = {}
 ): Extract<Section, { kind: 'download' }> {
   return {
     kind: 'download',
@@ -24,8 +24,10 @@ export function kitSection(
     body: copy.body ?? kit.blurb,
     image: kit.emailImage,
     alt: kit.emailImageAlt,
-    link: { href: kit.href, cta: 'Download the kit' },
-    meta: `ZIP, ${kit.size}. Unzip it into your .claude/skills folder.`,
+    link: { href: kit.href, cta: kit.cta ?? 'Download the kit' },
+    meta:
+      kit.meta ?? `ZIP, ${kit.size}. Unzip it into your .claude/skills folder.`,
+    ...(copy.badge ? { badge: copy.badge } : {}),
   };
 }
 
@@ -40,7 +42,7 @@ export function renderKitText(kit: Kit): string[] {
     kit.blurb,
     '',
     `Download (ZIP, ${kit.size}): ${kit.href}`,
-    'Unzip it into your .claude/skills folder.',
+    kit.meta ?? 'Unzip it into your .claude/skills folder.',
     '',
   ];
 }

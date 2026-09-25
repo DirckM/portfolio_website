@@ -103,13 +103,14 @@ const store: Store = {
     if (!res.ok) throw new Error(`Could not read issue_sends: ${res.error}`);
     return res.data;
   },
-  async reserve(s, subscriberId, tokenHash) {
+  async reserve(s, subscriberId, hashes) {
     const res = await pgInsert(
       'issue_sends',
       {
         issue_slug: s,
         subscriber_id: subscriberId,
-        unsubscribe_token_hash: tokenHash,
+        unsubscribe_token_hash: hashes.unsubscribe,
+        designs_token_hash: hashes.designs,
       },
       { returning: false }
     );
@@ -117,7 +118,7 @@ const store: Store = {
     if (res.status === 409) return false; // unique (issue_slug, subscriber_id): another run has it
     throw new Error(`Could not reserve ${subscriberId}: ${res.error}`);
   },
-  async markSent(s, r, resendId, tokenHash) {
+  async markSent(s, r, resendId, hashes) {
     const now = new Date().toISOString();
     const res = await pgPatch(
       'issue_sends',
@@ -125,7 +126,12 @@ const store: Store = {
       {
         sent_at: now,
         ...(resendId ? { resend_id: resendId } : {}),
-        ...(tokenHash ? { unsubscribe_token_hash: tokenHash } : {}),
+        ...(hashes
+          ? {
+              unsubscribe_token_hash: hashes.unsubscribe,
+              designs_token_hash: hashes.designs,
+            }
+          : {}),
       }
     );
     // The email is out at this point. A failed bookkeeping write is loud, but it
