@@ -173,13 +173,15 @@ export async function startSignup(
  */
 export async function confirmByToken(
   token: string
-): Promise<DbResult<{ email: string; unsubscribeToken: string } | null>> {
+): Promise<
+  DbResult<{ email: string; source: string; unsubscribeToken: string } | null>
+> {
   const hash = sha256hex(token);
   const unsubscribeToken = newToken();
 
   // Conditional on status AND expiry, so a stale or replayed link cannot
   // resurrect an unsubscribed row, and two taps cannot both win.
-  const patched = await pgPatch<{ email: string }>(
+  const patched = await pgPatch<{ email: string; source: string }>(
     'subscribers',
     `confirm_token_hash=eq.${hash}&status=eq.pending&confirm_expires_at=gt.${new Date().toISOString()}`,
     {
@@ -193,9 +195,11 @@ export async function confirmByToken(
   if (!patched.ok) return patched;
   if (patched.data.length === 0) return { ok: true, data: null };
 
-  const email = patched.data[0].email;
+  // The source says which form they signed up from, which is how the welcome
+  // email knows whether to carry a kit.
+  const { email, source } = patched.data[0];
   await logEvent(null, email, 'confirmed');
-  return { ok: true, data: { email, unsubscribeToken } };
+  return { ok: true, data: { email, source, unsubscribeToken } };
 }
 
 export async function unsubscribeByToken(

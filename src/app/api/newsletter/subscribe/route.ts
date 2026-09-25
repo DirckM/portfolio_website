@@ -4,8 +4,9 @@ import {
   renderConfirmEmail,
   renderAlreadySubscribedEmail,
   CONFIRM_SUBJECT,
-  ALREADY_SUBJECT,
+  alreadySubject,
 } from '@/lib/email/confirm';
+import { kitForSource, type Kit } from '@/lib/kits';
 import { dbConfigured } from '@/lib/db';
 import {
   normaliseEmail,
@@ -70,8 +71,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Too many attempts' }, { status: 429 });
   }
 
+  const source = (body.source ?? 'unknown').slice(0, 80);
   const result = await startSignup(email, {
-    source: (body.source ?? 'unknown').slice(0, 80),
+    source,
     ip,
     userAgent: request.headers.get('user-agent'),
   });
@@ -83,16 +85,18 @@ export async function POST(request: Request) {
 
   const apiKey = process.env.RESEND_API_KEY;
   if (apiKey && result.data.action !== 'nothing') {
-    await sendSignupEmail(apiKey, email, result.data);
+    await sendSignupEmail(apiKey, email, result.data, kitForSource(source));
   }
 
+  // Same body whether or not a kit was asked for and whichever email went out.
   return NextResponse.json({ status: 'pending' });
 }
 
 async function sendSignupEmail(
   apiKey: string,
   email: string,
-  data: { action: string; confirmToken?: string }
+  data: { action: string; confirmToken?: string },
+  kit: Kit | null
 ) {
   const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://dirckmulder.com';
   const from = process.env.NEWSLETTER_FROM_EMAIL || 'dirck@dirckmulder.com';
@@ -101,14 +105,14 @@ async function sendSignupEmail(
 
   const isConfirm = data.action === 'send_confirm';
   const { html, text } = isConfirm
-    ? renderConfirmEmail({ site, confirmToken: data.confirmToken ?? '' })
-    : renderAlreadySubscribedEmail();
+    ? renderConfirmEmail({ site, confirmToken: data.confirmToken ?? '', kit })
+    : renderAlreadySubscribedEmail({ kit });
 
   const { error } = await resend.emails.send({
     from: `Dirck Mulder <${from}>`,
     to: email,
     replyTo,
-    subject: isConfirm ? CONFIRM_SUBJECT : ALREADY_SUBJECT,
+    subject: isConfirm ? CONFIRM_SUBJECT : alreadySubject(kit),
     // `html` used to be built here and then never passed, so every subscriber
     // received the plain-text half of a fully designed email. Resend accepts a
     // send with no html, which is why nothing ever errored.
@@ -117,6 +121,14 @@ async function sendSignupEmail(
     tags: [
       { name: 'project', value: 'portfolio' },
       { name: 'kind', value: isConfirm ? 'confirm' : 'already-subscribed' },
+      ...(kit
+        ? [
+            {
+              name: 'kit',
+              value: kit.sourcePrefix.replace(/[^a-zA-Z0-9_-]/g, '-'),
+            },
+          ]
+        : []),
     ],
   });
 
