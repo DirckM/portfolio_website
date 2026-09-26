@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
-import DesignsActions from '@/components/shell/DesignsActions';
+import DesignsLanding from '@/components/designs/DesignsLanding';
 import { cookieName, designsIssue, pageState } from '@/lib/designs';
 import { designsDb } from '@/lib/designs-db';
+
+const COUNT_WORDS: Record<number, string> = { 2: 'two', 3: 'three', 4: 'four' };
 
 // Who is looking decides what the button does, so this page is never cached.
 export const dynamic = 'force-dynamic';
@@ -62,69 +64,26 @@ export default async function DesignsPage({ params, searchParams }: PageProps) {
 
   const cookieToken = (await cookies()).get(cookieName(slug))?.value;
   const state = await pageState(designsDb, slug, t ?? cookieToken, ref);
-  const issueNo = String(f.number).padStart(3, '0');
   const d = f.showcase.designs!;
+  const count = f.showcase.items.length;
 
   return (
-    <div className='px-6 pt-28 pb-24'>
-      <div className='mx-auto w-full max-w-[1120px]'>
-        <p className='flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] text-black/50'>
-          <span>
-            Made in {f.period} · Issue {issueNo}
-          </span>
-          <span className='bg-[#ff7e35] px-2 py-[3px] text-[10px] font-bold tracking-[0.14em] text-white'>
-            Free
-          </span>
-        </p>
-
-        <div className='mt-6 grid gap-10 lg:grid-cols-[1fr_380px] lg:items-end'>
-          <div>
-            <h1 className='text-4xl leading-[1.05] text-black md:text-6xl font-[family-name:var(--font-instrument-serif)]'>
-              {f.showcase.title}
-            </h1>
-            <p className='mt-6 max-w-[620px] text-lg leading-relaxed text-black/70'>
-              The code for all{' '}
-              {['two', 'three', 'four'][f.showcase.items.length - 2]}, one
-              folder each. Plain HTML and CSS you can open in a browser, pull
-              apart and reuse.
-            </p>
-          </div>
-          <DesignsActions
-            slug={slug}
-            state={state.kind}
-            refCode={state.kind === 'visitor' ? state.ref : null}
-            hasTokenInUrl={Boolean(t)}
-            size={d.size}
-            title={f.showcase.title}
-          />
-        </div>
-
-        <div className='mt-16 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-4'>
-          {f.showcase.items.map(item => (
-            <figure key={item.image}>
-              <div className='overflow-hidden bg-black/[0.03]'>
-                <video
-                  className='block aspect-[4/5] w-full object-contain'
-                  src={`/email/${item.image.replace(/\.gif$/, '.mp4')}`}
-                  poster={`/email/${item.image}`}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  aria-label={item.alt}
-                />
-              </div>
-              <figcaption className='mt-4 text-sm leading-relaxed text-black/70'>
-                {item.caption}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-
-        <p className='mt-16 max-w-[720px] border-t border-black/10 pt-6 text-sm leading-relaxed text-black/50'>
-          {f.showcase.credit}
-        </p>
-      </div>
-    </div>
+    <DesignsLanding
+      slug={slug}
+      state={state.kind}
+      refCode={state.kind === 'visitor' ? state.ref : null}
+      hasTokenInUrl={Boolean(t)}
+      kicker={`Made in ${f.period} · Issue ${String(f.number).padStart(3, '0')}`}
+      title={f.showcase.title}
+      countWord={COUNT_WORDS[count] ?? String(count)}
+      size={d.size}
+      credit={f.showcase.credit}
+      items={f.showcase.items.map(item => ({
+        // The page plays the mp4 the email GIF script made next to each GIF.
+        src: `/email/${item.image.replace(/\.gif$/, '.mp4')}`,
+        alt: item.alt,
+        caption: item.caption,
+      }))}
+    />
   );
 }
