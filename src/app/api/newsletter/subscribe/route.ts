@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { Resend } from 'resend';
 import {
   renderConfirmEmail,
@@ -6,7 +6,11 @@ import {
   CONFIRM_SUBJECT,
   alreadySubject,
 } from '@/lib/email/confirm';
-import { kitForSource, type Kit } from '@/lib/kits';
+import type { Kit } from '@/lib/kits';
+import { giveawayForSource } from '@/lib/giveaways';
+import { SHARE_ID_RE, VISITOR_COOKIE } from '@/lib/designs';
+import { visitorHash } from '@/lib/designs-http';
+import { designsDb } from '@/lib/designs-db';
 import { dbConfigured } from '@/lib/db';
 import {
   normaliseEmail,
@@ -29,7 +33,7 @@ const MAX_SIGNUPS_PER_IP_PER_HOUR = 3;
  * that person is on Dirck's list. That is a privacy leak about third parties,
  * not just an annoyance.
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   if (!dbConfigured()) {
     return NextResponse.json({ error: 'Not configured' }, { status: 500 });
   }
@@ -40,6 +44,8 @@ export async function POST(request: Request) {
     consent?: boolean;
     website?: string;
     elapsed?: number;
+    /** A share link id from a shared /designs link. Stored only if it exists. */
+    ref?: string;
   };
   try {
     body = await request.json();
@@ -72,10 +78,20 @@ export async function POST(request: Request) {
   }
 
   const source = (body.source ?? 'unknown').slice(0, 80);
+  // A share link id from /designs/<slug>?ref=. Looked up, never trusted: an
+  // unknown or malformed id is dropped, so the column only ever holds ids of
+  // real share links, and through them, of a real sharer.
+  const ref =
+    typeof body.ref === 'string' &&
+    SHARE_ID_RE.test(body.ref) &&
+    (await designsDb.shareLink(body.ref))
+      ? body.ref
+      : null;
   const result = await startSignup(email, {
     source,
     ip,
     userAgent: request.headers.get('user-agent'),
+    referredByShare: ref,
   });
 
   if (!result.ok) {
@@ -83,9 +99,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Could not sign up' }, { status: 500 });
   }
 
+  // This browser came in through that link and has now signed up. Written
+  // for every outcome, so the response stays identical either way.
+  const vid = request.cookies.get(VISITOR_COOKIE)?.value;
+  if (ref && vid) await designsDb.markVisitSignedUp(ref, visitorHash(vid));
+
   const apiKey = process.env.RESEND_API_KEY;
   if (apiKey && result.data.action !== 'nothing') {
-    await sendSignupEmail(apiKey, email, result.data, kitForSource(source));
+    await sendSignupEmail(
+      apiKey,
+      email,
+      result.data,
+      giveawayForSource(source)
+    );
   }
 
   // Same body whether or not a kit was asked for and whichever email went out.

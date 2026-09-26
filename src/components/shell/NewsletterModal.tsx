@@ -31,7 +31,7 @@ const DISMISS_DAYS = 30;
 const STORAGE_KEY = 'nl-modal';
 
 /** Routes where the ask is redundant or actively wrong. */
-const EXCLUDED = ['/newsletter', '/privacy', '/terms'];
+const EXCLUDED = ['/newsletter', '/privacy', '/terms', '/designs'];
 
 type Stored = { until: number | null };
 

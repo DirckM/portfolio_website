@@ -43,6 +43,8 @@ export interface SignupContext {
   referrerPath?: string | null;
   ip?: string | null;
   userAgent?: string | null;
+  /** A share link id that has already been looked up and found. */
+  referredByShare?: string | null;
 }
 
 /** Append to the audit trail. Best effort: never block the user's action. */
@@ -112,7 +114,13 @@ export async function startSignup(
   ).toISOString();
 
   if (existing.data && existing.data.status === 'confirmed') {
-    await logEvent(existing.data.id, email, 'signup', { already: true }, ctx.ip);
+    await logEvent(
+      existing.data.id,
+      email,
+      'signup',
+      { already: true },
+      ctx.ip
+    );
     return { ok: true, data: { action: 'send_already_confirmed' } };
   }
 
@@ -154,6 +162,9 @@ export async function startSignup(
     consent_text: CONSENT_TEXT,
     consent_ip_hash: ctx.ip ? pseudonymise(ctx.ip) : null,
     consent_user_agent: ctx.userAgent?.slice(0, 500) ?? null,
+    // Only sent when there is one: before the migration adds the column, an
+    // insert naming it would fail every signup.
+    ...(ctx.referredByShare ? { referred_by_share: ctx.referredByShare } : {}),
   });
   if (!created.ok) return created;
 
@@ -202,12 +213,70 @@ export async function confirmByToken(
   return { ok: true, data: { email, source, unsubscribeToken } };
 }
 
+/**
+ * Which subscriber an unsubscribe token belongs to.
+ *
+ * Two places hold token hashes. subscribers.unsubscribe_token_hash is the one
+ * minted at confirmation and carried by the welcome email. Every newsletter
+ * issue mints its own token per recipient and stores the hash on that send's
+ * row in issue_sends, because the confirmation token cannot be read back and
+ * rotating it would break the link in every email already delivered. So look
+ * in both, subscriber row first.
+ *
+ * Before the issue_sends migration is applied the second lookup errors, which
+ * reads here as "no match", exactly the behaviour before issues existed.
+ */
+async function subscriberForToken(
+  token: string
+): Promise<
+  DbResult<{ id: string; email: string; status: SubscriberStatus } | null>
+> {
+  const hash = sha256hex(token);
+  const direct = await pgSelect<{
+    id: string;
+    email: string;
+    status: SubscriberStatus;
+  }>(
+    'subscribers',
+    `unsubscribe_token_hash=eq.${hash}&select=id,email,status&limit=1`
+  );
+  if (!direct.ok) return direct;
+  if (direct.data[0]) return { ok: true, data: direct.data[0] };
+
+  const viaIssue = await pgSelect<{ subscriber_id: string }>(
+    'issue_sends',
+    `unsubscribe_token_hash=eq.${hash}&select=subscriber_id&limit=1`
+  );
+  const id = viaIssue.ok ? viaIssue.data[0]?.subscriber_id : undefined;
+  if (!id) return { ok: true, data: null };
+  const row = await pgSelect<{
+    id: string;
+    email: string;
+    status: SubscriberStatus;
+  }>('subscribers', `id=eq.${id}&select=id,email,status&limit=1`);
+  if (!row.ok) return row;
+  return { ok: true, data: row.data[0] ?? null };
+}
+
 export async function unsubscribeByToken(
   token: string
 ): Promise<DbResult<{ subscriberId: string | null }>> {
+  const found = await subscriberForToken(token);
+  if (!found.ok) return found;
+
+  // Unknown token, or already unsubscribed. Either way this reports success:
+  // telling someone their unsubscribe "failed" because it already worked is the
+  // worst possible moment to show an error. The id still comes back so a repeat
+  // visitor can leave a reason.
+  if (!found.data) return { ok: true, data: { subscriberId: null } };
+  if (found.data.status === 'unsubscribed') {
+    return { ok: true, data: { subscriberId: found.data.id } };
+  }
+
+  // Conditional on the current state, so two taps cannot both log the event.
   const patched = await pgPatch<{ id: string; email: string }>(
     'subscribers',
-    `unsubscribe_token_hash=eq.${sha256hex(token)}&status=neq.unsubscribed`,
+    `id=eq.${found.data.id}&status=neq.unsubscribed`,
     {
       status: 'unsubscribed',
       unsubscribed_at: new Date().toISOString(),
@@ -218,21 +287,8 @@ export async function unsubscribeByToken(
 
   if (patched.data.length > 0) {
     await logEvent(patched.data[0].id, patched.data[0].email, 'unsubscribed');
-    return { ok: true, data: { subscriberId: patched.data[0].id } };
   }
-
-  // Already unsubscribed, or an unknown token. Either way this reports success:
-  // telling someone their unsubscribe "failed" because it already worked is the
-  // worst possible moment to show an error. Resolve the id anyway so a repeat
-  // visitor can still leave a reason.
-  const existing = await pgSelect<{ id: string }>(
-    'subscribers',
-    `unsubscribe_token_hash=eq.${sha256hex(token)}&select=id&limit=1`
-  );
-  return {
-    ok: true,
-    data: { subscriberId: existing.ok ? (existing.data[0]?.id ?? null) : null },
-  };
+  return { ok: true, data: { subscriberId: found.data.id } };
 }
 
 export type UnsubscribeReason =
@@ -242,7 +298,10 @@ export type UnsubscribeReason =
   | 'dont_remember'
   | 'other';
 
-export const UNSUBSCRIBE_REASONS: ReadonlyArray<{ value: UnsubscribeReason; label: string }> = [
+export const UNSUBSCRIBE_REASONS: ReadonlyArray<{
+  value: UnsubscribeReason;
+  label: string;
+}> = [
   { value: 'too_many', label: 'Too many emails' },
   { value: 'not_relevant', label: 'Not relevant to me' },
   // A success for a portfolio newsletter, and it would otherwise hide inside
@@ -265,12 +324,9 @@ export async function recordUnsubscribeReason(
   reason: UnsubscribeReason | null,
   note: string | null
 ): Promise<DbResult<boolean>> {
-  const found = await pgSelect<{ id: string; email: string }>(
-    'subscribers',
-    `unsubscribe_token_hash=eq.${sha256hex(token)}&select=id,email&limit=1`
-  );
+  const found = await subscriberForToken(token);
   if (!found.ok) return found;
-  const row = found.data[0];
+  const row = found.data;
   if (!row) return { ok: true, data: false };
 
   const inserted = await pgInsert(

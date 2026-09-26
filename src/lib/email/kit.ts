@@ -7,19 +7,32 @@
  */
 
 import type { Kit } from '@/lib/kits';
-import { renderSection } from './blocks';
+import { renderSection, type Section } from './blocks';
 
-export function renderKitSection(kit: Kit): string {
-  return renderSection({
+/**
+ * The kit as a 'download' section. An issue hands a kit to the whole list
+ * with its own kicker and copy, the welcome email with the defaults below.
+ */
+export function kitSection(
+  kit: Kit,
+  copy: { kicker?: string; title?: string; body?: string; badge?: string } = {}
+): Extract<Section, { kind: 'download' }> {
+  return {
     kind: 'download',
-    kicker: 'You asked for this',
-    title: `Your ${kit.name}`,
-    body: kit.blurb,
+    kicker: copy.kicker ?? 'You asked for this',
+    title: copy.title ?? `Your ${kit.name}`,
+    body: copy.body ?? kit.blurb,
     image: kit.emailImage,
     alt: kit.emailImageAlt,
-    link: { href: kit.href, cta: 'Download the kit' },
-    meta: `ZIP, ${kit.size}. Unzip it into your .claude/skills folder.`,
-  });
+    link: { href: kit.href, cta: kit.cta ?? 'Download the kit' },
+    meta:
+      kit.meta ?? `ZIP, ${kit.size}. Unzip it into your .claude/skills folder.`,
+    ...(copy.badge ? { badge: copy.badge } : {}),
+  };
+}
+
+export function renderKitSection(kit: Kit): string {
+  return renderSection(kitSection(kit));
 }
 
 export function renderKitText(kit: Kit): string[] {
@@ -29,7 +42,7 @@ export function renderKitText(kit: Kit): string[] {
     kit.blurb,
     '',
     `Download (ZIP, ${kit.size}): ${kit.href}`,
-    'Unzip it into your .claude/skills folder.',
+    kit.meta ?? 'Unzip it into your .claude/skills folder.',
     '',
   ];
 }

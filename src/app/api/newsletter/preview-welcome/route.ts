@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { renderWelcome } from '@/lib/email/welcome';
 import { getTutorialPosts } from '@/lib/blog-utils';
 import { kitByName } from '@/lib/kits';
+import { giveawayForSource } from '@/lib/giveaways';
+
+// `?kit=app-demo` for a kit, `?kit=designs:2026-09` for an issue's designs.
+const previewKit = (name: string | null) =>
+  name?.startsWith('designs:') ? giveawayForSource(name) : kitByName(name);
 
 export const runtime = 'nodejs';
 
@@ -24,7 +29,7 @@ export async function GET(request: Request) {
   const html = renderWelcome({
     unsubscribeToken: 'preview_token_not_real',
     postCount: getTutorialPosts().length,
-    kit: kitByName(new URL(request.url).searchParams.get('kit')),
+    kit: previewKit(new URL(request.url).searchParams.get('kit')),
   })
     // Assets resolve against the live site, which is right for a real send and
     // wrong here: anything added in this branch is not deployed yet and renders

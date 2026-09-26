@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useId, useRef, useState } from 'react';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { ArrowRight, CircleAlert, MailCheck } from 'lucide-react';
 import posthog from 'posthog-js';
 
 /**
@@ -24,6 +25,12 @@ interface Props {
   /** Where this instance lives, recorded against the subscriber. */
   source: string;
   layout?: 'inline' | 'panel';
+  /**
+   * 'underline' is the site's form (ContactForm's floating label). 'pill' is
+   * one rounded field with the button inside it, stacked on a phone, for a
+   * page where the form is the whole point (/designs). Same behaviour.
+   */
+  variant?: 'underline' | 'pill';
   headline?: string;
   blurb?: string;
   /** Fired once the signup succeeded, so a host (the modal) can react. */
@@ -39,6 +46,13 @@ interface Props {
    * records they agreed to.
    */
   finePrint?: React.ReactNode;
+  /** A share link id from a shared link, passed through to the signup. */
+  refCode?: string | null;
+  /**
+   * Record the submit press as a button event (the /designs page and the blog
+   * kit panel). Only the press, never the address.
+   */
+  track?: { page: 'designs' | 'blog-kit'; slug?: string };
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -46,6 +60,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function NewsletterSignup({
   source,
   layout = 'inline',
+  variant = 'underline',
   headline = 'What I am building',
   blurb = 'One email a month. New components, what shipped, what broke.',
   onSuccess,
@@ -53,6 +68,8 @@ export default function NewsletterSignup({
   successTitle = 'Check your inbox.',
   successBody = 'I sent a confirmation link. One click and you are on the list.',
   finePrint = 'One email a month, and a one-click unsubscribe in every one.',
+  refCode = null,
+  track,
 }: Props) {
   // Two forms with the same source can sit on one page, and the source used to
   // be the id, which made the labels point at the wrong input.
@@ -77,6 +94,14 @@ export default function NewsletterSignup({
 
     setError(null);
     setIsSubmitting(true);
+    if (track) {
+      fetch('/api/designs/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page: track.page, slug: track.slug ?? '', kind: 'form_submit' }),
+        keepalive: true,
+      }).catch(() => {});
+    }
 
     try {
       const res = await fetch('/api/newsletter/subscribe', {
@@ -88,6 +113,7 @@ export default function NewsletterSignup({
           consent: true,
           website,
           elapsed: Date.now() - mountedAt.current,
+          ...(refCode ? { ref: refCode } : {}),
         }),
       });
 
@@ -109,6 +135,27 @@ export default function NewsletterSignup({
       setIsSubmitting(false);
     }
   };
+
+  if (variant === 'pill') {
+    return (
+      <PillForm
+        uid={uid}
+        email={email}
+        setEmail={setEmail}
+        error={error}
+        setError={setError}
+        website={website}
+        setWebsite={setWebsite}
+        isSubmitting={isSubmitting}
+        success={status === 'success'}
+        onSubmit={handleSubmit}
+        cta={cta}
+        successTitle={successTitle}
+        successBody={successBody}
+        finePrint={finePrint}
+      />
+    );
+  }
 
   if (status === 'success') {
     return (
@@ -201,6 +248,174 @@ export default function NewsletterSignup({
 
         {error && <p className='mt-3 text-sm text-black'>{error}</p>}
       </form>
+    </div>
+  );
+}
+
+function PillForm({
+  uid,
+  email,
+  setEmail,
+  error,
+  setError,
+  website,
+  setWebsite,
+  isSubmitting,
+  success,
+  onSubmit,
+  cta,
+  successTitle,
+  successBody,
+  finePrint,
+}: {
+  uid: string;
+  email: string;
+  setEmail: (v: string) => void;
+  error: string | null;
+  setError: (v: string | null) => void;
+  website: string;
+  setWebsite: (v: string) => void;
+  isSubmitting: boolean;
+  success: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  cta: string;
+  successTitle: string;
+  successBody: string;
+  finePrint: React.ReactNode;
+}) {
+  const reduce = useReducedMotion();
+  const fade = reduce
+    ? { initial: false as const, animate: { opacity: 1 }, exit: { opacity: 0 } }
+    : {
+        initial: { opacity: 0, y: 8, filter: 'blur(4px)' },
+        animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
+        exit: { opacity: 0, y: -8, filter: 'blur(4px)' },
+        transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const },
+      };
+  const errorId = `email-error-${uid}`;
+
+  return (
+    <div className='w-full'>
+      <AnimatePresence mode='wait' initial={false}>
+        {success ? (
+          <motion.div
+            key='done'
+            {...fade}
+            role='status'
+            className='flex items-center gap-4 rounded-[28px] border border-black/10 bg-white p-4 pr-6 text-left shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_32px_-12px_rgba(0,0,0,0.18)]'
+          >
+            <span className='bg-gradient-primary flex size-12 shrink-0 items-center justify-center rounded-full text-white'>
+              <MailCheck className='size-5' strokeWidth={1.75} aria-hidden />
+            </span>
+            <span>
+              <span className='block text-[15px] font-medium text-black'>
+                {successTitle}
+              </span>
+              <span className='mt-0.5 block text-sm text-black/60'>
+                {successBody}
+              </span>
+            </span>
+          </motion.div>
+        ) : (
+          <motion.form key='form' {...fade} onSubmit={onSubmit} noValidate>
+            {/* Not display:none. Some bots skip hidden fields but fill offscreen ones. */}
+            <div
+              aria-hidden='true'
+              className='absolute left-[-9999px] h-0 w-0 overflow-hidden'
+            >
+              <label htmlFor={`website-${uid}`}>Leave this empty</label>
+              <input
+                id={`website-${uid}`}
+                type='text'
+                tabIndex={-1}
+                autoComplete='off'
+                value={website}
+                onChange={e => setWebsite(e.target.value)}
+              />
+            </div>
+
+            <div
+              className={`flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-0 sm:rounded-full sm:border sm:bg-white sm:p-1.5 sm:shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_32px_-12px_rgba(0,0,0,0.18)] sm:transition-[border-color,box-shadow] sm:duration-200 ${
+                error
+                  ? 'sm:border-[#e66a1a] sm:shadow-[0_0_0_4px_rgba(255,126,53,0.16)]'
+                  : 'sm:border-black/10 sm:focus-within:border-[#ff7e35] sm:focus-within:shadow-[0_0_0_4px_rgba(255,126,53,0.18),0_12px_32px_-12px_rgba(0,0,0,0.18)]'
+              }`}
+            >
+              <label htmlFor={`email-${uid}`} className='sr-only'>
+                Your email
+              </label>
+              <input
+                id={`email-${uid}`}
+                type='email'
+                inputMode='email'
+                autoComplete='email'
+                placeholder='you@example.com'
+                value={email}
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? errorId : undefined}
+                onChange={e => {
+                  setEmail(e.target.value);
+                  if (error) setError(null);
+                }}
+                className={`h-14 w-full min-w-0 rounded-full bg-white px-6 text-base text-black outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-black/35 max-sm:border sm:h-12 sm:flex-1 sm:bg-transparent sm:pl-5 sm:pr-3 sm:text-[15px] ${
+                  error
+                    ? 'max-sm:border-[#e66a1a] max-sm:shadow-[0_0_0_4px_rgba(255,126,53,0.16)]'
+                    : 'max-sm:border-black/10 max-sm:shadow-[0_1px_2px_rgba(0,0,0,0.04)] max-sm:focus:border-[#ff7e35] max-sm:focus:shadow-[0_0_0_4px_rgba(255,126,53,0.18)]'
+                }`}
+              />
+              <motion.button
+                type='submit'
+                disabled={isSubmitting}
+                whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
+                className='bg-gradient-primary group inline-flex h-14 shrink-0 items-center justify-center gap-2 rounded-full px-7 text-[15px] font-medium text-white transition-opacity disabled:opacity-60 sm:h-12'
+              >
+                {isSubmitting ? 'Sending' : cta}
+                <ArrowRight
+                  className='size-4 transition-transform duration-200 group-hover:translate-x-0.5'
+                  strokeWidth={2}
+                  aria-hidden
+                />
+              </motion.button>
+            </div>
+
+            <div aria-live='polite' className='min-h-0'>
+              <AnimatePresence initial={false}>
+                {error && (
+                  <motion.p
+                    id={errorId}
+                    key='err'
+                    initial={reduce ? false : { opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className='overflow-hidden text-sm text-black'
+                  >
+                    <span className='flex items-center gap-1.5 px-5 pt-3'>
+                      <CircleAlert
+                        className='size-4 shrink-0 text-[#e66a1a]'
+                        strokeWidth={2}
+                        aria-hidden
+                      />
+                      {error}
+                    </span>
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
+
+      <p className='mt-4 px-5 text-[12px] leading-relaxed text-black/50'>
+        {finePrint} See the{' '}
+        <a
+          href='/privacy'
+          className='underline underline-offset-2 transition-colors hover:text-black'
+        >
+          privacy policy
+        </a>
+        .
+      </p>
     </div>
   );
 }
