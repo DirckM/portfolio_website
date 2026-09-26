@@ -132,7 +132,7 @@ test('the rules catch a semicolon, an em dash and a thin showcase', () => {
   assert.match(errors, /showcase needs 2 to 4/);
 });
 
-test('layout: no two neighbouring sections share a shape, showcase sits last before the sign-off', () => {
+test('layout: no two neighbouring sections share a shape, showcase sits where the file says, before the sign-off', () => {
   const issue = toIssue(draft, 't');
   for (let i = 1; i < issue.sections.length; i++) {
     const a = issue.sections[i - 1];
@@ -148,10 +148,13 @@ test('layout: no two neighbouring sections share a shape, showcase sits last bef
   );
   const html = renderIssue(issue);
   const showcase = html.indexOf('Made this month');
-  assert.ok(
-    showcase > html.indexOf(draft.items.at(-1)!.title),
-    'showcase after the last item'
-  );
+  for (const it of draft.items) {
+    const at = html.indexOf(it.title);
+    assert.ok(
+      it.afterShowcase ? at > showcase : at < showcase,
+      `${it.title} sits ${it.afterShowcase ? 'below' : 'above'} the showcase`
+    );
+  }
   assert.ok(
     showcase < html.indexOf(draft.signoff.slice(0, 20)),
     'showcase before the sign-off'

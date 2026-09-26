@@ -7,7 +7,7 @@
  * says what goes in it. Where things go is decided here, by rule:
  *
  *   cover -> headline -> items (shaped by layout(), kit right under the lead)
- *         -> "Made this month" showcase -> sign-off
+ *         -> "Made this month" showcase -> items marked afterShowcase -> sign-off
  *
  * The send script, the preview route and the tests all go through toIssue(),
  * so what Dirck approves in the preview is what a subscriber receives.
@@ -161,7 +161,21 @@ export function toIssue(
   unsubscribeToken: string,
   designsToken?: string
 ): Issue {
-  const sections: Section[] = layout(f.items, f.quote);
+  // Shapes and numbers are assigned over the whole list, so an item moved below
+  // the showcase keeps its number and the anti-stacking rule still holds.
+  const laid: Section[] = layout(f.items, f.quote);
+  const afterIdx = new Set(
+    f.items.flatMap((it, i) => (it.afterShowcase ? [i + 1] : []))
+  );
+  const isAfter = (s: Section) => 'n' in s && afterIdx.has(s.n as number);
+  const strip = (s: Section): Section => {
+    if (!('afterShowcase' in s)) return s;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { afterShowcase, ...rest } = s as Section & { afterShowcase?: boolean };
+    return rest as Section;
+  };
+  const sections = laid.filter(s => !isAfter(s)).map(strip);
+  const sectionsAfter = laid.filter(isAfter).map(strip);
   if (f.kit) {
     const { kit, ...copy } = f.kit;
     sections.splice(1, 0, kitSection(kit, copy));
@@ -175,6 +189,7 @@ export function toIssue(
     standfirst: f.standfirst,
     cover: f.cover,
     sections,
+    sectionsAfter,
     showcase: {
       title: f.showcase.title,
       items: f.showcase.items,

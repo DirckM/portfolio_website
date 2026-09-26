@@ -467,6 +467,8 @@ export interface Item extends Omit<Base, 'n'> {
    * dark video card, note is a quiet row.
    */
   type: 'web' | 'app' | 'reel' | 'note';
+  /** Render this item below the "Made this month" showcase instead of above it. */
+  afterShowcase?: boolean;
 }
 
 export interface QuoteBreak {

@@ -40,6 +40,8 @@ export interface Issue {
    */
   cover: { image: string; alt: string };
   sections: Section[];
+  /** Items the issue file placed below the showcase. */
+  sectionsAfter?: Section[];
   /**
    * "Made this month". Always rendered after the items and before the
    * sign-off, by this file, so the drafter cannot move or drop it.
@@ -127,6 +129,8 @@ export function renderIssue(issue: Issue): string {
 
   ${renderSection({ kind: 'showcase', ...issue.showcase }, ctx)}
 
+  ${(issue.sectionsAfter ?? []).map(s => renderSection(s, ctx)).join('')}
+
   <tr><td class="p" style="padding:0 34px 36px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${T.rule};">
       <tr>
@@ -169,26 +173,29 @@ export function renderIssueText(issue: Issue): string {
     '',
   ];
   const ctx: TrackCtx = { campaign: issue.slug };
-  for (const s of issue.sections) {
-    if (s.kind === 'quote') {
-      lines.push(`"${s.text}"`, '');
-      continue;
+  const pushSections = (list: Section[]) => {
+    for (const s of list) {
+      if (s.kind === 'quote') {
+        lines.push(`"${s.text}"`, '');
+        continue;
+      }
+      if (s.kind === 'showcase') continue; // rendered once, below
+      lines.push(s.kicker.toUpperCase(), s.title, s.body);
+      if (s.kind === 'download') lines.push(s.meta);
+      // Only print a URL when there is a real destination. The HTML version drops
+      // the button in that case, and the text version has to agree with it. The
+      // same UTM rule applies, so a click from the text part is attributed too.
+      if (s.link) {
+        lines.push(
+          s.kind === 'download'
+            ? s.link.href
+            : trackedHref(s.link.href, ctx, slugify(s.title))
+        );
+      }
+      lines.push('');
     }
-    if (s.kind === 'showcase') continue; // rendered once, below
-    lines.push(s.kicker.toUpperCase(), s.title, s.body);
-    if (s.kind === 'download') lines.push(s.meta);
-    // Only print a URL when there is a real destination. The HTML version drops
-    // the button in that case, and the text version has to agree with it. The
-    // same UTM rule applies, so a click from the text part is attributed too.
-    if (s.link) {
-      lines.push(
-        s.kind === 'download'
-          ? s.link.href
-          : trackedHref(s.link.href, ctx, slugify(s.title))
-      );
-    }
-    lines.push('');
-  }
+  };
+  pushSections(issue.sections);
   lines.push('MADE THIS MONTH', issue.showcase.title, '');
   for (const it of issue.showcase.items) {
     lines.push(`- ${it.caption}`);
@@ -206,6 +213,7 @@ export function renderIssueText(issue: Issue): string {
     );
   }
   if (issue.showcase.credit) lines.push(issue.showcase.credit, '');
+  pushSections(issue.sectionsAfter ?? []);
   lines.push(
     issue.signoff,
     'Dirck',

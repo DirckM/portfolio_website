@@ -72,6 +72,7 @@ const issue: IssueFile = {
     },
     {
       type: 'web',
+      afterShowcase: true,
       kicker: 'Tutorial',
       title: 'A reading progress bar with zero JavaScript',
       body: 'The line across the top of an article that fills as you read. The usual build is a scroll listener and a state update on every frame. This one is two keyframes and animation-timeline: scroll(). The post also covers what a browser without it should show instead.',
