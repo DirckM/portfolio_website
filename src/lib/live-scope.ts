@@ -36,6 +36,7 @@ import FlowingMenu from '@/components/library/components/FlowingMenu';
 import FluidGlass from '@/components/library/components/FluidGlass';
 import Folder from '@/components/library/components/Folder';
 import GlassSurface from '@/components/library/components/GlassSurface';
+import GradientBorderCSS from '@/components/library/components/GradientBorderCSS';
 import InfiniteMenu from '@/components/library/components/InfiniteMenu';
 import Lanyard from '@/components/library/components/Lanyard';
 import LanyardImpl from '@/components/library/components/LanyardImpl';
@@ -94,6 +95,7 @@ export const liveScope: Record<string, unknown> = {
   GlareHover,
   GlassSurface,
   GlitchText,
+  GradientBorderCSS,
   InfiniteMenu,
   Lanyard,
   LanyardImpl,

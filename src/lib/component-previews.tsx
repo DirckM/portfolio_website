@@ -100,6 +100,7 @@ import FlowingMenu from '@/components/library/components/FlowingMenu';
 import FluidGlass from '@/components/library/components/FluidGlass';
 import Folder from '@/components/library/components/Folder';
 import GlassSurface from '@/components/library/components/GlassSurface';
+import GradientBorderCSS from '@/components/library/components/GradientBorderCSS';
 import InfiniteMenu from '@/components/library/components/InfiniteMenu';
 import Lanyard from '@/components/library/components/Lanyard';
 import MagicBento from '@/components/library/components/MagicBento';
@@ -807,6 +808,16 @@ export const cardPreviews: Record<string, React.ReactNode> = {
       <ReflectiveCard className='w-40 h-28 rounded-xl' />
     </div>
   ),
+  'gradient-border-css': (
+    <div className='flex items-center justify-center w-full h-full'>
+      <GradientBorderCSS className='w-40' borderRadius={16} glow={14}>
+        <div className='px-4 py-4'>
+          <p className='text-sm font-semibold text-white'>Gradient Border</p>
+          <p className='mt-1 text-xs text-white/50'>@property, no JS</p>
+        </div>
+      </GradientBorderCSS>
+    </div>
+  ),
   'scroll-progress-css': (
     <div className='flex items-center justify-center w-full h-full px-4'>
       <ScrollProgressCSS
@@ -853,6 +864,63 @@ export const cardPreviews: Record<string, React.ReactNode> = {
 };
 
 export const fullDemos: Record<string, React.ReactNode> = {
+  // Three cards, one stylesheet. The colours and the speed are custom
+  // properties, so the registered --gbcss-angle is the only thing animating.
+  'gradient-border-css': (
+    <div className='flex flex-col items-center gap-3 p-10 w-full'>
+      <div className='flex flex-wrap items-stretch justify-center gap-6'>
+        <GradientBorderCSS className='w-56' duration={6}>
+          <div className='px-6 py-5'>
+            <p className='text-xs uppercase tracking-[0.18em] text-white/40'>
+              Default
+            </p>
+            <p className='mt-2 text-lg font-semibold text-white'>Six seconds</p>
+            <p className='mt-1 text-sm text-white/55'>
+              One conic gradient, one moving angle.
+            </p>
+          </div>
+        </GradientBorderCSS>
+        <GradientBorderCSS
+          className='w-56'
+          duration={2.5}
+          borderWidth={3}
+          borderRadius={26}
+          glow={28}
+          colors={['#f97316', '#facc15', '#34d399']}
+        >
+          <div className='px-6 py-5'>
+            <p className='text-xs uppercase tracking-[0.18em] text-white/40'>
+              Thicker
+            </p>
+            <p className='mt-2 text-lg font-semibold text-white'>Faster</p>
+            <p className='mt-1 text-sm text-white/55'>
+              Width, radius and blur are all props.
+            </p>
+          </div>
+        </GradientBorderCSS>
+        <GradientBorderCSS
+          className='w-56'
+          spinOnHover
+          duration={3}
+          glow={0}
+          colors={['#e11d48', '#f5f5f5', '#e11d48']}
+        >
+          <div className='px-6 py-5'>
+            <p className='text-xs uppercase tracking-[0.18em] text-white/40'>
+              On hover
+            </p>
+            <p className='mt-2 text-lg font-semibold text-white'>Still</p>
+            <p className='mt-1 text-sm text-white/55'>
+              Until you put a cursor on it.
+            </p>
+          </div>
+        </GradientBorderCSS>
+      </div>
+      <p className='text-xs text-library-gray'>
+        Hover the third card. The other two never stop.
+      </p>
+    </div>
+  ),
   // scroll() reads the nearest scroll container, so each demo brings its own
   // box rather than reporting on the reader's page scroll.
   'scroll-progress-css': (

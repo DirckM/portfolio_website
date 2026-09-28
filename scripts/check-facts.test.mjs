@@ -35,6 +35,23 @@ const CASES = [
     expect: 'fail',
   },
   {
+    name: 'does not pair a claim with a feature from a different paragraph',
+    // The gradient-border post, reduced. Both sentences are true and BCD agrees
+    // with both. Before claims were scoped to their own paragraph, the gate
+    // cross-multiplied them and reported four contradictions in a correct post.
+    body:
+      '`@property` has been Baseline since July 2024, when Firefox 128 became the last engine to ship it.'
+      + '\n\n'
+      + 'Or watch `background-clip: border-area`, which paints a background straight into the border box. Firefox has not shipped it at all.',
+    expect: 'pass',
+  },
+  {
+    name: 'still catches a false claim made in the same paragraph as its feature',
+    // The scoping must not become an escape hatch: claim and feature together.
+    body: 'Or watch `background-clip: border-area`, which Firefox 128 shipped.',
+    expect: 'fail',
+  },
+  {
     name: 'passes a post that makes no browser-support claim at all',
     body: 'Using `animation-timeline: scroll()` to drive a bar from scroll position.',
     expect: 'pass',

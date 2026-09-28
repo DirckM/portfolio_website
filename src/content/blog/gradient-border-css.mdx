@@ -1,0 +1,100 @@
+---
+title: "Animated Gradient Borders with @property"
+description: "Rotate a conic gradient around a card by animating a single registered CSS angle, with no rotating pseudo element, no canvas and no JavaScript."
+date: "2026-09-14"
+category: "Components"
+componentSlug: "gradient-border-css"
+---
+
+A conic gradient already looks like a gradient border. Making it turn used to mean spinning an oversized square behind the card and clipping it back down, because as far as the animation engine is concerned a custom property holding `0deg` is a piece of text, and there is no halfway point between two pieces of text. `@property` gives that text a type. The rotating layer, the overflow clipping and the extra element all go away, and one keyframe is left.
+
+## The final result
+
+<LiveStep
+  codeId="gradient-border-css-final"
+  controls={[
+    { prop: 'duration', type: 'slider', min: 1, max: 12, step: 0.5, default: 6, label: 'duration' },
+    { prop: 'borderWidth', type: 'slider', min: 1, max: 8, step: 1, default: 2, label: 'width' },
+    { prop: 'glow', type: 'slider', min: 0, max: 40, step: 2, default: 18, label: 'glow' },
+  ]}
+/>
+
+Nothing in that card moves except one number. The gradient is painted once and never repositioned, and the ring keeps its corner radius at every frame because it was never a square to begin with.
+
+## What we are building
+
+Two absolutely positioned layers sit behind the content. Both paint the same `conic-gradient`, and both read their start angle from `--gbcss-angle`. The front layer is masked down to a ring the thickness of the border. The back one is the same gradient blurred, which reads as a halo. A single animation on the card moves `--gbcss-angle` from `0deg` to `360deg` and both layers follow, because a registered property that inherits reaches its descendants with the animated value rather than the declared one.
+
+The [cursor-following version of this border](/blog/border-glow) reaches a similar picture with a pointermove handler and React state. Reading them next to each other is the fastest way to see what the two approaches actually cost, and there is a real thing the CSS one cannot do, at the bottom.
+
+## Setting up
+
+Nothing to install and nothing to import. `@property` has been Baseline since July 2024, when Firefox 128 became the last engine to ship it. Chrome and Edge have had it since 85 and Safari since 16.4, so the only browsers that miss it are several major versions old. Baseline expects it to reach widely available in January 2027.
+
+The fallback is worth a line of thought anyway. Without `@property` the custom property is undefined, the `conic-gradient()` referencing it is invalid, and the whole `background-image` is dropped. A solid `background-color` underneath is what keeps a real border on the card.
+
+```tsx
+<div
+  className='gbcss-ring'
+  style={{ backgroundImage: sweep, backgroundColor: colors[0] }}
+/>
+```
+
+## Step 1: Carve a ring out of a gradient
+
+Paint the gradient across the whole card, then subtract the middle. Two copies of the same mask, the inner one clipped to the content box, composited with `exclude`, leave exactly the padding ring with its corners intact.
+
+```css
+.gbcss-ring {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border-radius: inherit;
+  padding: var(--gbcss-width);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+```
+
+Set `mask` before `mask-composite`, never after. The shorthand resets the composite operator back to `add`, and a card with a fully painted rectangle behind its content looks enough like a design decision that you can stare at it for a while.
+
+## Step 2: Give the angle a type
+
+Register the property, then animate it. The syntax descriptor is the entire point, the rest is bookkeeping.
+
+```css
+@property --gbcss-angle {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@keyframes gbcss-spin {
+  to { --gbcss-angle: 360deg; }
+}
+```
+
+`inherits: true` is load bearing here. The animation runs on the card, the gradients live on two child layers, and a property registered with `inherits: false` would hand those children the initial value forever while the parent animates on its own.
+
+Drop the registration and keep everything else, and the failure is silent. The property still animates, but discretely, flipping from `0deg` to `360deg` at the halfway mark. Those two angles produce an identical gradient, so the border simply sits there with no error to explain why.
+
+<LiveStep codeId="gradient-border-css-step3" />
+
+Pausing costs nothing from here, because an animation already has a play state.
+
+```css
+.gbcss-root[data-hover='true'] { animation-play-state: paused; }
+.gbcss-root[data-hover='true']:hover { animation-play-state: running; }
+```
+
+<LiveStep codeId="gradient-border-css-step4" />
+
+Same for `prefers-reduced-motion`, where `animation-name: none` leaves the gradient and removes only the rotation. The colour was the design, the turning was the flourish.
+
+## Where this runs out
+
+The properties a browser can reliably hand to the compositor are `transform` and `opacity`, and an angle feeding a gradient is neither. Every frame changes a paint-time value, so the card repaints for as long as it is on screen, which the rotating-element trick avoided by handing a transform to the compositor instead. One hero card is nothing. Twenty of them in a list is a decision you should make on purpose.
+
+The other limit is the one the twin post is about. This border runs on a clock and knows nothing about the reader. Making it point at the cursor means writing a coordinate into a custom property from a `pointermove` handler, and at that point the JavaScript version is not the expensive one any more.
+
+Two directions from here. Animate the colour stops as well, since registering them as `<color>` makes them interpolate the same way. Or watch `background-clip: border-area`, which paints a background straight into the border box and deletes the mask from step 1 entirely. Safari shipped it first, in 18.2 in December 2024, and Chrome followed in 150 in June 2026. Firefox has not shipped it at all, which is why the mask stays for a while yet.

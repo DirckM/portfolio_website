@@ -16,6 +16,8 @@ A static glowing border is decorative. A border glow that follows your cursor is
 
 A card wrapper with three layered effects: a conic gradient border that illuminates in the direction of the cursor, a mesh gradient fill that bleeds softly through the border region, and a box shadow glow that radiates outward from the cursor angle. All three are driven by the same angle value computed from mouse position.
 
+If the border only has to turn rather than follow anything, that angle can come from a clock instead of a pointer, and the whole component becomes one keyframe. The [zero JavaScript version](/blog/gradient-border-css) does exactly that with a registered `@property` angle. Take this one when the glow has to react to the reader, take that one when it does not.
+
 ## Setting up
 
 ```tsx
