@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import KitLanding from '@/components/designs/KitLanding';
+import { ISSUES } from '@/content/newsletter';
 import { cookieName, pageState } from '@/lib/designs';
 import { designsDb } from '@/lib/designs-db';
 import { kitWithPage } from '@/lib/kits';
@@ -68,8 +69,23 @@ export default async function KitPage({ params, searchParams }: PageProps) {
   const cookieToken = (await cookies()).get(cookieName(key))?.value;
   const state = await pageState(designsDb, key, t ?? cookieToken, ref);
 
+  // The newest issue's showcase, so the kit page shows the designs it links to.
+  const latest = ISSUES.filter(i => i.showcase.designs).at(-1);
+  const designs = latest
+    ? {
+        slug: latest.slug,
+        title: latest.showcase.title,
+        items: latest.showcase.items.map(it => ({
+          video: `/email/${it.image.replace(/\.gif$/, '.mp4')}`,
+          poster: `/email/${it.image}`,
+          alt: it.alt,
+        })),
+      }
+    : null;
+
   return (
     <KitLanding
+      designs={designs}
       id={id}
       state={state.kind}
       refCode={state.kind === 'visitor' ? state.ref : null}
