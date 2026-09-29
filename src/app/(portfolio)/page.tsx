@@ -9,7 +9,7 @@ import {
 } from 'motion/react';
 import VariableProximity from '@/components/proximity-text/ProximityText';
 import ContactForm from '@/components/ContactForm';
-import Modal from '@/components/modal/Modal';
+import ProjectSheet from '@/components/modal/ProjectSheet';
 import { RefObject, useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import BlurText from '@/components/library/text-animations/BlurText';
@@ -18,6 +18,7 @@ import Magnet from '@/components/library/animations/Magnet';
 import ScrollVelocity from '@/components/library/text-animations/ScrollVelocity';
 import Folder from '@/components/library/components/Folder';
 import FavouriteBars from '@/components/favourites/FavouriteBars';
+import MomentumCarousel from '@/components/MomentumCarousel';
 
 interface LatestPost {
   slug: string;
@@ -54,6 +55,25 @@ export default function Home() {
   const [selectedJob, setSelectedJob] = useState<
     (typeof experienceData)[0] | null
   >(null);
+
+  // Phone experience row: which card is centred, for the dots.
+  const experienceRow = useRef<HTMLDivElement>(null);
+  const [experienceIndex, setExperienceIndex] = useState(0);
+  const onExperienceScroll = () => {
+    const row = experienceRow.current;
+    const card = row?.children[0] as HTMLElement | undefined;
+    if (!row || !card) return;
+    const step = card.offsetWidth + 16;
+    setExperienceIndex(Math.round(row.scrollLeft / step));
+  };
+  const scrollExperienceTo = (i: number) => {
+    const card = experienceRow.current?.children[i] as HTMLElement | undefined;
+    card?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    });
+  };
   const [latestPosts, setLatestPosts] = useState<LatestPost[]>([]);
   const folderRef = useRef<HTMLDivElement>(null);
   const [folderMounted, setFolderMounted] = useState(false);
@@ -128,10 +148,8 @@ export default function Home() {
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedProject(null);
-  };
+  // The project stays set while the dialog animates out.
+  const handleCloseModal = () => setIsModalOpen(false);
 
   useEffect(() => {
     fetch('/api/latest-blog-post')
@@ -504,7 +522,7 @@ export default function Home() {
       {/* Selected Work - auto-scrolling 3D carousel */}
       <section
         id='projects'
-        className='pt-6 sm:pt-8 md:pt-12 lg:pt-16 xl:pt-20 pb-32 overflow-x-clip'
+        className='pt-6 sm:pt-8 md:pt-12 lg:pt-16 xl:pt-20 pb-8 md:pb-32 overflow-x-clip'
       >
         <div className='max-w-5xl mx-auto px-6 md:px-16 mb-10 md:mb-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
@@ -516,7 +534,7 @@ export default function Home() {
         </div>
 
         <div
-          className='w-full flex items-center overflow-hidden h-[420px] py-8'
+          className='w-full flex items-center overflow-hidden h-[360px] py-4 md:h-[420px] md:py-8'
           style={{
             maskImage:
               'linear-gradient(to right, rgba(0,0,0,0) 0%, rgb(0,0,0) 12.5%, rgb(0,0,0) 87.5%, rgba(0,0,0,0) 100%)',
@@ -524,46 +542,10 @@ export default function Home() {
               'linear-gradient(to right, rgba(0,0,0,0) 0%, rgb(0,0,0) 12.5%, rgb(0,0,0) 87.5%, rgba(0,0,0,0) 100%)',
           }}
         >
-          <div
-            className='flex items-center gap-0 select-none'
-            style={{
-              animation: `projectScroll ${projects.length * 6}s linear infinite`,
-              width: 'fit-content',
-            }}
-            onMouseEnter={e =>
-              ((e.currentTarget as HTMLElement).style.animationPlayState =
-                'paused')
-            }
-            onMouseLeave={e =>
-              ((e.currentTarget as HTMLElement).style.animationPlayState =
-                'running')
-            }
-            onTouchStart={e => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.animationPlayState = 'paused';
-              el.dataset.touchStartX = String(e.touches[0].clientX);
-              el.dataset.touchOffset = String(
-                parseFloat(getComputedStyle(el).transform.split(',')[4] || '0')
-              );
-            }}
-            onTouchMove={e => {
-              const el = e.currentTarget as HTMLElement;
-              const startX = parseFloat(el.dataset.touchStartX || '0');
-              const offset = parseFloat(el.dataset.touchOffset || '0');
-              const diff = e.touches[0].clientX - startX;
-              el.style.animation = 'none';
-              el.style.transform = `translateX(${offset + diff}px)`;
-            }}
-            onTouchEnd={e => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.animation = '';
-              el.style.transform = '';
-              el.style.animationPlayState = 'running';
-            }}
-          >
-            {[...projects, ...projects].map((project, idx) => (
+          <MomentumCarousel>
+            {projects.map(project => (
               <figure
-                key={`${project.title}-${idx}`}
+                key={project.title}
                 className='shrink-0 relative cursor-pointer group'
                 onClick={() => handleProjectClick(project)}
                 style={{
@@ -599,28 +581,26 @@ export default function Home() {
                 </div>
               </figure>
             ))}
-          </div>
+          </MomentumCarousel>
         </div>
-
-        <style>{`
-          @keyframes projectScroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-        `}</style>
       </section>
 
       {/* Experience - centered grid with clickable cards */}
-      <section id='experience' className='py-32'>
+      <section id='experience' className='pt-8 pb-32 md:pt-32'>
         <div className='max-w-5xl mx-auto px-6 md:px-16'>
-          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight mb-16'>
+          <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight mb-10 md:mb-16'>
             My{' '}
             <span className='font-[family-name:var(--font-instrument-serif)] italic font-normal text-gradient-primary'>
               Experience
             </span>
           </h2>
 
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          {/* Phone: a swipe row that snaps per card. Desktop: the grid. */}
+          <div
+            ref={experienceRow}
+            onScroll={onExperienceScroll}
+            className='-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-2 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:px-0 md:pb-0 [&::-webkit-scrollbar]:hidden'
+          >
             {experienceData.map((job, i) => (
               <motion.div
                 key={i}
@@ -629,7 +609,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
                 onClick={() => setSelectedJob(job)}
-                className='group relative border border-library-border rounded-xl p-8 hover:border-primary/30 transition-colors duration-300 cursor-pointer'
+                className='group relative w-[84%] shrink-0 snap-center border border-library-border rounded-xl p-8 hover:border-primary/30 transition-colors duration-300 cursor-pointer md:w-auto'
               >
                 <div className='flex justify-between items-start mb-6'>
                   <p className='text-[10px] uppercase tracking-widest text-library-gray'>
@@ -657,6 +637,18 @@ export default function Home() {
                   {job.desc}
                 </p>
               </motion.div>
+            ))}
+          </div>
+          <div className='mt-5 flex justify-center gap-2 md:hidden'>
+            {experienceData.map((job, i) => (
+              <button
+                key={job.title}
+                aria-label={`Show ${job.title}`}
+                onClick={() => scrollExperienceTo(i)}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === experienceIndex ? 'w-5 bg-black' : 'w-1.5 bg-black/20'
+                }`}
+              />
             ))}
           </div>
         </div>
@@ -926,10 +918,10 @@ export default function Home() {
         </div>
       </section>
 
-      <Modal
-        isOpen={isModalOpen}
+      <ProjectSheet
+        open={isModalOpen}
+        project={selectedProject}
         onClose={handleCloseModal}
-        project={selectedProject as Project}
       />
     </div>
   );
