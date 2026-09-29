@@ -8,6 +8,7 @@ import {
 } from '@/lib/email/confirm';
 import type { Kit } from '@/lib/kits';
 import { giveawayForSource } from '@/lib/giveaways';
+import { kitEmailLink, kitTokenDb } from '@/lib/kit-access';
 import { SHARE_ID_RE, VISITOR_COOKIE } from '@/lib/designs';
 import { visitorHash } from '@/lib/designs-http';
 import { designsDb } from '@/lib/designs-db';
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     consent?: boolean;
     website?: string;
     elapsed?: number;
-    /** A share link id from a shared /designs link. Stored only if it exists. */
+    /** A share link id from a shared /designs or /kits link. Stored only if it exists. */
     ref?: string;
   };
   try {
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
   }
 
   const source = (body.source ?? 'unknown').slice(0, 80);
-  // A share link id from /designs/<slug>?ref=. Looked up, never trusted: an
+  // A share link id from /designs/<slug>?ref= or /kits/<id>?ref=. Looked up, never trusted: an
   // unknown or malformed id is dropped, so the column only ever holds ids of
   // real share links, and through them, of a real sharer.
   const ref =
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
 async function sendSignupEmail(
   apiKey: string,
   email: string,
-  data: { action: string; confirmToken?: string },
+  data: { action: string; confirmToken?: string; subscriberId?: string },
   kit: Kit | null
 ) {
   const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://dirckmulder.com';
@@ -132,7 +133,18 @@ async function sendSignupEmail(
   const isConfirm = data.action === 'send_confirm';
   const { html, text } = isConfirm
     ? renderConfirmEmail({ site, confirmToken: data.confirmToken ?? '', kit })
-    : renderAlreadySubscribedEmail({ kit });
+    : renderAlreadySubscribedEmail({
+        kit,
+        // Only this email carries it, and it goes to the address itself.
+        kitHref: kit
+          ? await kitEmailLink(
+              kitTokenDb,
+              kit,
+              data.subscriberId,
+              'already-subscribed'
+            )
+          : undefined,
+      });
 
   const { error } = await resend.emails.send({
     from: `Dirck Mulder <${from}>`,

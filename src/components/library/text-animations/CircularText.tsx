@@ -8,6 +8,7 @@ import {
   MotionValue,
   Transition,
 } from 'motion/react';
+import { cn } from '@/lib/utils';
 
 interface CircularTextProps {
   text: string;
@@ -104,7 +105,10 @@ const CircularText: React.FC<CircularTextProps> = ({
 
   return (
     <motion.div
-      className={`m-0 mx-auto rounded-full w-[200px] h-[200px] relative font-black text-white text-center cursor-pointer origin-center ${className}`}
+      className={cn(
+        'm-0 mx-auto rounded-full w-[200px] h-[200px] relative font-black text-white text-center cursor-pointer origin-center',
+        className
+      )}
       style={{ rotate: rotation }}
       initial={{ rotate: 0 }}
       animate={controls}

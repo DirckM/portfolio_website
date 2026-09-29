@@ -18,6 +18,31 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* CirclingElements: each child orbits at --circling-radius from the
+     centre, starting at --circling-offset degrees, and counter-rotates to
+     stay upright. Centring comes from the element's translate utilities. */
+  --animate-circling: circling 10s linear infinite;
+  @keyframes circling {
+    from {
+      transform: rotate(calc(var(--circling-offset) * 1deg))
+        translateX(calc(var(--circling-radius) * 1px))
+        rotate(calc(var(--circling-offset) * -1deg));
+    }
+    to {
+      transform: rotate(
+          calc(
+            (var(--circling-offset) + 360 * var(--circling-direction)) * 1deg
+          )
+        )
+        translateX(calc(var(--circling-radius) * 1px))
+        rotate(
+          calc(
+            (var(--circling-offset) + 360 * var(--circling-direction)) * -1deg
+          )
+        );
+    }
+  }
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -143,18 +168,39 @@
 }
 
 .text-gradient-primary {
-  background: linear-gradient(135deg, #a33d0d 0%, #c44b10 25%, #d4692a 50%, #e66a1a 75%, #ff7e35 100%);
+  background: linear-gradient(
+    135deg,
+    #a33d0d 0%,
+    #c44b10 25%,
+    #d4692a 50%,
+    #e66a1a 75%,
+    #ff7e35 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .bg-gradient-primary {
-  background: linear-gradient(135deg, #a33d0d 0%, #c44b10 25%, #d4692a 50%, #e66a1a 75%, #ff7e35 100%);
+  background: linear-gradient(
+    135deg,
+    #a33d0d 0%,
+    #c44b10 25%,
+    #d4692a 50%,
+    #e66a1a 75%,
+    #ff7e35 100%
+  );
 }
 
 .bg-gradient-primary:hover {
-  background: linear-gradient(135deg, #8a3209 0%, #a33d0d 25%, #c44b10 50%, #d4692a 75%, #e66a1a 100%);
+  background: linear-gradient(
+    135deg,
+    #8a3209 0%,
+    #a33d0d 25%,
+    #c44b10 50%,
+    #d4692a 75%,
+    #e66a1a 100%
+  );
 }
 
 /* Continuous scrolling animation */

@@ -520,7 +520,7 @@ const MagicBento: React.FC<BentoProps> = ({
       )}
 
       <div
-        className='bento-section grid gap-2 p-3 max-w-[54rem] select-none relative'
+        className='bento-section grid gap-2 p-3 mx-auto w-full max-w-[54rem] select-none relative'
         style={{ fontSize: 'clamp(1rem,0.9rem + 0.5vw,1.5rem)' }}
         ref={gridRef}
       >

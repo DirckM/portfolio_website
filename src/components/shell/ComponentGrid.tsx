@@ -1,41 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect, ReactNode } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ComponentCard from './ComponentCard';
 import FilterBar from './FilterBar';
+import LazyCard from './LazyCard';
 import {
   type ComponentCategory,
   type ComponentEntry,
 } from '@/lib/components-registry';
-
-function LazyCard({
-  children,
-  fallback,
-}: {
-  children: ReactNode;
-  fallback: ReactNode;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      { rootMargin: '300px' }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return <div ref={ref}>{isVisible ? children : fallback}</div>;
-}
 
 interface ComponentGridProps {
   components: ComponentEntry[];

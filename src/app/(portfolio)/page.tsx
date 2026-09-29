@@ -13,6 +13,7 @@ import Modal from '@/components/modal/Modal';
 import { RefObject, useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import BlurText from '@/components/library/text-animations/BlurText';
+import HeroIntro from '@/components/hero-intro/HeroIntro';
 import Magnet from '@/components/library/animations/Magnet';
 import ScrollVelocity from '@/components/library/text-animations/ScrollVelocity';
 import Folder from '@/components/library/components/Folder';
@@ -156,7 +157,8 @@ export default function Home() {
       image: '/projects/website-rebuilds.png',
       cardBg: 'linear-gradient(135deg, #0a0a0f 0%, #241246 100%)',
       cardTextColor: '#ffffff',
-      description: 'Polished web and mobile designs rebuilt as live, animated pages',
+      description:
+        'Polished web and mobile designs rebuilt as live, animated pages',
       media: {
         type: 'image' as const,
         src: '/projects/website-rebuilds.png',
@@ -486,39 +488,7 @@ export default function Home() {
     <div className='flex flex-col'>
       {/* Hero */}
       <section className='relative flex flex-col justify-center items-center h-screen overflow-hidden'>
-        <div className='relative flex flex-col items-center text-center'>
-          <motion.div
-            initial={{ opacity: 0, y: -100, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 1.2, delay: 0.8, ease: 'easeOut' }}
-            className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20'
-          >
-            <Image
-              src='/dirck_mulder_organge_light.jpg'
-              alt='Dirck Mulder'
-              className='w-20 h-30 sm:w-24 sm:h-36 md:w-28 md:h-42 lg:w-32 lg:h-48 xl:w-36 xl:h-54 object-cover rounded-t-full rounded-b-full shadow-2xl'
-              width={160}
-              height={240}
-            />
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, x: 100, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
-            className='text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-black font-[family-name:var(--font-inter)] font-bold tracking-wider leading-none select-none'
-          >
-            DIRCK
-          </motion.h1>
-          <motion.h1
-            initial={{ opacity: 0, x: -100, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 1, delay: 0.4, ease: 'easeOut' }}
-            className='text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-black font-[family-name:var(--font-instrument-serif)] italic tracking-wider leading-none select-none'
-          >
-            MULDER
-          </motion.h1>
-        </div>
+        <HeroIntro />
 
         <div className='mt-8'>
           <BlurText
@@ -532,7 +502,10 @@ export default function Home() {
       </section>
 
       {/* Selected Work - auto-scrolling 3D carousel */}
-      <section id='projects' className='pt-6 sm:pt-8 md:pt-12 lg:pt-16 xl:pt-20 pb-32 overflow-x-clip'>
+      <section
+        id='projects'
+        className='pt-6 sm:pt-8 md:pt-12 lg:pt-16 xl:pt-20 pb-32 overflow-x-clip'
+      >
         <div className='max-w-5xl mx-auto px-6 md:px-16 mb-10 md:mb-16'>
           <h2 className='text-3xl md:text-4xl font-[family-name:var(--font-inter)] font-bold text-black tracking-tight'>
             Selected{' '}
@@ -812,7 +785,10 @@ export default function Home() {
             </h2>
 
             <div className='flex flex-col items-center'>
-              <div ref={folderRef} className='py-20 scale-[0.55] md:scale-100 origin-center'>
+              <div
+                ref={folderRef}
+                className='py-20 scale-[0.55] md:scale-100 origin-center'
+              >
                 <Folder
                   color='#000000'
                   size={3}

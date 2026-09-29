@@ -6,7 +6,7 @@ import { jsonBody, who } from '@/lib/designs-http';
 export const runtime = 'nodejs';
 
 /**
- * Any other button press on /designs/<slug> or the blog's kit panel (copy
+ * Any other button press on /designs/<slug>, /kits/<id> or the blog's kit panel (copy
  * success, share sheet opened, completed or dismissed, form opened or sent).
  * POST only, from the click itself.
  */
@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
   const { w, finish } = who(request, body.slug ?? '');
   const result = await recordButtonPress(designsDb, {
     ...w,
-    page: body.page === 'blog-kit' ? 'blog-kit' : 'designs',
+    page:
+      body.page === 'blog-kit' || body.page === 'kit' ? body.page : 'designs',
     kind: (body.kind ?? '') as ButtonKind,
     shareId: body.shareId ?? null,
   });

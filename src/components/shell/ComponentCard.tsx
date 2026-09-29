@@ -39,7 +39,13 @@ export default function ComponentCard({
   }
 
   return (
-    <Link href={`/components/${slug}`} className='no-underline'>
+    // No prefetch: every demo page carries its own heavy component (WebGL,
+    // physics), and prefetching them all from a grid downloads megabytes.
+    <Link
+      href={`/components/${slug}`}
+      prefetch={false}
+      className='no-underline'
+    >
       <div
         ref={cardRef}
         onMouseMove={handleMouseMove}
