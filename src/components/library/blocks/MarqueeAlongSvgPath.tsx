@@ -1,6 +1,6 @@
 'use client';
 
-import React, { RefObject, useEffect, useRef } from 'react';
+import React, { RefObject, useEffect, useId, useRef } from 'react';
 import {
   motion,
   MotionValue,
@@ -257,8 +257,10 @@ const MarqueeAlongSvgPath = ({
     );
   }, [children, repeat]);
 
-  const id =
-    pathId || `marquee-path-${Math.random().toString(36).substring(7)}`;
+  // useId keeps the path id identical on server and client, so hydration
+  // does not warn about a mismatched attribute.
+  const generatedId = useId();
+  const id = pathId || `marquee-path-${generatedId.replace(/:/g, '')}`;
 
   const { scrollY } = useScroll({
     container:

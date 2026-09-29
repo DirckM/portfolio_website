@@ -24,16 +24,12 @@ const ReflectiveCard: React.FC<ReflectiveCardProps> = ({
   metalness = 1,
   roughness = 0.4,
   overlayColor = 'rgba(255, 255, 255, 0.1)',
-  displacementStrength = 20,
-  noiseScale = 1,
   specularConstant = 1.2,
   className = '',
   style = {},
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
-
-  const baseFrequency = 0.03 / Math.max(0.1, noiseScale);
 
   const cssVariables = {
     '--blur-strength': `${blurStrength}px`,
@@ -43,7 +39,7 @@ const ReflectiveCard: React.FC<ReflectiveCardProps> = ({
     '--text-color': color,
   } as React.CSSProperties;
 
-  function handleMouseMove(e: React.MouseEvent) {
+  function handlePointerMove(e: React.PointerEvent) {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     setMousePos({
@@ -55,75 +51,33 @@ const ReflectiveCard: React.FC<ReflectiveCardProps> = ({
   return (
     <div
       ref={cardRef}
-      onMouseMove={handleMouseMove}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={() => setMousePos({ x: 0.5, y: 0.5 })}
       className={`relative w-[320px] h-[500px] rounded-[20px] overflow-hidden bg-[#1a1a1a] shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.1)_inset] isolate font-sans ${className}`}
       style={{ ...style, ...cssVariables }}
     >
-      <svg
-        className='absolute w-0 h-0 pointer-events-none opacity-0'
-        aria-hidden='true'
-      >
-        <defs>
-          <filter
-            id='metallic-displacement'
-            x='-20%'
-            y='-20%'
-            width='140%'
-            height='140%'
-          >
-            <feTurbulence
-              type='turbulence'
-              baseFrequency={baseFrequency}
-              numOctaves='2'
-              result='noise'
-            />
-            <feColorMatrix
-              in='noise'
-              type='luminanceToAlpha'
-              result='noiseAlpha'
-            />
-            <feDisplacementMap
-              in='SourceGraphic'
-              in2='noise'
-              scale={displacementStrength}
-              xChannelSelector='R'
-              yChannelSelector='G'
-              result='rippled'
-            />
-            <feSpecularLighting
-              in='noiseAlpha'
-              surfaceScale={displacementStrength}
-              specularConstant={specularConstant}
-              specularExponent='20'
-              lightingColor='#ffffff'
-              result='light'
-            >
-              <fePointLight x='0' y='0' z='300' />
-            </feSpecularLighting>
-            <feComposite
-              in='light'
-              in2='rippled'
-              operator='in'
-              result='light-effect'
-            />
-            <feBlend
-              in='light-effect'
-              in2='rippled'
-              mode='screen'
-              result='metallic-result'
-            />
-          </filter>
-        </defs>
-      </svg>
-
-      {/* Animated gradient background instead of webcam */}
+      {/* Brushed-metal base with a light source that follows the pointer.
+          The old SVG displacement filter rendered as silver static and
+          hid the card, so the reflection is plain gradients now. */}
       <div
         className='absolute inset-0 z-0'
         style={{
-          background: `radial-gradient(circle at ${mousePos.x * 100}% ${mousePos.y * 100}%, #2a1a4e 0%, #0d0d2b 40%, #1a0a2e 70%, #0a0a1a 100%)`,
-          filter: `blur(${blurStrength}px) url(#metallic-displacement)`,
-          transition: 'background 0.3s ease',
-          transform: 'scale(1.2)',
+          background: `linear-gradient(${120 + (mousePos.x - 0.5) * 40}deg, #0d0d1f 0%, #2a2440 35%, #15142a 55%, #0a0a18 100%)`,
+        }}
+      />
+      <div
+        className='absolute inset-0 z-0 transition-[background] duration-300 ease-out'
+        style={{
+          background: `radial-gradient(circle at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(180,170,255,0.55) 0%, transparent 55%)`,
+          filter: `blur(${blurStrength}px)`,
+          opacity: 0.6 + specularConstant * 0.2,
+        }}
+      />
+      <div
+        className='absolute inset-0 z-20 pointer-events-none mix-blend-screen transition-[background] duration-300 ease-out'
+        style={{
+          background: `linear-gradient(${105 + (mousePos.x - 0.5) * 30}deg, transparent ${mousePos.x * 100 - 30}%, rgba(255,255,255,0.35) ${mousePos.x * 100}%, transparent ${mousePos.x * 100 + 30}%)`,
+          opacity: metalness * 0.8,
         }}
       />
 

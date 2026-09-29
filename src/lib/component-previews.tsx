@@ -1,123 +1,209 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import React, { useRef } from 'react';
+// Every demo is a React.lazy import, so a page only downloads the components
+// it renders. next/dynamic preloaded all of them on every page that imported
+// this map (3.2 MB of JS for one demo).
+import React, { lazy, useRef } from 'react';
 
 // Text animations
-import BlurText from '@/components/library/text-animations/BlurText';
-import GlitchText from '@/components/library/text-animations/GlitchText';
-import CircularText from '@/components/library/text-animations/CircularText';
-import CurvedLoop from '@/components/library/text-animations/CurvedLoop';
-import DecryptedText from '@/components/library/text-animations/DecryptedText';
-import FallingText from '@/components/library/text-animations/FallingText';
-import RotatingText from '@/components/library/text-animations/RotatingText';
-import ScrambledText from '@/components/library/text-animations/ScrambledText';
-import ScrollFloat from '@/components/library/text-animations/ScrollFloat';
-import ScrollReveal from '@/components/library/text-animations/ScrollReveal';
-import ScrollRevealCSS from '@/components/library/text-animations/ScrollRevealCSS';
-import { ScrollVelocity } from '@/components/library/text-animations/ScrollVelocity';
-import ShinyText from '@/components/library/text-animations/ShinyText';
-import Shuffle from '@/components/library/text-animations/Shuffle';
-import SplitText from '@/components/library/text-animations/SplitText';
-import TextPressure from '@/components/library/text-animations/TextPressure';
-import TextType from '@/components/library/text-animations/TextType';
-import TrueFocus from '@/components/library/text-animations/TrueFocus';
-import VariableProximity from '@/components/library/text-animations/VariableProximity';
+const BlurText = lazy(
+  () => import('@/components/library/text-animations/BlurText')
+);
+const GlitchText = lazy(
+  () => import('@/components/library/text-animations/GlitchText')
+);
+const CircularText = lazy(
+  () => import('@/components/library/text-animations/CircularText')
+);
+const CurvedLoop = lazy(
+  () => import('@/components/library/text-animations/CurvedLoop')
+);
+const DecryptedText = lazy(
+  () => import('@/components/library/text-animations/DecryptedText')
+);
+const FallingText = lazy(
+  () => import('@/components/library/text-animations/FallingText')
+);
+const RotatingText = lazy(
+  () => import('@/components/library/text-animations/RotatingText')
+);
+const ScrambledText = lazy(
+  () => import('@/components/library/text-animations/ScrambledText')
+);
+const ScrollFloat = lazy(
+  () => import('@/components/library/text-animations/ScrollFloat')
+);
+const ScrollReveal = lazy(
+  () => import('@/components/library/text-animations/ScrollReveal')
+);
+const ScrollRevealCSS = lazy(
+  () => import('@/components/library/text-animations/ScrollRevealCSS')
+);
+const ScrollVelocity = lazy(() =>
+  import('@/components/library/text-animations/ScrollVelocity').then(m => ({
+    default: m.ScrollVelocity,
+  }))
+);
+const ShinyText = lazy(
+  () => import('@/components/library/text-animations/ShinyText')
+);
+const Shuffle = lazy(
+  () => import('@/components/library/text-animations/Shuffle')
+);
+const SplitText = lazy(
+  () => import('@/components/library/text-animations/SplitText')
+);
+const TextPressure = lazy(
+  () => import('@/components/library/text-animations/TextPressure')
+);
+const TextType = lazy(
+  () => import('@/components/library/text-animations/TextType')
+);
+const TrueFocus = lazy(
+  () => import('@/components/library/text-animations/TrueFocus')
+);
+const VariableProximity = lazy(
+  () => import('@/components/library/text-animations/VariableProximity')
+);
 
 // Animations
-import Antigravity from '@/components/library/animations/Antigravity';
-import Crosshair from '@/components/library/animations/Crosshair';
-import ElectricBorder from '@/components/library/animations/ElectricBorder';
-import GlareHover from '@/components/library/animations/GlareHover';
-import LogoLoop from '@/components/library/animations/LogoLoop';
-import MagicRings from '@/components/library/animations/MagicRings';
-import Magnet from '@/components/library/animations/Magnet';
-import MetaBalls from '@/components/library/animations/MetaBalls';
-import MetallicPaint from '@/components/library/animations/MetallicPaint';
-import PixelTrail from '@/components/library/animations/PixelTrail';
-import ShapeBlur from '@/components/library/animations/ShapeBlur';
-import TargetCursor from '@/components/library/animations/TargetCursor';
+const Antigravity = lazy(
+  () => import('@/components/library/animations/Antigravity')
+);
+const Crosshair = lazy(
+  () => import('@/components/library/animations/Crosshair')
+);
+const ElectricBorder = lazy(
+  () => import('@/components/library/animations/ElectricBorder')
+);
+const GlareHover = lazy(
+  () => import('@/components/library/animations/GlareHover')
+);
+const LogoLoop = lazy(() => import('@/components/library/animations/LogoLoop'));
+const MagicRings = lazy(
+  () => import('@/components/library/animations/MagicRings')
+);
+const Magnet = lazy(() => import('@/components/library/animations/Magnet'));
+const MetaBalls = lazy(
+  () => import('@/components/library/animations/MetaBalls')
+);
+const MetallicPaint = lazy(
+  () => import('@/components/library/animations/MetallicPaint')
+);
+const PixelTrail = lazy(
+  () => import('@/components/library/animations/PixelTrail')
+);
+const ShapeBlur = lazy(
+  () => import('@/components/library/animations/ShapeBlur')
+);
+const TargetCursor = lazy(
+  () => import('@/components/library/animations/TargetCursor')
+);
 
 // Backgrounds (non-WebGL CSS/canvas)
-import LineWaves from '@/components/library/backgrounds/LineWaves';
+const LineWaves = lazy(
+  () => import('@/components/library/backgrounds/LineWaves')
+);
 
 // WebGL backgrounds loaded dynamically
-const SoftAurora = dynamic(
-  () => import('@/components/library/backgrounds/SoftAurora'),
-  { ssr: false }
+const SoftAurora = lazy(
+  () => import('@/components/library/backgrounds/SoftAurora')
 );
-const ColorBends = dynamic(
-  () => import('@/components/library/backgrounds/ColorBends'),
-  { ssr: false }
+const ColorBends = lazy(
+  () => import('@/components/library/backgrounds/ColorBends')
 );
-const DarkVeil = dynamic(
-  () => import('@/components/library/backgrounds/DarkVeil'),
-  { ssr: false }
+const DarkVeil = lazy(
+  () => import('@/components/library/backgrounds/DarkVeil')
 );
-const EvilEye = dynamic(
-  () => import('@/components/library/backgrounds/EvilEye'),
-  { ssr: false }
+const EvilEye = lazy(() => import('@/components/library/backgrounds/EvilEye'));
+const LightPillar = lazy(
+  () => import('@/components/library/backgrounds/LightPillar')
 );
-const LightPillar = dynamic(
-  () => import('@/components/library/backgrounds/LightPillar'),
-  { ssr: false }
-);
-const Radar = dynamic(() => import('@/components/library/backgrounds/Radar'), {
-  ssr: false,
-});
+const Radar = lazy(() => import('@/components/library/backgrounds/Radar'));
 
 // Blocks
-import CirclingElements from '@/components/library/blocks/CirclingElements';
-import MacbookScroll from '@/components/library/blocks/MacbookScroll';
-import MarqueeAlongSvgPath from '@/components/library/blocks/MarqueeAlongSvgPath';
-import Terminal from '@/components/library/blocks/Terminal';
-import WorldMap from '@/components/library/blocks/WorldMap';
+const CirclingElements = lazy(
+  () => import('@/components/library/blocks/CirclingElements')
+);
+const MacbookScroll = lazy(
+  () => import('@/components/library/blocks/MacbookScroll')
+);
+const MarqueeAlongSvgPath = lazy(
+  () => import('@/components/library/blocks/MarqueeAlongSvgPath')
+);
+const Terminal = lazy(() => import('@/components/library/blocks/Terminal'));
+const WorldMap = lazy(() => import('@/components/library/blocks/WorldMap'));
 
 // ParallaxFloating loaded dynamically (uses scroll listeners)
-const ParallaxFloating = dynamic(
-  () =>
-    import('@/components/library/blocks/ParallaxFloating').then(m => ({
-      default: m.default,
-    })),
-  { ssr: false }
+const ParallaxFloating = lazy(() =>
+  import('@/components/library/blocks/ParallaxFloating').then(m => ({
+    default: m.default,
+  }))
 );
-const FloatingElement = dynamic(
-  () =>
-    import('@/components/library/blocks/ParallaxFloating').then(m => ({
-      default: m.FloatingElement,
-    })),
-  { ssr: false }
+const FloatingElement = lazy(() =>
+  import('@/components/library/blocks/ParallaxFloating').then(m => ({
+    default: m.FloatingElement,
+  }))
 );
 
 // Components
-import AnimatedList from '@/components/library/components/AnimatedList';
-import BorderGlow from '@/components/library/components/BorderGlow';
-import CircularGallery from '@/components/library/components/CircularGallery';
-import Dock from '@/components/library/components/Dock';
-import DomeGallery from '@/components/library/components/DomeGallery';
-import ElasticSlider from '@/components/library/components/ElasticSlider';
-import FlowingMenu from '@/components/library/components/FlowingMenu';
-import FluidGlass from '@/components/library/components/FluidGlass';
-import Folder from '@/components/library/components/Folder';
-import GlassSurface from '@/components/library/components/GlassSurface';
-import InfiniteMenu from '@/components/library/components/InfiniteMenu';
-import Lanyard from '@/components/library/components/Lanyard';
-import MagicBento from '@/components/library/components/MagicBento';
-const PixelCard = dynamic(
-  () => import('@/components/library/components/PixelCard'),
-  { ssr: false }
+const AnimatedList = lazy(
+  () => import('@/components/library/components/AnimatedList')
 );
-import ReflectiveCard from '@/components/library/components/ReflectiveCard';
-import ScrollProgressCSS from '@/components/library/components/ScrollProgressCSS';
-import ScrollStack, {
-  ScrollStackItem,
-} from '@/components/library/components/ScrollStack';
-import TiltedCard from '@/components/library/components/TiltedCard';
+const BorderGlow = lazy(
+  () => import('@/components/library/components/BorderGlow')
+);
+const CircularGallery = lazy(
+  () => import('@/components/library/components/CircularGallery')
+);
+const Dock = lazy(() => import('@/components/library/components/Dock'));
+const DomeGallery = lazy(
+  () => import('@/components/library/components/DomeGallery')
+);
+const ElasticSlider = lazy(
+  () => import('@/components/library/components/ElasticSlider')
+);
+const FlowingMenu = lazy(
+  () => import('@/components/library/components/FlowingMenu')
+);
+const FluidGlass = lazy(
+  () => import('@/components/library/components/FluidGlass')
+);
+const Folder = lazy(() => import('@/components/library/components/Folder'));
+const GlassSurface = lazy(
+  () => import('@/components/library/components/GlassSurface')
+);
+const InfiniteMenu = lazy(
+  () => import('@/components/library/components/InfiniteMenu')
+);
+const Lanyard = lazy(() => import('@/components/library/components/Lanyard'));
+const MagicBento = lazy(
+  () => import('@/components/library/components/MagicBento')
+);
+const PixelCard = lazy(
+  () => import('@/components/library/components/PixelCard')
+);
+const ReflectiveCard = lazy(
+  () => import('@/components/library/components/ReflectiveCard')
+);
+const ScrollProgressCSS = lazy(
+  () => import('@/components/library/components/ScrollProgressCSS')
+);
+const ScrollStack = lazy(
+  () => import('@/components/library/components/ScrollStack')
+);
+const ScrollStackItem = lazy(() =>
+  import('@/components/library/components/ScrollStack').then(m => ({
+    default: m.ScrollStackItem,
+  }))
+);
+const TiltedCard = lazy(
+  () => import('@/components/library/components/TiltedCard')
+);
 
 // ASCIIText loaded dynamically (WebGL + THREE)
-const ASCIIText = dynamic(
-  () => import('@/components/library/text-animations/ASCIIText'),
-  { ssr: false }
+const ASCIIText = lazy(
+  () => import('@/components/library/text-animations/ASCIIText')
 );
 
 function VariableProximityPreview() {
@@ -687,8 +773,8 @@ export const cardPreviews: Record<string, React.ReactNode> = {
           'https://images.unsplash.com/photo-1551632811-561732d1e306?w=300',
           'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300',
         ]}
-        fit={1.2}
         grayscale={false}
+        overlayBlurColor='#ffffff'
       />
     </div>
   ),
@@ -1543,8 +1629,8 @@ export const fullDemos: Record<string, React.ReactNode> = {
           'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600',
           'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600',
         ]}
-        fit={1.2}
         grayscale={false}
+        overlayBlurColor='#ffffff'
       />
     </div>
   ),
