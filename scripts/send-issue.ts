@@ -46,7 +46,7 @@ for (const f of [
 function usage(msg?: string): never {
   if (msg) console.error(msg);
   console.error(
-    'usage: pnpm send-issue <slug> [--test <email> | --send]\n' +
+    'usage: pnpm send-issue <slug> [--test <email> | --send [--only <email>]]\n' +
       `issues: ${ISSUES.map(i => `${i.slug} (${i.status})`).join(', ')}`
   );
   process.exit(2);
@@ -63,7 +63,12 @@ if (argv[1] === '--test') {
   if (!to || !to.includes('@')) usage('--test needs an email address');
   mode = { kind: 'test', to };
 } else if (argv[1] === '--send') {
-  mode = { kind: 'send' };
+  if (argv[2] === '--only') {
+    if (!argv[3] || !argv[3].includes('@')) usage('--only needs an email address');
+    mode = { kind: 'send', only: argv[3] };
+  } else {
+    mode = { kind: 'send' };
+  }
 } else if (argv[1]) {
   usage(`Unknown option ${argv[1]}`);
 }

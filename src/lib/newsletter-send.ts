@@ -120,7 +120,7 @@ export interface Mailer {
 export type Mode =
   | { kind: 'dry-run' }
   | { kind: 'test'; to: string }
-  | { kind: 'send' };
+  | { kind: 'send'; only?: string };
 
 export interface SendOptions {
   file: IssueFile;
@@ -285,8 +285,18 @@ export async function sendIssue(o: SendOptions): Promise<SendReport> {
     ])
   );
   report.recipients = recipients.length;
-  const todo = recipients.filter(r => !rows.get(r.id)?.sent_at);
+  let todo = recipients.filter(r => !rows.get(r.id)?.sent_at);
   report.alreadySent = recipients.length - todo.length;
+  // --only: the real send, to one confirmed subscriber. Same token, same row,
+  // so the full send later skips them. Used to test the flow end to end.
+  if (o.mode.kind === 'send' && o.mode.only) {
+    const only = o.mode.only.trim().toLowerCase();
+    todo = todo.filter(r => r.email.toLowerCase() === only);
+    if (!todo.length)
+      throw new Error(
+        `${only} is not a confirmed subscriber who still needs ${file.slug}. Nothing was sent.`
+      );
+  }
 
   // ----------------------------------------------------------------- dry run
   if (o.mode.kind === 'dry-run') {
