@@ -10,7 +10,7 @@ export const LEGAL = {
   },
   contactEmail: "contact@dirckmulder.com",
   privacyEmail: "privacy@dirckmulder.com",
-  lastUpdated: "2026-05-24",
+  lastUpdated: "2026-09-25",
   subprocessors: [
     { name: "PostHog", purpose: "Product analytics (EU-hosted)", region: "EU", url: "https://posthog.com/privacy" },
     { name: "Resend", purpose: "Contact form and newsletter email delivery", region: "EU/US (SCC)", url: "https://resend.com/legal/privacy-policy" },

@@ -30,6 +30,10 @@ export interface Kit {
   /** Picture for the email section, from public/email/. */
   emailImage: string;
   emailImageAlt: string;
+  /** The line under the download button. Defaults to the Claude skills one. */
+  meta?: string;
+  /** The download button's label. Defaults to "Download the kit". */
+  cta?: string;
 }
 
 export const KITS: Kit[] = [

@@ -4,6 +4,11 @@ import {
   renderAlreadySubscribedEmail,
 } from '@/lib/email/confirm';
 import { kitByName } from '@/lib/kits';
+import { giveawayForSource } from '@/lib/giveaways';
+
+// `?kit=app-demo` for a kit, `?kit=designs:2026-09` for an issue's designs.
+const previewKit = (name: string | null) =>
+  name?.startsWith('designs:') ? giveawayForSource(name) : kitByName(name);
 
 export const runtime = 'nodejs';
 
@@ -23,7 +28,7 @@ export async function GET(request: Request) {
   }
 
   const params = new URL(request.url).searchParams;
-  const kit = kitByName(params.get('kit'));
+  const kit = previewKit(params.get('kit'));
 
   const { html } =
     params.get('kind') === 'already'

@@ -7,7 +7,7 @@ import {
   renderWelcomeText,
   welcomeSubject,
 } from '@/lib/email/welcome';
-import { kitForSource } from '@/lib/kits';
+import { giveawayForSource } from '@/lib/giveaways';
 
 export const runtime = 'nodejs';
 
@@ -87,7 +87,7 @@ async function sendWelcome(
 
   const from = process.env.NEWSLETTER_FROM_EMAIL || 'dirck@dirckmulder.com';
   const replyTo = process.env.NEWSLETTER_REPLY_TO || 'dirck@dirckmulder.com';
-  const kit = kitForSource(source);
+  const kit = giveawayForSource(source);
   const payload = {
     unsubscribeToken,
     postCount: getTutorialPosts().length,

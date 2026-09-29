@@ -97,7 +97,11 @@ async function request<T>(
       const hint = text.includes('PGRST106')
         ? ' (the `portfolio` schema is not exposed in Supabase: Settings > API > Exposed schemas)'
         : '';
-      return { ok: false, error: `${res.status} ${text}${hint}`, status: res.status };
+      return {
+        ok: false,
+        error: `${res.status} ${text}${hint}`,
+        status: res.status,
+      };
     }
 
     return { ok: true, data: (text ? JSON.parse(text) : null) as T };
@@ -132,7 +136,9 @@ export function pgInsert<T>(
     returning ? 'return=representation' : 'return=minimal',
     ...(upsertOn ? ['resolution=merge-duplicates'] : []),
   ].join(',');
-  const path = upsertOn ? `${table}?on_conflict=${encodeURIComponent(upsertOn)}` : table;
+  const path = upsertOn
+    ? `${table}?on_conflict=${encodeURIComponent(upsertOn)}`
+    : table;
   return request<T[]>(path, {
     method: 'POST',
     write: true,
@@ -170,5 +176,17 @@ export function pgPatch<T>(
     write: true,
     headers: { Prefer: 'return=representation' },
     body: JSON.stringify(patch),
+  });
+}
+
+/** DELETE rows matching `query`. Same rule as pgPatch: always filter narrowly. */
+export function pgDelete(
+  table: string,
+  query: string
+): Promise<DbResult<null>> {
+  return request<null>(`${table}?${query}`, {
+    method: 'DELETE',
+    write: true,
+    headers: { Prefer: 'return=minimal' },
   });
 }
