@@ -231,7 +231,8 @@ test('--send refuses a draft', async () => {
   await assert.rejects(
     sendIssue({
       ...base,
-      file: draft,
+      // A draft copy: the real 2026-09 file is approved once it is signed off.
+      file: { ...draft, status: 'draft' },
       mode: { kind: 'send' },
       store,
       mailer,
