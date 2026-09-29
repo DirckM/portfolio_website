@@ -90,7 +90,86 @@ function ComponentThumb({ post }: { post: NextPost }) {
 export default function ConfirmedNextSteps({ posts }: { posts: NextPost[] }) {
   return (
     <>
-      <section className='mt-20' aria-labelledby='next-posts'>
+      <section className='mt-16' aria-labelledby='next-reels'>
+        <div className='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
+          <div>
+            <h2
+              id='next-reels'
+              className='text-3xl sm:text-4xl font-[family-name:var(--font-instrument-serif)] text-black'
+            >
+              Watch it first
+            </h2>
+            <p className='mt-4 max-w-[440px] text-black/70 leading-relaxed'>
+              Most things show up on Instagram before they get a proper
+              write-up, usually while they are still a bit messy.
+            </p>
+          </div>
+          <div className='flex flex-col items-start gap-3 lg:items-end'>
+            <p className='text-lg font-[family-name:var(--font-instrument-serif)] italic text-black'>
+              Your follow would mean the world to me.
+            </p>
+            <a
+              href={INSTAGRAM_PROFILE}
+              target='_blank'
+              rel='noopener noreferrer'
+              onClick={() => track({ kind: 'instagram_profile' })}
+              className='inline-flex items-center gap-2.5 rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/80'
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src='/email/icon-instagram.png'
+                alt=''
+                width={16}
+                height={16}
+                className='invert'
+              />
+              Follow on Instagram
+            </a>
+          </div>
+        </div>
+
+        {/* Big on every width: three columns on desktop, a swipeable row on a
+            phone so each reel keeps most of the screen instead of shrinking
+            to a third of it. */}
+        <ul className='mt-8 -mx-4 px-4 flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:gap-6 sm:overflow-visible'>
+          {REELS.slice(0, 3).map((reel, i) => (
+            <li key={reel.id} className='w-[72%] shrink-0 snap-start sm:w-auto'>
+              <a
+                href={reel.href}
+                target='_blank'
+                rel='noopener noreferrer'
+                onClick={() =>
+                  track({ kind: 'reel', reel: reel.id, position: i + 1 })
+                }
+                className='group block no-underline'
+              >
+                <div className='relative aspect-[9/16] rounded-2xl overflow-hidden bg-black sm:shadow-[0_18px_40px_rgba(0,0,0,0.14)]'>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={reel.image}
+                    alt={reel.alt}
+                    loading='lazy'
+                    className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]'
+                  />
+                  <div className='absolute inset-0 ring-1 ring-inset ring-black/10 rounded-2xl' />
+                </div>
+                <p className='mt-3 text-sm sm:text-base leading-snug text-black group-hover:underline underline-offset-4 decoration-black/30'>
+                  {reel.caption}
+                  <ArrowUpRight
+                    size={14}
+                    className='inline ml-0.5 -mt-0.5 text-black/40 transition-colors group-hover:text-black'
+                  />
+                </p>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section
+        className='mt-16 sm:mt-24 pt-12 border-t border-library-border'
+        aria-labelledby='next-posts'
+      >
         <div className='flex items-baseline justify-between gap-4'>
           <h2
             id='next-posts'
@@ -145,75 +224,6 @@ export default function ConfirmedNextSteps({ posts }: { posts: NextPost[] }) {
                   {post.description}
                 </p>
               </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section
-        className='mt-16 sm:mt-24 pt-12 border-t border-library-border grid gap-10 lg:grid-cols-[1fr_minmax(0,560px)] lg:items-start'
-        aria-labelledby='next-reels'
-      >
-        <div>
-          <h2
-            id='next-reels'
-            className='text-3xl font-[family-name:var(--font-instrument-serif)] text-black'
-          >
-            Or watch it first
-          </h2>
-          <p className='mt-4 max-w-[380px] text-black/70 leading-relaxed'>
-            Most things show up on Instagram before they get a proper write-up,
-            usually while they are still a bit messy.
-          </p>
-          <a
-            href={INSTAGRAM_PROFILE}
-            target='_blank'
-            rel='noopener noreferrer'
-            onClick={() => track({ kind: 'instagram_profile' })}
-            className='mt-6 inline-flex items-center gap-2.5 rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/80'
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src='/email/icon-instagram.png'
-              alt=''
-              width={16}
-              height={16}
-              className='invert'
-            />
-            Follow on Instagram
-          </a>
-        </div>
-
-        <ul className='grid grid-cols-3 gap-3 sm:gap-4'>
-          {REELS.slice(0, 3).map((reel, i) => (
-            <li key={reel.id}>
-              <a
-                href={reel.href}
-                target='_blank'
-                rel='noopener noreferrer'
-                onClick={() =>
-                  track({ kind: 'reel', reel: reel.id, position: i + 1 })
-                }
-                className='group block no-underline'
-              >
-                <div className='relative aspect-[9/16] rounded-xl overflow-hidden bg-black'>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={reel.image}
-                    alt={reel.alt}
-                    loading='lazy'
-                    className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]'
-                  />
-                  <div className='absolute inset-0 ring-1 ring-inset ring-black/10 rounded-xl' />
-                </div>
-                <p className='mt-2.5 text-xs sm:text-sm leading-snug text-black group-hover:underline underline-offset-4 decoration-black/30'>
-                  {reel.caption}
-                  <ArrowUpRight
-                    size={13}
-                    className='inline ml-0.5 -mt-0.5 text-black/40 transition-colors group-hover:text-black'
-                  />
-                </p>
-              </a>
             </li>
           ))}
         </ul>
