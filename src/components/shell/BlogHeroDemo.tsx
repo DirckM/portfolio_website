@@ -1,6 +1,7 @@
 'use client';
 
 import { fullDemos } from '@/lib/component-previews';
+import ClientDemo from './ClientDemo';
 
 /**
  * The hero demo above a blog post.
@@ -22,7 +23,7 @@ export default function BlogHeroDemo({ slug }: { slug: string | null }) {
   return (
     <section className='w-full bg-library-cream border-y border-library-border mb-12'>
       <div className='max-w-[1200px] mx-auto min-h-[300px] flex items-center justify-center py-12'>
-        {demo}
+        <ClientDemo>{demo}</ClientDemo>
       </div>
     </section>
   );

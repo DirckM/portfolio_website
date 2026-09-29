@@ -50,7 +50,10 @@ export default async function ComponentDetailPage({ params }: PageProps) {
 
   return (
     <div className='pt-24'>
-      <section className='w-full min-h-[60vh] flex items-center justify-center bg-library-cream border-b border-library-border'>
+      {/* A grid row gives the demo a definite height, so demos sized with
+          h-full fill the stage instead of collapsing to 0px, while taller
+          scroll demos still grow the row. */}
+      <section className='relative w-full grid grid-cols-[minmax(0,1fr)] grid-rows-[minmax(70vh,auto)] place-items-center overflow-x-clip bg-library-cream border-b border-library-border'>
         <FullDemo slug={slug} name={component.name} />
       </section>
 
@@ -66,8 +69,10 @@ export default async function ComponentDetailPage({ params }: PageProps) {
         <p className='text-library-gray mt-4 max-w-xl'>
           {component.description}
         </p>
+        {/* No prefetch: the post's live editor imports every component */}
         <Link
           href={`/blog/${slug}`}
+          prefetch={false}
           className='inline-block mt-6 text-sm text-black underline underline-offset-4 hover:no-underline transition-all'
         >
           Read the blog post

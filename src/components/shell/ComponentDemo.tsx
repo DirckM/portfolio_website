@@ -1,23 +1,28 @@
 'use client';
 
 import { fullDemos, cardPreviews } from '@/lib/component-previews';
+import LazyCard from './LazyCard';
+import ClientDemo from './ClientDemo';
 
 export function FullDemo({ slug, name }: { slug: string; name: string }) {
   return (
     <>
-      {fullDemos[slug] || (
-        <div className='text-library-gray'>Live demo: {name}</div>
-      )}
+      <ClientDemo>
+        {fullDemos[slug] || (
+          <div className='text-library-gray'>Live demo: {name}</div>
+        )}
+      </ClientDemo>
     </>
   );
 }
 
 export function CardPreview({ slug, name }: { slug: string; name: string }) {
+  const fallback = <div className='text-library-gray text-sm'>{name}</div>;
   return (
-    <>
-      {cardPreviews[slug] || (
-        <div className='text-library-gray text-sm'>{name}</div>
-      )}
-    </>
+    <LazyCard fallback={fallback}>
+      <ClientDemo fallback={fallback}>
+        {cardPreviews[slug] || fallback}
+      </ClientDemo>
+    </LazyCard>
   );
 }

@@ -117,6 +117,7 @@ export default function BlogList({ posts }: { posts: BlogPost[] }) {
         <>
           <Link
             href={`/blog/${latest.slug}`}
+            prefetch={false}
             className='group no-underline block mb-16'
           >
             <div className='border border-library-border rounded-xl p-8 hover:shadow-lg transition-shadow duration-300'>
@@ -152,6 +153,7 @@ export default function BlogList({ posts }: { posts: BlogPost[] }) {
                 <Link
                   key={post.slug}
                   href={`/blog/${post.slug}`}
+                  prefetch={false}
                   className='group no-underline py-5 border-b border-library-border first:pt-0 last:border-0'
                 >
                   <div className='flex items-center gap-3 mb-1.5'>
