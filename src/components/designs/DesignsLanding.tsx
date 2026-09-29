@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import { ArrowDown, ArrowRight } from 'lucide-react';
 import NewsletterSignup from '@/components/shell/NewsletterSignup';
 import PhoneRing, { type RingItem } from './PhoneRing';
-import { GiveawayButtons, rise, useGiveaway } from './useGiveaway';
+import { rise, SubscriberActions, useGiveaway } from './useGiveaway';
 
 /**
  * The page behind each issue's "Get the code" button, driven entirely by the
@@ -54,10 +54,6 @@ export default function DesignsLanding(props: DesignsLandingProps) {
 
   const up = (delay: number) => rise(g.reduce, delay);
 
-  const subscriberButtons = (at: 'hero' | 'end') => (
-    <GiveawayButtons at={at} g={g} label='Download the code' size={size} />
-  );
-
   return (
     <div className='overflow-x-clip pb-20 pt-28 md:pt-32'>
       {/* Hero */}
@@ -89,12 +85,13 @@ export default function DesignsLanding(props: DesignsLandingProps) {
           className='mt-9 flex w-full flex-col items-center'
         >
           {state === 'subscriber' ? (
-            <>
-              {subscriberButtons('hero')}
-              <p className='mt-4 text-sm text-black/50'>
-                Free, and you are already on the list.
-              </p>
-            </>
+            <SubscriberActions
+              g={g}
+              label='Download the code'
+              size={size}
+              downloading='The code is downloading'
+              shareHeading='Share these designs with your friends'
+            />
           ) : (
             <>
               <button
@@ -127,20 +124,14 @@ export default function DesignsLanding(props: DesignsLandingProps) {
       </motion.section>
 
       {/* Get the code */}
-      <section
-        id={FORM_ID}
-        className='mx-auto mt-20 max-w-[640px] scroll-mt-24 px-4 text-center sm:px-6 md:mt-28'
-      >
-        <h2 className='text-balance text-4xl leading-[1.05] text-black md:text-5xl font-[family-name:var(--font-instrument-serif)]'>
-          {state === 'subscriber'
-            ? `${All}, in one zip`
-            : `${All}, in your inbox`}
-        </h2>
-        {state === 'subscriber' ? (
-          <div className='mt-8 flex flex-col items-center'>
-            {subscriberButtons('end')}
-          </div>
-        ) : (
+      {state === 'visitor' && (
+        <section
+          id={FORM_ID}
+          className='mx-auto mt-20 max-w-[640px] scroll-mt-24 px-4 text-center sm:px-6 md:mt-28'
+        >
+          <h2 className='text-balance text-4xl leading-[1.05] text-black md:text-5xl font-[family-name:var(--font-instrument-serif)]'>
+            {`${All}, in your inbox`}
+          </h2>
           <>
             <p className='mx-auto mt-4 max-w-[460px] text-pretty text-base leading-relaxed text-black/60'>
               Put your email in and the code comes straight to you. You also get
@@ -165,8 +156,8 @@ export default function DesignsLanding(props: DesignsLandingProps) {
               />
             </div>
           </>
-        )}
-      </section>
+        </section>
+      )}
 
       <footer className='mx-auto mt-24 max-w-[640px] border-t border-black/10 px-6 pt-6 text-center'>
         <p className='text-pretty text-[13px] leading-relaxed text-black/45'>

@@ -7,7 +7,7 @@ import { ArrowDown, ArrowRight } from 'lucide-react';
 import NewsletterSignup from '@/components/shell/NewsletterSignup';
 import { BEZEL } from '@/lib/phone-demos';
 import type { KitPage } from '@/lib/kits';
-import { GiveawayButtons, rise, useGiveaway } from './useGiveaway';
+import { rise, SubscriberActions, useGiveaway } from './useGiveaway';
 
 /**
  * The page behind a kit's button in the emails, /kits/<id>. Same design and
@@ -112,10 +112,6 @@ export default function KitLanding(props: KitLandingProps) {
 
   const up = (delay: number) => rise(g.reduce, delay);
 
-  const buttons = (at: 'hero' | 'end') => (
-    <GiveawayButtons at={at} g={g} label='Download the kit' size={size} />
-  );
-
   return (
     <div className='overflow-x-clip pb-20 pt-28 md:pt-32'>
       {/* Hero */}
@@ -146,12 +142,13 @@ export default function KitLanding(props: KitLandingProps) {
           className='mt-9 flex w-full flex-col items-center'
         >
           {state === 'subscriber' ? (
-            <>
-              {buttons('hero')}
-              <p className='mt-4 text-sm text-black/50'>
-                Free, and you are already on the list.
-              </p>
-            </>
+            <SubscriberActions
+              g={g}
+              label='Download the kit'
+              size={size}
+              downloading='Your kit is downloading'
+              shareHeading='Share the kit with your friends'
+            />
           ) : (
             <>
               <button
@@ -229,20 +226,14 @@ export default function KitLanding(props: KitLandingProps) {
       </motion.section>
 
       {/* Get the kit */}
-      <section
-        id={FORM_ID}
-        className='mx-auto mt-20 max-w-[640px] scroll-mt-24 px-4 text-center sm:px-6 md:mt-28'
-      >
-        <h2 className='text-balance text-4xl leading-[1.05] text-black md:text-5xl font-[family-name:var(--font-instrument-serif)]'>
-          {state === 'subscriber'
-            ? 'The whole kit, in one zip'
-            : 'The kit, in your inbox'}
-        </h2>
-        {state === 'subscriber' ? (
-          <div className='mt-8 flex flex-col items-center'>
-            {buttons('end')}
-          </div>
-        ) : (
+      {state === 'visitor' && (
+        <section
+          id={FORM_ID}
+          className='mx-auto mt-20 max-w-[640px] scroll-mt-24 px-4 text-center sm:px-6 md:mt-28'
+        >
+          <h2 className='text-balance text-4xl leading-[1.05] text-black md:text-5xl font-[family-name:var(--font-instrument-serif)]'>
+            {'The kit, in your inbox'}
+          </h2>
           <>
             <p className='mx-auto mt-4 max-w-[460px] text-pretty text-base leading-relaxed text-black/60'>
               Put your email in and the kit comes straight to you. You also get
@@ -267,8 +258,8 @@ export default function KitLanding(props: KitLandingProps) {
               />
             </div>
           </>
-        )}
-      </section>
+        </section>
+      )}
 
       <footer className='mx-auto mt-24 max-w-[640px] border-t border-black/10 px-6 pt-6 text-center'>
         <Link
