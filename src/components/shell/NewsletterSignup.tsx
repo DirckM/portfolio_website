@@ -52,7 +52,7 @@ interface Props {
    * Record the submit press as a button event (the /designs page and the blog
    * kit panel). Only the press, never the address.
    */
-  track?: { page: 'designs' | 'blog-kit'; slug?: string };
+  track?: { page: 'designs' | 'blog-kit' | 'kit'; slug?: string };
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

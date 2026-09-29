@@ -121,7 +121,15 @@ export async function startSignup(
       { already: true },
       ctx.ip
     );
-    return { ok: true, data: { action: 'send_already_confirmed' } };
+    // The id is for the kit link in the "already subscribed" email. It never
+    // leaves the server, so the response stays identical.
+    return {
+      ok: true,
+      data: {
+        action: 'send_already_confirmed',
+        subscriberId: existing.data.id,
+      },
+    };
   }
 
   if (existing.data) {
@@ -182,17 +190,20 @@ export async function startSignup(
  * actually mail to unsubscribe from, and this way an abandoned pending row
  * never holds a live token.
  */
-export async function confirmByToken(
-  token: string
-): Promise<
-  DbResult<{ email: string; source: string; unsubscribeToken: string } | null>
+export async function confirmByToken(token: string): Promise<
+  DbResult<{
+    id: string;
+    email: string;
+    source: string;
+    unsubscribeToken: string;
+  } | null>
 > {
   const hash = sha256hex(token);
   const unsubscribeToken = newToken();
 
   // Conditional on status AND expiry, so a stale or replayed link cannot
   // resurrect an unsubscribed row, and two taps cannot both win.
-  const patched = await pgPatch<{ email: string; source: string }>(
+  const patched = await pgPatch<{ id: string; email: string; source: string }>(
     'subscribers',
     `confirm_token_hash=eq.${hash}&status=eq.pending&confirm_expires_at=gt.${new Date().toISOString()}`,
     {
@@ -208,9 +219,9 @@ export async function confirmByToken(
 
   // The source says which form they signed up from, which is how the welcome
   // email knows whether to carry a kit.
-  const { email, source } = patched.data[0];
+  const { id, email, source } = patched.data[0];
   await logEvent(null, email, 'confirmed');
-  return { ok: true, data: { email, source, unsubscribeToken } };
+  return { ok: true, data: { id, email, source, unsubscribeToken } };
 }
 
 /**

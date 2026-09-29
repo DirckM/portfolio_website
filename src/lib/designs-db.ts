@@ -26,6 +26,23 @@ export const designsDb: DesignsStore = {
     return sub.ok ? (sub.data[0] ?? null) : null;
   },
 
+  async subscriberForKitToken(giveaway, tokenHash) {
+    // giveaway_tokens comes from 20260929_0001_kit_pages.sql. Before that is
+    // applied this select errors, which reads as "no match": the page shows
+    // the form, exactly as for any unknown token.
+    const row = await pgSelect<{ subscriber_id: string }>(
+      'giveaway_tokens',
+      `giveaway=eq.${enc(giveaway)}&token_hash=eq.${tokenHash}&select=subscriber_id&limit=1`
+    );
+    const id = row.ok ? row.data[0]?.subscriber_id : undefined;
+    if (!id) return null;
+    const sub = await pgSelect<{ id: string; status: string }>(
+      'subscribers',
+      `id=eq.${id}&select=id,status&limit=1`
+    );
+    return sub.ok ? (sub.data[0] ?? null) : null;
+  },
+
   async buttonEventsFromIpSince(ipHash, sinceIso) {
     const res = await pgSelect<{ id: number }>(
       'button_events',

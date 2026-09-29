@@ -13,7 +13,7 @@
  * so what Dirck approves in the preview is what a subscriber receives.
  */
 
-import type { Kit } from '@/lib/kits';
+import { kitPageUrl, kitWithPage, kitId, type Kit } from '@/lib/kits';
 import {
   layout,
   type Item,
@@ -171,14 +171,21 @@ export function toIssue(
   const strip = (s: Section): Section => {
     if (!('afterShowcase' in s)) return s;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { afterShowcase, ...rest } = s as Section & { afterShowcase?: boolean };
+    const { afterShowcase, ...rest } = s as Section & {
+      afterShowcase?: boolean;
+    };
     return rest as Section;
   };
   const sections = laid.filter(s => !isAfter(s)).map(strip);
   const sectionsAfter = laid.filter(isAfter).map(strip);
   if (f.kit) {
     const { kit, ...copy } = f.kit;
-    sections.splice(1, 0, kitSection(kit, copy));
+    // A kit with a page gets the page, opened with the same per-send designs
+    // token as "Get the code": one token unlocks every giveaway of the issue.
+    const href = kitWithPage(kitId(kit))
+      ? kitPageUrl(kit, designsToken ?? 'preview_token_not_real')
+      : kit.href;
+    sections.splice(1, 0, kitSection(kit, copy, href));
   }
   return {
     number: f.number,

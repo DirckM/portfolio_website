@@ -8,6 +8,7 @@ import {
   welcomeSubject,
 } from '@/lib/email/welcome';
 import { giveawayForSource } from '@/lib/giveaways';
+import { kitEmailLink, kitTokenDb } from '@/lib/kit-access';
 
 export const runtime = 'nodejs';
 
@@ -57,7 +58,8 @@ export async function GET(request: Request) {
   await sendWelcome(
     result.data.email,
     result.data.unsubscribeToken,
-    result.data.source
+    result.data.source,
+    result.data.id
   );
 
   return NextResponse.redirect(`${site}/newsletter/confirmed`, 302);
@@ -77,7 +79,8 @@ export async function GET(request: Request) {
 async function sendWelcome(
   email: string,
   unsubscribeToken: string,
-  source: string
+  source: string,
+  subscriberId: string
 ) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -92,6 +95,10 @@ async function sendWelcome(
     unsubscribeToken,
     postCount: getTutorialPosts().length,
     kit,
+    // A kit with a page: that page, unlocked with a token of their own.
+    kitHref: kit
+      ? await kitEmailLink(kitTokenDb, kit, subscriberId, 'welcome')
+      : undefined,
   };
 
   const { error } = await new Resend(apiKey).emails.send({

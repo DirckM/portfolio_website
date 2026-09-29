@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { renderWelcome } from '@/lib/email/welcome';
 import { getTutorialPosts } from '@/lib/blog-utils';
-import { kitByName } from '@/lib/kits';
+import { kitByName, previewKitHref } from '@/lib/kits';
 import { giveawayForSource } from '@/lib/giveaways';
 
 // `?kit=app-demo` for a kit, `?kit=designs:2026-09` for an issue's designs.
@@ -26,10 +26,12 @@ export async function GET(request: Request) {
     return new NextResponse('Not found', { status: 404 });
   }
 
+  const kit = previewKit(new URL(request.url).searchParams.get('kit'));
   const html = renderWelcome({
     unsubscribeToken: 'preview_token_not_real',
     postCount: getTutorialPosts().length,
-    kit: previewKit(new URL(request.url).searchParams.get('kit')),
+    kit,
+    kitHref: kit ? previewKitHref(kit) : undefined,
   })
     // Assets resolve against the live site, which is right for a real send and
     // wrong here: anything added in this branch is not deployed yet and renders

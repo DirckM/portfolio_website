@@ -53,6 +53,9 @@ function fakeStore(opts: { status?: string } = {}) {
         ? { id: 'tom', status: opts.status ?? 'confirmed' }
         : null;
     },
+    async subscriberForKitToken() {
+      return null;
+    },
     async buttonEventsFromIpSince() {
       return 0;
     },
