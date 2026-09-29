@@ -30,8 +30,12 @@ const DISMISS_DAYS = 30;
 
 const STORAGE_KEY = 'nl-modal';
 
-/** Routes where the ask is redundant or actively wrong. */
-const EXCLUDED = ['/newsletter', '/privacy', '/terms', '/designs'];
+/**
+ * Routes where the ask is redundant or actively wrong. The giveaway pages
+ * (/designs, /kits) are signup pages in their own right, and a subscriber
+ * who just downloaded there would be asked to sign up again.
+ */
+const EXCLUDED = ['/newsletter', '/privacy', '/terms', '/designs', '/kits'];
 
 type Stored = { until: number | null };
 
