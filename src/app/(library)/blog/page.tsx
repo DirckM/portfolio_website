@@ -1,3 +1,4 @@
+import AccentTitle from '@/components/shell/AccentTitle';
 import { Metadata } from 'next';
 import { getAllBlogPosts } from '@/lib/blog-utils';
 import { JsonLd, blogIndexJsonLd } from '@/lib/structured-data';
@@ -16,8 +17,8 @@ export default function BlogPage() {
     <>
     <JsonLd data={blogIndexJsonLd(posts)} />
     <div className='pt-24 pb-20 max-w-[900px] mx-auto px-6'>
-      <h1 className='text-3xl font-[family-name:var(--font-instrument-serif)] mb-16'>
-        Blog
+      <h1 className='text-3xl font-semibold tracking-[-0.03em] mb-16'>
+        <AccentTitle text={`Blog`} />
       </h1>
 
       <BlogList

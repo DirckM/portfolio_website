@@ -1,5 +1,6 @@
 'use client';
 
+import AccentTitle from '@/components/shell/AccentTitle';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { ArrowDown, ArrowRight } from 'lucide-react';
@@ -69,9 +70,9 @@ export default function DesignsLanding(props: DesignsLandingProps) {
         </motion.p>
         <motion.h1
           {...up(0.06)}
-          className='mt-6 text-balance text-[42px] leading-[1.02] text-black md:text-7xl font-[family-name:var(--font-instrument-serif)]'
+          className='mt-6 text-balance text-[40px] leading-[1.02] text-black md:text-[64px] font-semibold tracking-[-0.035em]'
         >
-          {title}
+          <AccentTitle text={title} />
         </motion.h1>
         <motion.p
           {...up(0.12)}
@@ -129,8 +130,8 @@ export default function DesignsLanding(props: DesignsLandingProps) {
           id={FORM_ID}
           className='mx-auto mt-20 max-w-[640px] scroll-mt-24 px-4 text-center sm:px-6 md:mt-28'
         >
-          <h2 className='text-balance text-4xl leading-[1.05] text-black md:text-5xl font-[family-name:var(--font-instrument-serif)]'>
-            {`${All}, in your inbox`}
+          <h2 className='text-balance text-[32px] leading-[1.05] text-black md:text-[44px] font-semibold tracking-[-0.035em]'>
+            <AccentTitle text={`${All}, in your inbox`} />
           </h2>
           <>
             <p className='mx-auto mt-4 max-w-[460px] text-pretty text-base leading-relaxed text-black/60'>

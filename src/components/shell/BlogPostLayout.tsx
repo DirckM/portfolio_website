@@ -1,3 +1,4 @@
+import AccentTitle from '@/components/shell/AccentTitle';
 import Link from 'next/link';
 import type { BlogPost } from '@/lib/blog-utils';
 import PostFeedback from './PostFeedback';
@@ -25,8 +26,8 @@ export default function BlogPostLayout({
           <span className='text-library-border'>|</span>
           <span className='text-xs text-library-gray'>{post.readingTime}</span>
         </div>
-        <h1 className='text-4xl md:text-5xl font-[family-name:var(--font-instrument-serif)] text-black leading-tight'>
-          {post.title}
+        <h1 className='text-4xl md:text-5xl font-semibold tracking-[-0.03em] text-black leading-tight'>
+          <AccentTitle text={post.title} />
         </h1>
         <p className='mt-4 text-library-gray text-lg'>{post.description}</p>
       </header>

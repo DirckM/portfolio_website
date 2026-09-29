@@ -1,5 +1,6 @@
 'use client';
 
+import AccentTitle from '@/components/shell/AccentTitle';
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
@@ -26,6 +27,12 @@ export interface KitLandingProps {
   name: string;
   size: string;
   page: KitPage;
+  /** The newest issue's free designs, shown at the bottom with their screens. */
+  designs: {
+    slug: string;
+    title: string;
+    items: { video: string; poster: string; alt: string }[];
+  } | null;
 }
 
 // Screen opening as a share of the bezel, so the phone can be any size.
@@ -96,7 +103,7 @@ function Phone({ demo }: { demo: KitPage['demo'] }) {
 }
 
 export default function KitLanding(props: KitLandingProps) {
-  const { id, state, refCode, hasTokenInUrl, size, page } = props;
+  const { id, state, refCode, hasTokenInUrl, size, page, designs } = props;
   const g = useGiveaway({
     slug: `kit:${id}`,
     page: 'kit',
@@ -127,9 +134,9 @@ export default function KitLanding(props: KitLandingProps) {
         </motion.p>
         <motion.h1
           {...up(0.06)}
-          className='mt-6 text-balance text-[42px] leading-[1.02] text-black md:text-7xl font-[family-name:var(--font-instrument-serif)]'
+          className='mt-6 text-balance text-[40px] leading-[1.02] text-black md:text-[64px] font-semibold tracking-[-0.035em]'
         >
-          {page.title}
+          <AccentTitle text={page.title} />
         </motion.h1>
         <motion.p
           {...up(0.12)}
@@ -231,8 +238,8 @@ export default function KitLanding(props: KitLandingProps) {
           id={FORM_ID}
           className='mx-auto mt-20 max-w-[640px] scroll-mt-24 px-4 text-center sm:px-6 md:mt-28'
         >
-          <h2 className='text-balance text-4xl leading-[1.05] text-black md:text-5xl font-[family-name:var(--font-instrument-serif)]'>
-            {'The kit, in your inbox'}
+          <h2 className='text-balance text-[32px] leading-[1.05] text-black md:text-[44px] font-semibold tracking-[-0.035em]'>
+            <AccentTitle text='The kit, in your inbox' />
           </h2>
           <>
             <p className='mx-auto mt-4 max-w-[460px] text-pretty text-base leading-relaxed text-black/60'>
@@ -261,19 +268,60 @@ export default function KitLanding(props: KitLandingProps) {
         </section>
       )}
 
-      <footer className='mx-auto mt-24 max-w-[640px] border-t border-black/10 px-6 pt-6 text-center'>
-        <Link
-          href='/designs'
-          className='group inline-flex items-center gap-1.5 text-sm text-black/70 transition-colors hover:text-black'
-        >
-          Free app designs, with the code
-          <ArrowRight
-            className='size-4 transition-transform duration-200 group-hover:translate-x-0.5'
-            strokeWidth={1.75}
-            aria-hidden
-          />
-        </Link>
-      </footer>
+      {designs && (
+        <section className='mx-auto mt-24 max-w-[1040px] border-t border-black/10 px-6 pt-16'>
+          <Link
+            href={`/designs/${designs.slug}`}
+            className='group block no-underline'
+          >
+            <div className='flex flex-col items-center text-center'>
+              <p className='flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-black/50'>
+                Also free
+                <span className='rounded-full bg-gradient-to-r from-[#b8410f] to-[#f47a2a] px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] text-white'>
+                  FREE
+                </span>
+              </p>
+              <h2 className='mt-3 max-w-[560px] text-balance text-[28px] leading-[1.08] text-black sm:text-4xl font-semibold tracking-[-0.035em]'>
+                <AccentTitle text={designs.title} />
+              </h2>
+              <p className='mt-3 max-w-[460px] text-black/60'>
+                The code for every screen, one folder each. Open it in a
+                browser and pull it apart.
+              </p>
+            </div>
+            <ul className='mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4'>
+              {designs.items.map(it => (
+                <li
+                  key={it.video}
+                  className='aspect-[3/4] overflow-hidden rounded-2xl bg-black/[0.03] ring-1 ring-inset ring-black/5 transition-transform duration-500 group-hover:-translate-y-1'
+                >
+                  <video
+                    src={it.video}
+                    poster={it.poster}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload='metadata'
+                    aria-label={it.alt}
+                    className='h-full w-full object-cover'
+                  />
+                </li>
+              ))}
+            </ul>
+            <div className='mt-8 flex justify-center'>
+              <span className='inline-flex items-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition-colors duration-200 group-hover:bg-black/80'>
+                See the designs and get the code
+                <ArrowRight
+                  className='size-4 transition-transform duration-200 group-hover:translate-x-0.5'
+                  strokeWidth={1.75}
+                  aria-hidden
+                />
+              </span>
+            </div>
+          </Link>
+        </section>
+      )}
     </div>
   );
 }

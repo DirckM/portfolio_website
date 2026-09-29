@@ -1,3 +1,4 @@
+import AccentTitle from '@/components/shell/AccentTitle';
 import type { Metadata } from 'next';
 import ConfirmedNextSteps, {
   type NextPost,
@@ -41,8 +42,8 @@ export default function ConfirmedPage() {
         <p className='text-xs uppercase tracking-[0.16em] text-gradient-primary font-semibold'>
           Subscription confirmed
         </p>
-        <h1 className='mt-3 text-5xl font-[family-name:var(--font-instrument-serif)] text-black'>
-          You are on the list
+        <h1 className='mt-3 text-5xl font-semibold tracking-[-0.03em] text-black'>
+          <AccentTitle text={`You are on the list`} />
         </h1>
         <p className='mt-6 text-black/70 leading-relaxed'>
           Good to have you. The next issue lands in your inbox, and every one

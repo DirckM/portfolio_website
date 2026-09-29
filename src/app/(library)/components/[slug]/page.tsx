@@ -1,3 +1,4 @@
+import AccentTitle from '@/components/shell/AccentTitle';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import {
@@ -37,8 +38,8 @@ export default async function ComponentDetailPage({ params }: PageProps) {
   if (!component) {
     return (
       <div className='pt-32 text-center'>
-        <h1 className='text-2xl font-[family-name:var(--font-instrument-serif)]'>
-          Component not found
+        <h1 className='text-2xl font-semibold tracking-[-0.03em]'>
+          <AccentTitle text={`Component not found`} />
         </h1>
       </div>
     );
@@ -58,8 +59,8 @@ export default async function ComponentDetailPage({ params }: PageProps) {
       </section>
 
       <section className='max-w-[1200px] mx-auto px-6 py-16'>
-        <h1 className='text-4xl font-[family-name:var(--font-instrument-serif)]'>
-          {component.name}
+        <h1 className='text-4xl font-semibold tracking-[-0.03em]'>
+          <AccentTitle text={component.name} />
         </h1>
         <div className='flex items-center gap-4 mt-3'>
           <span className='text-xs text-library-gray uppercase tracking-wider'>
@@ -81,8 +82,8 @@ export default async function ComponentDetailPage({ params }: PageProps) {
 
       {related.length > 0 && (
         <section className='max-w-[1200px] mx-auto px-6 pb-24'>
-          <h2 className='text-lg font-[family-name:var(--font-instrument-serif)] mb-8'>
-            Related components
+          <h2 className='text-lg font-semibold tracking-[-0.03em] mb-8'>
+            <AccentTitle text={`Related components`} />
           </h2>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
             {related.map(r => (

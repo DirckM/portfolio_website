@@ -1,5 +1,6 @@
 'use client';
 
+import AccentTitle from '@/components/shell/AccentTitle';
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 
@@ -135,8 +136,8 @@ export default function BlogList({ posts }: { posts: BlogPost[] }) {
                   {latest.readingTime}
                 </span>
               </div>
-              <h2 className='text-3xl font-[family-name:var(--font-instrument-serif)] text-black group-hover:underline underline-offset-4 decoration-primary/40 leading-tight'>
-                {latest.title}
+              <h2 className='text-3xl font-semibold tracking-[-0.03em] text-black group-hover:underline underline-offset-4 decoration-primary/40 leading-tight'>
+                <AccentTitle text={latest.title} />
               </h2>
               <p className='text-library-gray mt-3 text-base leading-relaxed'>
                 {latest.description}
@@ -146,8 +147,8 @@ export default function BlogList({ posts }: { posts: BlogPost[] }) {
 
           {rest.length > 0 && (
             <div className='flex flex-col'>
-              <h2 className='text-lg font-[family-name:var(--font-instrument-serif)] mb-8 text-library-gray'>
-                {activeCategory ? `${activeCategory} posts` : 'All posts'}
+              <h2 className='text-lg font-semibold tracking-[-0.03em] mb-8 text-library-gray'>
+                <AccentTitle text={activeCategory ? `${activeCategory} posts` : 'All posts'} />
               </h2>
               {rest.map(post => (
                 <Link
@@ -169,8 +170,8 @@ export default function BlogList({ posts }: { posts: BlogPost[] }) {
                       {post.readingTime}
                     </span>
                   </div>
-                  <h3 className='text-lg font-[family-name:var(--font-instrument-serif)] text-black group-hover:underline underline-offset-4 decoration-primary/40'>
-                    {post.title}
+                  <h3 className='text-lg font-semibold tracking-[-0.03em] text-black group-hover:underline underline-offset-4 decoration-primary/40'>
+                    <AccentTitle text={post.title} />
                   </h3>
                   <p className='text-sm text-library-gray mt-1'>
                     {post.description}

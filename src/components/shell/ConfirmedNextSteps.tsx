@@ -1,5 +1,6 @@
 'use client';
 
+import AccentTitle from '@/components/shell/AccentTitle';
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import posthog from 'posthog-js';
@@ -95,9 +96,9 @@ export default function ConfirmedNextSteps({ posts }: { posts: NextPost[] }) {
           <div>
             <h2
               id='next-reels'
-              className='max-w-[520px] text-3xl sm:text-4xl leading-tight font-[family-name:var(--font-instrument-serif)] text-black'
+              className='max-w-[520px] text-3xl sm:text-4xl leading-tight font-semibold tracking-[-0.03em] text-black'
             >
-              It would mean the world if you followed me on socials too
+              <AccentTitle text={`It would mean the world if you followed me on socials too`} />
             </h2>
             <p className='mt-4 max-w-[440px] text-black/70 leading-relaxed'>
               Most things show up on Instagram before they get a proper
@@ -170,9 +171,9 @@ export default function ConfirmedNextSteps({ posts }: { posts: NextPost[] }) {
         <div className='flex items-baseline justify-between gap-4'>
           <h2
             id='next-posts'
-            className='text-3xl font-[family-name:var(--font-instrument-serif)] text-black'
+            className='text-3xl font-semibold tracking-[-0.03em] text-black'
           >
-            Latest on the blog
+            <AccentTitle text={`Latest on the blog`} />
           </h2>
           <Link
             href='/blog'

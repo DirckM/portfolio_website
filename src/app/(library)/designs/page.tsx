@@ -1,3 +1,4 @@
+import AccentTitle from '@/components/shell/AccentTitle';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -27,8 +28,8 @@ export default function DesignsIndexPage() {
         <p className='text-[11px] uppercase tracking-[0.2em] text-black/50'>
           From the newsletter
         </p>
-        <h1 className='mt-5 max-w-[760px] text-balance text-[42px] leading-[1.02] text-black md:text-6xl font-[family-name:var(--font-instrument-serif)]'>
-          App screens, rebuilt in HTML, free to take apart
+        <h1 className='mt-5 max-w-[760px] text-balance text-[42px] leading-[1.02] text-black md:text-6xl font-semibold tracking-[-0.03em]'>
+          <AccentTitle text={`App screens, rebuilt in HTML, free to take apart`} />
         </h1>
         <p className='mt-5 max-w-[600px] text-base leading-relaxed text-black/60 md:text-lg'>
           Every month a few designs, animated and with the code. Newest first.

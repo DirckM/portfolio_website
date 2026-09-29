@@ -1,5 +1,6 @@
 'use client';
 
+import AccentTitle from '@/components/shell/AccentTitle';
 import React, { useId, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowRight, CircleAlert, MailCheck } from 'lucide-react';
@@ -172,8 +173,8 @@ export default function NewsletterSignup({
     <div className={isPanel ? 'bg-black/[0.03] p-8' : ''}>
       {isPanel && (
         <>
-          <h2 className='text-2xl font-[family-name:var(--font-instrument-serif)] text-black'>
-            {headline}
+          <h2 className='text-2xl font-semibold tracking-[-0.03em] text-black'>
+            <AccentTitle text={headline} />
           </h2>
           <p className='mt-2 mb-6 text-sm text-black/60'>{blurb}</p>
         </>
