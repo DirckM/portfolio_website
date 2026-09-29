@@ -1,3 +1,4 @@
+import AccentTitle from '@/components/shell/AccentTitle';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import NewsletterSignup from '@/components/shell/NewsletterSignup';
@@ -20,8 +21,8 @@ export default function NewsletterPage() {
   return (
     <div className='flex min-h-[100svh] flex-col justify-center px-6 pt-24 pb-16'>
       <div className='mx-auto w-full max-w-[760px]'>
-        <h1 className='text-4xl md:text-5xl font-[family-name:var(--font-instrument-serif)] text-black leading-tight'>
-          What I am building
+        <h1 className='text-4xl md:text-5xl font-semibold tracking-[-0.03em] text-black leading-tight'>
+          <AccentTitle text={`What I am building`} />
         </h1>
 
         <p className='mt-6 text-lg text-black/70 leading-relaxed'>
@@ -58,8 +59,8 @@ export default function NewsletterPage() {
             card's turns the form half a visibly darker grey. */}
           <div className='flex flex-1 items-center px-7 py-9 sm:px-9'>
             <div className='w-full'>
-              <h2 className='font-[family-name:var(--font-instrument-serif)] text-2xl text-black'>
-                Sign up
+              <h2 className='font-semibold tracking-[-0.03em] text-2xl text-black'>
+                <AccentTitle text={`Sign up`} />
               </h2>
               <p className='mt-2 mb-7 text-sm text-black/60'>
                 No spam, no drip sequence, no course. One email a month.

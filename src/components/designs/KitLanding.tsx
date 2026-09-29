@@ -1,5 +1,6 @@
 'use client';
 
+import AccentTitle from '@/components/shell/AccentTitle';
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
@@ -133,9 +134,9 @@ export default function KitLanding(props: KitLandingProps) {
         </motion.p>
         <motion.h1
           {...up(0.06)}
-          className='mt-6 text-balance text-[42px] leading-[1.02] text-black md:text-7xl font-[family-name:var(--font-instrument-serif)]'
+          className='mt-6 text-balance text-[40px] leading-[1.02] text-black md:text-[64px] font-semibold tracking-[-0.035em]'
         >
-          {page.title}
+          <AccentTitle text={page.title} />
         </motion.h1>
         <motion.p
           {...up(0.12)}
@@ -237,8 +238,8 @@ export default function KitLanding(props: KitLandingProps) {
           id={FORM_ID}
           className='mx-auto mt-20 max-w-[640px] scroll-mt-24 px-4 text-center sm:px-6 md:mt-28'
         >
-          <h2 className='text-balance text-4xl leading-[1.05] text-black md:text-5xl font-[family-name:var(--font-instrument-serif)]'>
-            {'The kit, in your inbox'}
+          <h2 className='text-balance text-[32px] leading-[1.05] text-black md:text-[44px] font-semibold tracking-[-0.035em]'>
+            <AccentTitle text='The kit, in your inbox' />
           </h2>
           <>
             <p className='mx-auto mt-4 max-w-[460px] text-pretty text-base leading-relaxed text-black/60'>
@@ -280,8 +281,8 @@ export default function KitLanding(props: KitLandingProps) {
                   FREE
                 </span>
               </p>
-              <h2 className='mt-3 max-w-[560px] font-[family-name:var(--font-instrument-serif)] text-3xl leading-tight text-black sm:text-4xl'>
-                {designs.title}
+              <h2 className='mt-3 max-w-[560px] text-balance text-[28px] leading-[1.08] text-black sm:text-4xl font-semibold tracking-[-0.035em]'>
+                <AccentTitle text={designs.title} />
               </h2>
               <p className='mt-3 max-w-[460px] text-black/60'>
                 The code for every screen, one folder each. Open it in a

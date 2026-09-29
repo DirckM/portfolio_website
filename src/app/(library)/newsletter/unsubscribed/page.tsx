@@ -1,3 +1,4 @@
+import AccentTitle from '@/components/shell/AccentTitle';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import UnsubscribeSurvey from '@/components/shell/UnsubscribeSurvey';
@@ -24,8 +25,8 @@ export default async function UnsubscribedPage({ searchParams }: Props) {
 
   return (
     <div className='pt-32 pb-24 max-w-[560px] mx-auto px-6'>
-      <h1 className='text-4xl font-[family-name:var(--font-instrument-serif)] text-black'>
-        You are unsubscribed
+      <h1 className='text-4xl font-semibold tracking-[-0.03em] text-black'>
+        <AccentTitle text={`You are unsubscribed`} />
       </h1>
       <p className='mt-6 text-black/70 leading-relaxed'>
         Done, no more emails. That took effect immediately, and nothing below

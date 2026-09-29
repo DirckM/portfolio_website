@@ -1,5 +1,6 @@
 'use client';
 
+import AccentTitle from '@/components/shell/AccentTitle';
 import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { Check, Copy, Download, Loader2, Share2 } from 'lucide-react';
@@ -320,8 +321,8 @@ function ShareBlock({ g, heading }: { g: Giveaway; heading: string }) {
       aria-label={heading}
       className='mt-12 w-full max-w-[560px] rounded-[28px] border border-black/10 bg-[#faf8f6] p-5 text-left sm:p-7'
     >
-      <h2 className='text-balance text-[30px] leading-[1.05] text-black md:text-4xl font-[family-name:var(--font-instrument-serif)]'>
-        {heading}
+      <h2 className='text-balance text-[26px] leading-[1.08] text-black md:text-[32px] font-semibold tracking-[-0.035em]'>
+        <AccentTitle text={heading} />
       </h2>
       <p className='mt-2 text-pretty text-[15px] leading-relaxed text-black/60'>
         Anyone who opens your link gets it free, with just their email.

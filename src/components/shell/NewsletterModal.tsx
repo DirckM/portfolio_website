@@ -1,5 +1,6 @@
 'use client';
 
+import AccentTitle from '@/components/shell/AccentTitle';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
@@ -277,9 +278,9 @@ export default function NewsletterModal() {
             <div className='flex-1 px-7 pt-8 pb-7 sm:px-9 sm:py-10'>
               <h2
                 id='nl-modal-title'
-                className='font-[family-name:var(--font-instrument-serif)] text-[30px] leading-tight text-black'
+                className='font-semibold tracking-[-0.03em] text-[30px] leading-tight text-black'
               >
-                What I am building
+                <AccentTitle text={`What I am building`} />
               </h2>
               <p id='nl-modal-blurb' className='mt-2 mb-7 text-sm text-black/60'>
                 One email a month from me. New components, what shipped, what

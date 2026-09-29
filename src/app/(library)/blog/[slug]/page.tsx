@@ -1,3 +1,4 @@
+import AccentTitle from '@/components/shell/AccentTitle';
 import { Metadata } from 'next';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog-utils';
@@ -130,8 +131,8 @@ const mdxComponents = {
   ),
   pre: HighlightedPre,
   h2: ({ children }: { children: React.ReactNode }) => (
-    <h2 className='text-2xl font-[family-name:var(--font-instrument-serif)] mt-12 mb-4'>
-      {children}
+    <h2 className='text-2xl font-semibold tracking-[-0.03em] mt-12 mb-4'>
+      {typeof children === 'string' ? <AccentTitle text={children} /> : children}
     </h2>
   ),
   p: ({ children }: { children: React.ReactNode }) => (
@@ -152,8 +153,8 @@ export default async function BlogPostPage({ params }: PageProps) {
   if (!post) {
     return (
       <div className='pt-32 text-center'>
-        <h1 className='text-2xl font-[family-name:var(--font-instrument-serif)]'>
-          Post not found
+        <h1 className='text-2xl font-semibold tracking-[-0.03em]'>
+          <AccentTitle text={`Post not found`} />
         </h1>
       </div>
     );
