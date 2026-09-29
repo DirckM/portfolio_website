@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import readingTime from 'reading-time';
+import { phoneDemos } from './phone-demos';
 
 const BLOG_DIR = path.join(process.cwd(), 'src/content/blog');
 
@@ -73,4 +74,16 @@ export function getBlogPost(slug: string): BlogPost | null {
 /** Tutorials only, for anything that promises "a working component each". */
 export function getTutorialPosts(): BlogPost[] {
   return getAllBlogPosts().filter(p => p.kind === 'tutorial');
+}
+
+/**
+ * A still for a story post, for cards that link to it.
+ *
+ * A tutorial has its component's live preview for that. A story has no
+ * component, so this takes the poster of the first phone demo it embeds. Null
+ * when the post embeds none, and the card then goes without a picture.
+ */
+export function getStoryPoster(post: BlogPost): string | null {
+  const match = post.content.match(/<PhoneDemo\s+demo=["']([^"']+)["']/);
+  return match ? (phoneDemos[match[1]]?.poster ?? null) : null;
 }
