@@ -95,9 +95,9 @@ export default function ConfirmedNextSteps({ posts }: { posts: NextPost[] }) {
           <div>
             <h2
               id='next-reels'
-              className='text-3xl sm:text-4xl font-[family-name:var(--font-instrument-serif)] text-black'
+              className='max-w-[520px] text-3xl sm:text-4xl leading-tight font-[family-name:var(--font-instrument-serif)] text-black'
             >
-              Watch it first
+              It would mean the world if you followed me on socials too
             </h2>
             <p className='mt-4 max-w-[440px] text-black/70 leading-relaxed'>
               Most things show up on Instagram before they get a proper
@@ -105,9 +105,6 @@ export default function ConfirmedNextSteps({ posts }: { posts: NextPost[] }) {
             </p>
           </div>
           <div className='flex flex-col items-start gap-3 lg:items-end'>
-            <p className='text-lg font-[family-name:var(--font-instrument-serif)] italic text-black'>
-              Your follow would mean the world to me.
-            </p>
             <a
               href={INSTAGRAM_PROFILE}
               target='_blank'
