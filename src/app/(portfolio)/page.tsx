@@ -171,6 +171,38 @@ export default function Home() {
 
   const projects: Project[] = [
     {
+      title: 'Dishy',
+      image: '/projects/dishy-icon.png',
+      cardBg: 'linear-gradient(135deg, #FF5C29 0%, #FF8A4C 100%)',
+      cardTextColor: '#ffffff',
+      description: 'A week of dinners, planned and priced',
+      media: {
+        type: 'video' as const,
+        src: '/blog/dishy-demo/dishy-demo-mealprep.mp4',
+        alt: 'Dishy planning a week of meal prep',
+      },
+      content: {
+        description:
+          '<strong>Dishy</strong> is a native iOS meal-prep planner. It plans a week of real dinners so there is no nightly decision, and puts the <strong>price underneath</strong> as proof the plan is real. Every price says where it came from: a live shelf price, an estimate, or unknown and left out of the total. On its way to the App Store.',
+        technologies: [
+          'SwiftUI',
+          'RealityKit',
+          'Supabase',
+          'Gemini',
+          'RevenueCat',
+          'Remotion',
+        ],
+        features: [
+          'Onboarding that ends in a planned week',
+          'A weekly dinner plan with its price on it',
+          'Fridge photo scan that takes what you have off the list',
+          'Prep-day cook mode, every dish in one session',
+          'A 3D fridge-door intro in RealityKit',
+        ],
+        link: '/blog/how-i-made-the-dishy-demo-videos',
+      },
+    },
+    {
       title: 'Website Rebuilds',
       image: '/projects/website-rebuilds.png',
       cardBg: 'linear-gradient(135deg, #0a0a0f 0%, #241246 100%)',

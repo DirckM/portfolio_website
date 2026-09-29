@@ -91,8 +91,10 @@ export function Body({
         <motion.a
           variants={rise}
           href={content.link}
-          target='_blank'
-          rel='noopener noreferrer'
+          // Links inside the site stay in this tab.
+          {...(content.link.startsWith('/')
+            ? {}
+            : { target: '_blank', rel: 'noopener noreferrer' })}
           className='mt-6 inline-flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm text-white no-underline transition-colors hover:bg-neutral-800'
         >
           View project <ArrowUpRight size={16} />
