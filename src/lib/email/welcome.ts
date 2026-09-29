@@ -29,6 +29,11 @@ export interface Welcome {
    * makes the person scroll for the one thing they came for.
    */
   kit?: Kit | null;
+  /**
+   * Where the kit button goes: the kit's page with this subscriber's own token
+   * (src/lib/kit-access.ts). Defaults to the zip.
+   */
+  kitHref?: string;
 }
 
 export const WELCOME_SUBJECT = 'You are on the list';
@@ -37,7 +42,12 @@ export function welcomeSubject(kit?: Kit | null): string {
   return kit ? `Your ${kit.name}, and you are on the list` : WELCOME_SUBJECT;
 }
 
-export function renderWelcome({ unsubscribeToken, postCount, kit }: Welcome): string {
+export function renderWelcome({
+  unsubscribeToken,
+  postCount,
+  kit,
+  kitHref,
+}: Welcome): string {
   const unsub = `${SITE}/api/newsletter/unsubscribe?t=${encodeURIComponent(unsubscribeToken)}`;
   const components = `${SITE}/components?utm_source=newsletter&utm_medium=email&utm_campaign=welcome`;
   const instagram = 'https://www.instagram.com/dirckmulder/';
@@ -107,7 +117,7 @@ export function renderWelcome({ unsubscribeToken, postCount, kit }: Welcome): st
     </tr></table>
   </td></tr>
 
-  ${kit ? `<tr><td style="height:24px;line-height:24px;font-size:0;">&nbsp;</td></tr>${renderKitSection(kit)}` : ''}
+  ${kit ? `<tr><td style="height:24px;line-height:24px;font-size:0;">&nbsp;</td></tr>${renderKitSection(kit, kitHref ?? kit.href)}` : ''}
 
   <tr><td class="p" style="padding:${kit ? 4 : 24}px 34px 22px;">
     <h1 class="big" style="margin:0 0 12px;font-family:${FONT};font-size:37px;line-height:1.08;letter-spacing:-.038em;color:${T.ink};font-weight:800;">You are <span style="font-family:${SERIF};font-style:italic;font-weight:400;letter-spacing:-.01em;">in</span>.</h1>
@@ -254,10 +264,15 @@ export function renderWelcome({ unsubscribeToken, postCount, kit }: Welcome): st
  * filters, and this is the first email the address ever receives from us, which
  * is exactly when reputation is decided.
  */
-export function renderWelcomeText({ unsubscribeToken, postCount, kit }: Welcome): string {
+export function renderWelcomeText({
+  unsubscribeToken,
+  postCount,
+  kit,
+  kitHref,
+}: Welcome): string {
   const unsub = `${SITE}/api/newsletter/unsubscribe?t=${encodeURIComponent(unsubscribeToken)}`;
   return [
-    ...(kit ? renderKitText(kit) : []),
+    ...(kit ? renderKitText(kit, kitHref ?? kit.href) : []),
     'YOU ARE IN.',
     '',
     'Thanks for signing up. You’ll hear from me once a month. That feels frequent enough to be useful and infrequent enough that we don’t start resenting each other.',

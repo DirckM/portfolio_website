@@ -3,7 +3,7 @@ import {
   renderConfirmEmail,
   renderAlreadySubscribedEmail,
 } from '@/lib/email/confirm';
-import { kitByName } from '@/lib/kits';
+import { kitByName, previewKitHref } from '@/lib/kits';
 import { giveawayForSource } from '@/lib/giveaways';
 
 // `?kit=app-demo` for a kit, `?kit=designs:2026-09` for an issue's designs.
@@ -32,7 +32,10 @@ export async function GET(request: Request) {
 
   const { html } =
     params.get('kind') === 'already'
-      ? renderAlreadySubscribedEmail({ kit })
+      ? renderAlreadySubscribedEmail({
+          kit,
+          kitHref: kit ? previewKitHref(kit) : undefined,
+        })
       : renderConfirmEmail({
           site: 'https://dirckmulder.com',
           confirmToken: 'preview_token_not_real',

@@ -163,12 +163,17 @@ export function renderConfirmEmail({
  */
 export function renderAlreadySubscribedEmail({
   kit,
-}: { kit?: Kit | null } = {}): Rendered {
+  kitHref,
+}: {
+  kit?: Kit | null;
+  /** The kit's page with this subscriber's token. Defaults to the zip. */
+  kitHref?: string;
+} = {}): Rendered {
   // Someone already on the list who signed up again from a kit form gets the
   // kit here, since no welcome email follows for them. It still only goes to
   // the address itself, so the subscribe endpoint's identical response keeps
   // its privacy property.
-  const body = `${kit ? `<tr><td style="height:24px;line-height:24px;font-size:0;">&nbsp;</td></tr>${renderKitSection(kit)}` : ''}
+  const body = `${kit ? `<tr><td style="height:24px;line-height:24px;font-size:0;">&nbsp;</td></tr>${renderKitSection(kit, kitHref ?? kit.href)}` : ''}
   <tr><td class="p" style="padding:${kit ? 4 : 24}px 34px 34px;">
     <h1 class="big" style="margin:0 0 12px;font-family:${FONT};font-size:34px;line-height:1.1;letter-spacing:-.035em;color:${T.ink};font-weight:800;">You are already <span style="font-family:${SERIF};font-style:italic;font-weight:400;letter-spacing:-.01em;">in</span></h1>
     <p style="margin:0 0 14px;font-family:${FONT};font-size:16px;line-height:1.65;color:${T.body};">
@@ -188,7 +193,7 @@ export function renderAlreadySubscribedEmail({
       body
     ),
     text: [
-      ...(kit ? renderKitText(kit) : []),
+      ...(kit ? renderKitText(kit, kitHref ?? kit.href) : []),
       'YOU ARE ALREADY IN',
       '',
       `${kit ? 'You were already on the list, so the kit is right here instead of in a welcome email.' : 'Nothing to do.'} The next issue lands in your inbox on its own.`,

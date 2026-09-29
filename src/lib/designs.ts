@@ -18,14 +18,24 @@
  * themselves, so every write here comes from a POST a click in the browser
  * makes.
  *
+ * KIT PAGES. /kits/<id> (src/lib/kits.ts) runs on exactly this logic. Every
+ * function here takes a giveaway KEY: an issue slug ('2026-09') for a designs
+ * page, or 'kit:<id>' ('kit:app-demo') for a kit page. The key is what goes in
+ * button_events.issue_slug and share_links.issue_slug. A kit page opens for:
+ *  - the designs token of any issue that hands out that kit (one token per
+ *    send unlocks every giveaway page of that issue), and
+ *  - the token minted for a subscriber's welcome or "already subscribed"
+ *    email, stored hashed in giveaway_tokens (src/lib/kit-access.ts).
+ *
  * The logic takes its database as an argument so scripts/designs.test.ts runs
  * it without a network. src/lib/designs-db.ts is the real one.
  */
 
 import { sha256hex } from '@/lib/tokens';
 import { SITE } from '@/lib/email/theme';
-import { issueBySlug } from '@/content/newsletter';
+import { issueBySlug, ISSUES } from '@/content/newsletter';
 import type { IssueFile } from '@/lib/email/issue-file';
+import { kitId, kitWithPage, type Kit } from '@/lib/kits';
 
 export type ButtonKind =
   | 'page_view_token'
@@ -39,7 +49,7 @@ export type ButtonKind =
   | 'form_open'
   | 'form_submit';
 
-export type ButtonPage = 'designs' | 'blog-kit';
+export type ButtonPage = 'designs' | 'blog-kit' | 'kit';
 
 export interface ButtonEvent {
   page: ButtonPage;
@@ -57,6 +67,11 @@ export interface DesignsStore {
   /** The subscriber a designs token was minted for, for this issue. */
   subscriberForDesignsToken(
     slug: string,
+    tokenHash: string
+  ): Promise<{ id: string; status: string } | null>;
+  /** The subscriber a welcome-email kit token was minted for. */
+  subscriberForKitToken(
+    giveaway: string,
     tokenHash: string
   ): Promise<{ id: string; status: string } | null>;
   buttonEventsFromIpSince(ipHash: string, sinceIso: string): Promise<number>;
@@ -93,16 +108,61 @@ export function zipUrl(f: IssueFile): string {
   return `${SITE}/kits/${f.showcase.designs!.zip}`;
 }
 
+/** 'kit:app-demo' and the like: the key of a kit page. */
+export const KIT_KEY_RE = /^kit:([a-z0-9-]{1,40})$/;
+
+export const kitKey = (kit: Kit) => `kit:${kitId(kit)}`;
+
+export type Giveaway =
+  | { kind: 'designs'; key: string; file: IssueFile; zip: string }
+  | {
+      kind: 'kit';
+      key: string;
+      kit: Kit;
+      zip: string;
+      /** Issues that hand this kit to the list: their designs tokens open it. */
+      issueSlugs: string[];
+    };
+
+/** What a giveaway key points at, or null for anything unknown. */
+export function giveaway(key: string | null | undefined): Giveaway | null {
+  if (!key) return null;
+  const k = KIT_KEY_RE.exec(key);
+  if (k) {
+    const kit = kitWithPage(k[1]);
+    if (!kit) return null;
+    return {
+      kind: 'kit',
+      key,
+      kit,
+      zip: kit.href,
+      issueSlugs: ISSUES.filter(
+        f => f.kit?.kit.sourcePrefix === kit.sourcePrefix
+      ).map(f => f.slug),
+    };
+  }
+  const f = designsIssue(key);
+  return f ? { kind: 'designs', key, file: f, zip: zipUrl(f) } : null;
+}
+
+/** The page a giveaway key lives on, without a token. */
+export function giveawayPath(key: string): string {
+  const k = KIT_KEY_RE.exec(key);
+  return k ? `/kits/${k[1]}` : `/designs/${key}`;
+}
+
 /** A share id: 10 letters and digits, made in the browser per share action. */
 export const SHARE_ID_RE = /^[A-Za-z0-9]{10}$/;
 
 export function shareUrl(slug: string, shareId: string): string {
-  return `${SITE}/designs/${slug}?ref=${encodeURIComponent(shareId)}`;
+  return `${SITE}${giveawayPath(slug)}?ref=${encodeURIComponent(shareId)}`;
 }
 
 /** The cookie that keeps a subscriber's access after the token leaves the URL. */
-export const cookieName = (slug: string) =>
-  `dm_designs_${slug.replace(/[^0-9-]/g, '')}`;
+export const cookieName = (slug: string) => {
+  const k = KIT_KEY_RE.exec(slug);
+  return k ? `dm_kit_${k[1]}` : `dm_designs_${slug.replace(/[^0-9-]/g, '')}`;
+};
 
 /** A random first-party id per browser, stored only as a salted hash. */
 export const VISITOR_COOKIE = 'dm_vid';
@@ -116,8 +176,19 @@ export async function resolveAccess(
   slug: string,
   token: string | null | undefined
 ): Promise<{ subscriberId: string } | null> {
-  if (!token || token.length > 200 || !designsIssue(slug)) return null;
-  const sub = await store.subscriberForDesignsToken(slug, sha256hex(token));
+  const g = giveaway(slug);
+  if (!token || token.length > 200 || !g) return null;
+  const hash = sha256hex(token);
+  let sub: { id: string; status: string } | null = null;
+  if (g.kind === 'designs') {
+    sub = await store.subscriberForDesignsToken(slug, hash);
+  } else {
+    for (const issue of g.issueSlugs) {
+      sub = await store.subscriberForDesignsToken(issue, hash);
+      if (sub) break;
+    }
+    sub ??= await store.subscriberForKitToken(g.key, hash);
+  }
   if (!sub || sub.status !== 'confirmed') return null;
   return { subscriberId: sub.id };
 }
@@ -168,7 +239,7 @@ const event = (
   subscriberId: string | null,
   shareId: string | null = null
 ): ButtonEvent => ({
-  page: 'designs',
+  page: KIT_KEY_RE.test(w.slug) ? 'kit' : 'designs',
   slug: w.slug,
   kind,
   subscriberId,
@@ -195,11 +266,16 @@ export async function download(
   store: DesignsStore,
   w: Who
 ): Promise<Result<{ url: string }>> {
-  const f = designsIssue(w.slug);
-  if (!f) return { ok: false, status: 404, error: 'No designs for that issue' };
+  const g = giveaway(w.slug);
+  if (!g) return { ok: false, status: 404, error: 'Nothing to download here' };
   const access = await resolveAccess(store, w.slug, w.token);
   if (!access)
-    return { ok: false, status: 403, error: 'Sign up to get the code' };
+    return {
+      ok: false,
+      status: 403,
+      error:
+        g.kind === 'kit' ? 'Sign up to get the kit' : 'Sign up to get the code',
+    };
   if (await rateLimited(store, w.ipHash, w.now ?? Date.now())) {
     return {
       ok: false,
@@ -208,7 +284,7 @@ export async function download(
     };
   }
   await store.recordButton(event(w, 'download', access.subscriberId));
-  return { ok: true, url: zipUrl(f) };
+  return { ok: true, url: g.zip };
 }
 
 /**
@@ -221,8 +297,8 @@ export async function registerShare(
   store: DesignsStore,
   w: Who & { id: string; method: 'copy' | 'native' }
 ): Promise<Result<{ url: string }>> {
-  if (!designsIssue(w.slug))
-    return { ok: false, status: 404, error: 'No designs for that issue' };
+  if (!giveaway(w.slug))
+    return { ok: false, status: 404, error: 'Nothing to share here' };
   if (!SHARE_ID_RE.test(w.id))
     return { ok: false, status: 400, error: 'Bad share id' };
   const access = await resolveAccess(store, w.slug, w.token);
@@ -275,11 +351,14 @@ export async function recordButtonPress(
   if (w.page === 'designs' && !designsIssue(w.slug)) {
     return { ok: false, status: 404, error: 'No such page' };
   }
+  if (w.page === 'kit' && giveaway(w.slug)?.kind !== 'kit') {
+    return { ok: false, status: 404, error: 'No such page' };
+  }
   if (await rateLimited(store, w.ipHash, w.now ?? Date.now())) {
     return { ok: false, status: 429, error: 'Too many requests' };
   }
   const access =
-    w.page === 'designs' ? await resolveAccess(store, w.slug, w.token) : null;
+    w.page === 'blog-kit' ? null : await resolveAccess(store, w.slug, w.token);
   const shareId = w.shareId && SHARE_ID_RE.test(w.shareId) ? w.shareId : null;
   if (w.kind === 'native_cancelled' && shareId && access) {
     await store.setShareMethod(
@@ -291,7 +370,7 @@ export async function recordButtonPress(
   await store.recordButton({
     ...event(w, w.kind, access?.subscriberId ?? null, shareId),
     page: w.page,
-    slug: /^\d{4}-\d{2}$/.test(w.slug) ? w.slug : null,
+    slug: w.page === 'kit' || /^\d{4}-\d{2}$/.test(w.slug) ? w.slug : null,
   });
   return { ok: true };
 }
