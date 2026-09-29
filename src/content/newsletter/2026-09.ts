@@ -24,7 +24,7 @@ const issue: IssueFile = {
   number: 1,
   slug: '2026-09',
   period: 'September',
-  status: 'draft',
+  status: 'approved',
   subject: 'The app demo that played itself',
 
   headline: 'The demo that played itself',
