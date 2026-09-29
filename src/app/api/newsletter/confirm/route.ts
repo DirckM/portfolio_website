@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { confirmByToken } from '@/lib/newsletter';
+import { notifyNewSubscriber } from '@/lib/notify-signup';
 import { getTutorialPosts } from '@/lib/blog-utils';
 import {
   renderWelcome,
@@ -61,6 +62,7 @@ export async function GET(request: Request) {
     result.data.source,
     result.data.id
   );
+  await notifyNewSubscriber(result.data);
 
   return NextResponse.redirect(`${site}/newsletter/confirmed`, 302);
 }
