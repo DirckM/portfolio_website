@@ -29,7 +29,7 @@ The [cursor-following version of this border](/blog/border-glow) reaches a simil
 
 ## Setting up
 
-Nothing to install and nothing to import. `@property` has been Baseline since July 2024, when Firefox 128 became the last engine to ship it. Chrome and Edge have had it since 85 and Safari since 16.4, so the only browsers that miss it are several major versions old. Baseline expects it to reach widely available in January 2027.
+Nothing to install and nothing to import. `@property` has been Baseline since July 2024, when Firefox became the last engine to ship it. Chrome and Edge have had it since 85 and Safari since 16.4, so the only browsers that miss it are several major versions old. Baseline expects it to reach widely available in January 2027.
 
 The fallback is worth a line of thought anyway. Without `@property` the custom property is undefined, the `conic-gradient()` referencing it is invalid, and the whole `background-image` is dropped. A solid `background-color` underneath is what keeps a real border on the card.
 
