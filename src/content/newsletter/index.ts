@@ -14,3 +14,18 @@ export function issueBySlug(slug: string | null | undefined): IssueFile | null {
   if (!slug) return null;
   return ISSUES.find(i => i.slug === slug) ?? null;
 }
+
+/**
+ * The newest issue that is out of draft: what a new subscriber gets the moment
+ * they confirm. 'approved' counts, because that is the status an issue keeps
+ * while it goes out to the list.
+ */
+export function latestReleasedIssue(
+  issues: IssueFile[] = ISSUES
+): IssueFile | null {
+  return (
+    issues
+      .filter(i => i.status !== 'draft')
+      .sort((a, b) => b.number - a.number)[0] ?? null
+  );
+}
