@@ -31,6 +31,19 @@ const DISMISS_DAYS = 30;
 
 const STORAGE_KEY = 'nl-modal';
 
+/** Dispatched by openNewsletterModal(). */
+const OPEN_EVENT = 'newsletter:open';
+
+/**
+ * Open the modal from anywhere. False when it is not mounted or switched off
+ * on this route, so the caller can go to /newsletter instead.
+ */
+export function openNewsletterModal(): boolean {
+  const detail = { handled: false };
+  window.dispatchEvent(new CustomEvent(OPEN_EVENT, { detail }));
+  return detail.handled;
+}
+
 /**
  * Routes where the ask is redundant or actively wrong. The giveaway pages
  * (/designs, /kits) are signup pages in their own right, and a subscriber
@@ -136,6 +149,28 @@ export default function NewsletterModal() {
     };
   }, [excluded, pathname, preview]);
 
+  // An explicit ask (the link in the burger menu) opens it right away, past the
+  // triggers and the cooldown, because the reader chose it. `handled` tells the
+  // sender the modal took it. On an excluded route nothing renders, so the
+  // sender falls back to the /newsletter page instead.
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      if (excluded) return;
+      const detail = (e as CustomEvent<{ handled: boolean }>).detail;
+      if (detail) detail.handled = true;
+      firedRef.current = true;
+      setOpen(true);
+      if (posthog.__loaded) {
+        posthog.capture('newsletter_modal_shown', {
+          trigger: 'menu',
+          pathname,
+        });
+      }
+    };
+    window.addEventListener(OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_EVENT, onOpen);
+  }, [excluded, pathname]);
+
   // Focus handling and the escape key. Moving focus into the panel is what
   // makes this usable with a keyboard or a screen reader instead of a trap.
   useEffect(() => {
@@ -195,7 +230,10 @@ export default function NewsletterModal() {
   const forwardTouch = useCallback((e: React.TouchEvent) => {
     const y = e.touches[0]?.clientY;
     if (y == null || touchY.current == null) return;
-    window.scrollBy({ top: touchY.current - y, behavior: 'instant' as ScrollBehavior });
+    window.scrollBy({
+      top: touchY.current - y,
+      behavior: 'instant' as ScrollBehavior,
+    });
     touchY.current = y;
   }, []);
 
@@ -211,7 +249,7 @@ export default function NewsletterModal() {
   return (
     <AnimatePresence>
       {open && (
-        <div className='fixed inset-0 z-[100] flex items-end justify-center sm:items-center'>
+        <div className='fixed inset-0 z-[100] flex items-end justify-center px-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:items-center sm:p-0'>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -239,7 +277,7 @@ export default function NewsletterModal() {
               ease: [0.22, 1, 0.36, 1],
               opacity: { duration: 0.45 },
             }}
-            className='relative flex w-full max-w-[720px] flex-col overflow-hidden bg-white shadow-2xl outline-none sm:flex-row'
+            className='relative flex max-h-[calc(100dvh-24px)] w-full max-w-[720px] flex-col overflow-y-auto overscroll-contain rounded-[22px] bg-white shadow-2xl outline-none sm:max-h-none sm:flex-row sm:overflow-hidden sm:rounded-none'
           >
             <button
               type='button'
@@ -264,7 +302,7 @@ export default function NewsletterModal() {
 
             {/* A full-bleed column on desktop, a banner on mobile. object-position
                 keeps the face in frame when the banner crops the portrait. */}
-            <div className='relative h-[190px] w-full shrink-0 sm:h-auto sm:w-[268px]'>
+            <div className='relative h-[150px] w-full shrink-0 sm:h-auto sm:w-[268px]'>
               <Image
                 src='/dirck-newsletter-tall.jpg'
                 alt='Dirck Mulder'
@@ -275,14 +313,17 @@ export default function NewsletterModal() {
               />
             </div>
 
-            <div className='flex-1 px-7 pt-8 pb-7 sm:px-9 sm:py-10'>
+            <div className='flex-1 px-6 pt-6 pb-4 sm:px-9 sm:py-10'>
               <h2
                 id='nl-modal-title'
-                className='font-semibold tracking-[-0.03em] text-[30px] leading-tight text-black'
+                className='font-semibold tracking-[-0.03em] text-[26px] leading-tight text-black sm:text-[30px]'
               >
                 <AccentTitle text={`What I am building`} />
               </h2>
-              <p id='nl-modal-blurb' className='mt-2 mb-7 text-sm text-black/60'>
+              <p
+                id='nl-modal-blurb'
+                className='mt-2 mb-5 text-sm text-black/60 sm:mb-7'
+              >
                 One email a month from me. New components, what shipped, what
                 broke.
               </p>
@@ -298,7 +339,7 @@ export default function NewsletterModal() {
                 <button
                   type='button'
                   onClick={() => close('dismiss')}
-                  className='mt-5 w-full text-center text-xs text-black/40 underline underline-offset-2 transition-colors hover:text-black/70'
+                  className='mt-3 w-full py-2 text-center text-xs text-black/40 underline underline-offset-2 transition-colors hover:text-black/70'
                 >
                   No thanks
                 </button>

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
+import { openNewsletterModal } from '@/components/shell/NewsletterModal';
 
 const MENU_EASE = { duration: 0.45, ease: [0.22, 1, 0.36, 1] } as const;
 const MENU_ITEM = {
@@ -301,6 +302,21 @@ export default function LibraryHeader() {
                   >
                     Portal
                   </a>
+                </motion.div>
+                <motion.div
+                  variants={MENU_ITEM}
+                  className='mt-2 border-t border-black/10 pt-2'
+                >
+                  <Link
+                    href='/newsletter'
+                    onClick={e => {
+                      setMenuOpen(false);
+                      if (openNewsletterModal()) e.preventDefault();
+                    }}
+                    className='block py-2 text-xs font-normal text-black/50 underline underline-offset-2 transition-colors hover:text-black'
+                  >
+                    Sign up for the newsletter
+                  </Link>
                 </motion.div>
               </motion.div>
             </motion.div>

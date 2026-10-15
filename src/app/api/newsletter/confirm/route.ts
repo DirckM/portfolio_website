@@ -10,6 +10,9 @@ import {
 } from '@/lib/email/welcome';
 import { giveawayForSource } from '@/lib/giveaways';
 import { kitEmailLink, kitTokenDb } from '@/lib/kit-access';
+import { latestReleasedIssue } from '@/content/newsletter';
+import { issueSendStore, resendMailer } from '@/lib/issue-store';
+import { sendIssueTo } from '@/lib/newsletter-send';
 
 export const runtime = 'nodejs';
 
@@ -62,6 +65,7 @@ export async function GET(request: Request) {
     result.data.source,
     result.data.id
   );
+  await sendLatestIssue(result.data.email, result.data.id);
   await notifyNewSubscriber(result.data);
 
   return NextResponse.redirect(`${site}/newsletter/confirmed`, 302);
@@ -125,4 +129,36 @@ async function sendWelcome(
   });
 
   if (error) console.error('welcome email failed:', error);
+}
+
+/**
+ * The newest released issue, right after the welcome, so someone who signs up
+ * mid-month reads the last issue instead of waiting for the next one.
+ *
+ * Fails open like the welcome: they are confirmed, and a missing issue must not
+ * bounce them to an error page. sendIssueTo() reserves the issue_sends row
+ * first, so the next list send skips them and nobody gets it twice.
+ */
+async function sendLatestIssue(email: string, subscriberId: string) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const file = latestReleasedIssue();
+  if (!apiKey || !file) return;
+  try {
+    const result = await sendIssueTo({
+      file,
+      recipient: { id: subscriberId, email },
+      store: issueSendStore,
+      mailer: resendMailer(apiKey),
+      from: process.env.NEWSLETTER_FROM_EMAIL || 'news@mail.dirckmulder.com',
+      replyTo: process.env.NEWSLETTER_REPLY_TO || 'dirck@dirckmulder.com',
+      // A serverless request, not a batch: one quick retry, then the list
+      // run picks the reservation up.
+      sleep: ms => new Promise(r => setTimeout(r, Math.min(ms, 1000))),
+      log: l => console.error(l),
+    });
+    if (result === 'failed')
+      console.error(`latest issue ${file.slug} not sent`);
+  } catch (err) {
+    console.error('latest issue send failed:', err);
+  }
 }

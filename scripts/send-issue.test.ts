@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { sha256hex } from '@/lib/tokens';
-import { ISSUES, issueBySlug } from '@/content/newsletter';
+import { ISSUES, issueBySlug, latestReleasedIssue } from '@/content/newsletter';
 import {
   toIssue,
   validateIssueFile,
@@ -20,6 +20,7 @@ import { renderIssue } from '@/lib/email/issue';
 import {
   IssueSendsMissing,
   sendIssue,
+  sendIssueTo,
   idempotencyKey,
   type MailResult,
   type Mailer,
@@ -478,4 +479,94 @@ test('a refused email releases its reservation so the next run can retry it', as
   assert.ok(calls.includes(`release ${people[1].id}`));
   assert.ok(!rows.has(people[1].id));
   assert.equal(report.sent, 2);
+});
+
+test('a new subscriber gets the newest issue that is out of draft', () => {
+  const older: IssueFile = { ...approved, number: 1, slug: '2026-09' };
+  const newer: IssueFile = {
+    ...approved,
+    number: 2,
+    slug: '2026-10',
+    status: 'sent',
+  };
+  const drafted: IssueFile = {
+    ...approved,
+    number: 3,
+    slug: '2026-11',
+    status: 'draft',
+  };
+  assert.equal(latestReleasedIssue([older, drafted, newer])?.slug, '2026-10');
+  assert.equal(latestReleasedIssue([drafted]), null);
+});
+
+test('sendIssueTo: reserves, sends under the list key, and the list run then skips them', async () => {
+  const { store, rows, calls } = fakeStore();
+  const { mailer, sent } = fakeMailer();
+  const res = await sendIssueTo({
+    ...base,
+    file: approved,
+    recipient: people[2],
+    store,
+    mailer,
+  });
+  assert.equal(res, 'sent');
+  assert.deepEqual(calls, [
+    `reserve ${people[2].id}`,
+    `markSent ${people[2].id}`,
+  ]);
+  assert.equal(sent[0].key, idempotencyKey('2026-09', people[2].id));
+  assert.equal(rows.get(people[2].id)!.hash, sha256hex(tokenIn(sent[0].email)));
+
+  const again = await sendIssueTo({
+    ...base,
+    file: approved,
+    recipient: people[2],
+    store,
+    mailer,
+  });
+  assert.equal(again, 'already');
+  assert.equal(sent.length, 1, 'a second confirm click sends nothing');
+
+  const list = fakeMailer();
+  const report = await sendIssue({
+    ...base,
+    file: approved,
+    mode: { kind: 'send' },
+    store,
+    mailer: list.mailer,
+    confirm: async () => '2026-09',
+  });
+  assert.equal(report.alreadySent, 1);
+  assert.ok(!list.sent.some(s => s.email.to === people[2].email));
+});
+
+test('sendIssueTo: never sends a draft, releases a refused email', async () => {
+  const { store, rows } = fakeStore();
+  const { mailer, sent } = fakeMailer(() => ({
+    ok: false,
+    kind: 'rejected',
+    message: 'bad address',
+  }));
+  assert.equal(
+    await sendIssueTo({
+      ...base,
+      file: { ...approved, status: 'draft' },
+      recipient: people[0],
+      store,
+      mailer,
+    }),
+    'failed'
+  );
+  assert.equal(sent.length, 0);
+  assert.equal(
+    await sendIssueTo({
+      ...base,
+      file: approved,
+      recipient: people[0],
+      store,
+      mailer,
+    }),
+    'failed'
+  );
+  assert.equal(rows.size, 0, 'reservation released so a later run can retry');
 });

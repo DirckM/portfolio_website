@@ -417,3 +417,72 @@ export async function sendIssue(o: SendOptions): Promise<SendReport> {
   );
   return report;
 }
+
+export type SendOneResult = 'sent' | 'already' | 'failed';
+
+/**
+ * The latest issue, to one person who just confirmed. Without it a new
+ * subscriber hears nothing after the welcome until the next issue, which can
+ * be a month away.
+ *
+ * Same bookkeeping as the list send: the row is reserved first, so a later
+ * `pnpm send-issue <slug> --send` skips this person, and a reservation that
+ * already exists means they have it (or a list run is sending it right now).
+ * Same idempotency key too, so a double click on the confirm link cannot send
+ * it twice. A transient failure leaves the reservation in place, and the next
+ * list run retries it under that key within Resend's 24 hour window.
+ */
+export async function sendIssueTo(o: {
+  file: IssueFile;
+  recipient: Recipient;
+  store: SendStore;
+  mailer: Mailer;
+  from: string;
+  replyTo: string;
+  sleep?: (ms: number) => Promise<void>;
+  log?: (line: string) => void;
+}): Promise<SendOneResult> {
+  const log = o.log ?? (() => {});
+  const sleep = o.sleep ?? (ms => new Promise(r => setTimeout(r, ms)));
+  const { file, recipient: r } = o;
+  if (file.status === 'draft' || validateIssueFile(file).length) {
+    log(`issue ${file.slug} is a draft or breaks its rules, not sent`);
+    return 'failed';
+  }
+
+  const token = newToken();
+  const designsToken = newToken();
+  const hashes: TokenHashes = {
+    unsubscribe: sha256hex(token),
+    designs: sha256hex(designsToken),
+  };
+  if (!(await o.store.reserve(file.slug, r.id, hashes))) return 'already';
+
+  const email = buildEmail(
+    file,
+    r.email,
+    token,
+    o.from,
+    o.replyTo,
+    r.id,
+    designsToken
+  );
+  const res = await sendWithRetry(
+    o.mailer,
+    email,
+    idempotencyKey(file.slug, r.id),
+    sleep,
+    log
+  );
+  if (res.ok) {
+    await o.store.markSent(file.slug, r, res.id);
+    return 'sent';
+  }
+  if (res.kind === 'conflict') {
+    await o.store.markSent(file.slug, r, null);
+    return 'sent';
+  }
+  if (res.kind === 'rejected') await o.store.release(file.slug, r.id);
+  log(`issue ${file.slug} to ${r.id} failed: ${res.message}`);
+  return 'failed';
+}
